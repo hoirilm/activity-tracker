@@ -4,18 +4,22 @@
         @include('partials.head')
     </head>
     <body class="min-h-screen bg-white dark:bg-zinc-800">
-        <flux:sidebar sticky collapsible="mobile" class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
+        <flux:sidebar sticky collapsible class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
             <flux:sidebar.header>
                 <x-app-logo :sidebar="true" href="{{ route('dashboard') }}" wire:navigate />
-                <flux:sidebar.collapse class="lg:hidden" />
+                <flux:sidebar.collapse />
             </flux:sidebar.header>
 
             <flux:sidebar.nav>
-                <flux:sidebar.group :heading="__('Platform')" class="grid">
-                    <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
-                        {{ __('Dashboard') }}
-                    </flux:sidebar.item>
-                </flux:sidebar.group>
+                <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
+                    {{ __('Dashboard') }}
+                </flux:sidebar.item>
+                <flux:sidebar.item icon="clock" :href="route('tracker')" :current="request()->routeIs('tracker')" wire:navigate>
+                    {{ __('Tracker') }}
+                </flux:sidebar.item>
+                <flux:sidebar.item icon="cog-8-tooth" :href="route('manage')" :current="request()->routeIs('manage')" wire:navigate>
+                    {{ __('Manage') }}
+                </flux:sidebar.item>
             </flux:sidebar.nav>
 
             <flux:spacer />
@@ -27,6 +31,10 @@
 
                 <flux:sidebar.item icon="book-open-text" href="https://laravel.com/docs/starter-kits#livewire" target="_blank">
                     {{ __('Documentation') }}
+                </flux:sidebar.item>
+
+                <flux:sidebar.item icon="calendar-days" href="https://openproject.pactindo.com/weeklog/" target="_blank">
+                    {{ __('Weeklog Primavisi') }}
                 </flux:sidebar.item>
             </flux:sidebar.nav>
 

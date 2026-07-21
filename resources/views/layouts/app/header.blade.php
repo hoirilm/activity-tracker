@@ -13,6 +13,12 @@
                 <flux:navbar.item icon="layout-grid" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
                     {{ __('Dashboard') }}
                 </flux:navbar.item>
+                <flux:navbar.item icon="clock" :href="route('tracker')" :current="request()->routeIs('tracker')" wire:navigate>
+                    {{ __('Tracker') }}
+                </flux:navbar.item>
+                <flux:navbar.item icon="cog-8-tooth" :href="route('manage')" :current="request()->routeIs('manage')" wire:navigate>
+                    {{ __('Manage') }}
+                </flux:navbar.item>
             </flux:navbar>
 
             <flux:spacer />
@@ -55,6 +61,12 @@
                 <flux:sidebar.group :heading="__('Platform')">
                     <flux:sidebar.item icon="layout-grid" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('Dashboard')  }}
+                    </flux:sidebar.item>
+                    <flux:sidebar.item icon="clock" :href="route('tracker')" :current="request()->routeIs('tracker')" wire:navigate>
+                        {{ __('Tracker') }}
+                    </flux:sidebar.item>
+                    <flux:sidebar.item icon="cog-8-tooth" :href="route('manage')" :current="request()->routeIs('manage')" wire:navigate>
+                        {{ __('Manage') }}
                     </flux:sidebar.item>
                 </flux:sidebar.group>
             </flux:sidebar.nav>
