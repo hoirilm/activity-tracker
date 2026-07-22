@@ -17,6 +17,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Application Version
+    |--------------------------------------------------------------------------
+    |
+    | Automatically read from the latest git tag. Falls back to short commit
+    | hash, then 'dev' if no git info is available. When config is cached
+    | (php artisan config:cache), the value is baked in at deploy time.
+    |
+    */
+
+    'version' => env('APP_VERSION', trim(shell_exec('git describe --tags --abbrev=0 2>/dev/null') ?: (trim(shell_exec('git rev-parse --short HEAD 2>/dev/null') ?: 'dev')))),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Environment
     |--------------------------------------------------------------------------
     |

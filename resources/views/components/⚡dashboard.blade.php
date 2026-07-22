@@ -6,7 +6,7 @@ use Carbon\Carbon;
 
 new class extends Component
 {
-    public $chartPeriod = 'daily';
+    public $chartPeriod = 'weekly';
 
     public function getTodayDurationProperty()
     {
@@ -365,73 +365,72 @@ new class extends Component
         
         <!-- Activity Chart (Daily, Weekly, Monthly, Yearly) -->
         <div wire:ignore class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xs"
-             x-data="{ 
-                 period: 'daily',
-                 chart: null 
+             x-data="{
+                 period: 'weekly',
+                 chart: null,
+                 isDark: document.documentElement.classList.contains('dark'),
+                 initChart(labels, data) {
+                     if (this.chart) {
+                         this.chart.destroy();
+                         this.chart = null;
+                     }
+                     const ctx = this.$refs.canvas;
+                     const gridColor = this.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)';
+                     const textColor = this.isDark ? '#a3a3a3' : '#737373';
+                     this.chart = new Chart(ctx, {
+                         type: 'bar',
+                         data: {
+                             labels: labels,
+                             datasets: [{
+                                 label: 'Hours Worked',
+                                 data: data,
+                                 backgroundColor: '#6366f1',
+                                 borderRadius: 6,
+                                 barThickness: 'flex',
+                                 maxBarThickness: 45,
+                             }]
+                         },
+                         options: {
+                             responsive: true,
+                             maintainAspectRatio: false,
+                             animation: { duration: 400 },
+                             plugins: {
+                                 legend: { display: false },
+                                 tooltip: {
+                                     backgroundColor: this.isDark ? '#262626' : '#ffffff',
+                                     titleColor: this.isDark ? '#f5f5f5' : '#171717',
+                                     bodyColor: this.isDark ? '#d4d4d4' : '#525252',
+                                     borderColor: this.isDark ? '#404040' : '#e5e5e5',
+                                     borderWidth: 1,
+                                     padding: 10,
+                                     displayColors: false,
+                                     callbacks: {
+                                         label: function(context) {
+                                             let val = context.raw;
+                                             let h = Math.floor(val);
+                                             let m = Math.round((val - h) * 60);
+                                             return ` ${h}h ${m}m`;
+                                         }
+                                     }
+                                 }
+                             },
+                             scales: {
+                                 y: {
+                                     beginAtZero: true,
+                                     grid: { color: gridColor },
+                                     ticks: { color: textColor }
+                                 },
+                                 x: {
+                                     grid: { display: false },
+                                     ticks: { color: textColor }
+                                 }
+                             }
+                         }
+                     });
+                 }
              }"
-             x-on:chart-updated.window="
-                if (chart) {
-                    chart.data.labels = $event.detail.stats.labels;
-                    chart.data.datasets[0].data = $event.detail.stats.data;
-                    chart.update();
-                }
-             "
-             x-init="
-                const ctx = $refs.canvas;
-                const isDarkMode = document.documentElement.classList.contains('dark');
-                const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)';
-                const textColor = isDarkMode ? '#a3a3a3' : '#737373';
-                
-                chart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: @js($this->chartStats['labels']),
-                        datasets: [{
-                            label: 'Hours Worked',
-                            data: @js($this->chartStats['data']),
-                            backgroundColor: '#6366f1', // indigo-500
-                            borderRadius: 6,
-                            barThickness: 'flex',
-                            maxBarThickness: 45,
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: {
-                                backgroundColor: isDarkMode ? '#262626' : '#ffffff',
-                                titleColor: isDarkMode ? '#f5f5f5' : '#171717',
-                                bodyColor: isDarkMode ? '#d4d4d4' : '#525252',
-                                borderColor: isDarkMode ? '#404040' : '#e5e5e5',
-                                borderWidth: 1,
-                                padding: 10,
-                                displayColors: false,
-                                callbacks: {
-                                    label: function(context) {
-                                        let val = context.raw;
-                                        let h = Math.floor(val);
-                                        let m = Math.round((val - h) * 60);
-                                        return ` ${h}h ${m}m`;
-                                    }
-                                }
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                grid: { color: gridColor },
-                                ticks: { color: textColor }
-                            },
-                            x: {
-                                grid: { display: false },
-                                ticks: { color: textColor }
-                            }
-                        }
-                    }
-                });
-             ">
+             x-init="initChart(@js($this->chartStats['labels']), @js($this->chartStats['data']))"
+             x-on:chart-updated.window="initChart($event.detail.stats.labels, $event.detail.stats.data)">
             <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-4">
                 <h3 class="text-sm font-semibold text-zinc-850 dark:text-zinc-150 flex items-center gap-2">
                     <flux:icon name="chart-bar" class="size-4.5 text-zinc-500" />
@@ -440,11 +439,6 @@ new class extends Component
                 
                 <!-- Period Toggle Tabs -->
                 <div class="flex bg-zinc-100 dark:bg-zinc-800/80 rounded-lg p-0.5 self-start sm:self-auto shrink-0">
-                    <button type="button" @click="period = 'daily'; $wire.set('chartPeriod', 'daily')" 
-                            class="text-[10px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider transition-colors cursor-pointer"
-                            :class="period === 'daily' ? 'bg-white dark:bg-zinc-900 shadow-xs text-zinc-900 dark:text-zinc-100' : 'text-zinc-450 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200'">
-                        Daily
-                    </button>
                     <button type="button" @click="period = 'weekly'; $wire.set('chartPeriod', 'weekly')" 
                             class="text-[10px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider transition-colors cursor-pointer"
                             :class="period === 'weekly' ? 'bg-white dark:bg-zinc-900 shadow-xs text-zinc-900 dark:text-zinc-100' : 'text-zinc-450 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200'">
@@ -505,8 +499,8 @@ new class extends Component
                                              <span class="text-zinc-600 dark:text-zinc-400 font-medium">{{ $cat['name'] }}</span>
                                              <span class="text-zinc-450 dark:text-zinc-500 font-mono">{{ $cat['duration'] }} ({{ $cat['percentage'] }}%)</span>
                                          </div>
-                                         <div class="w-full bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-150/20 dark:border-zinc-850/20 rounded-full h-1">
-                                             <div class="bg-emerald-500 h-1 rounded-full animate-width" style="width: {{ $cat['percentage'] }}%"></div>
+                                         <div class="w-full bg-zinc-100 dark:bg-zinc-800/80 rounded-full h-1.5">
+                                             <div class="bg-emerald-400 h-1.5 rounded-full" style="width: {{ $cat['percentage'] }}%"></div>
                                          </div>
                                      </div>
                                  @endforeach
