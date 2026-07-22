@@ -15,6 +15,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
         }
         return view('issues');
     })->name('issues');
+
+    Route::get('members', function () {
+        if (!auth()->user()->is_admin) {
+            abort(403);
+        }
+        return view('members');
+    })->name('members');
+
+    Route::get('broadcast', function () {
+        if (!auth()->user()->is_admin) {
+            abort(403);
+        }
+        return view('broadcast');
+    })->name('broadcast');
 });
 
 require __DIR__.'/settings.php';

@@ -8,6 +8,6 @@
     <p>Attached is your daily activity report for today.</p>
     <p>Keep up the good work!</p>
     <br>
-    <p>Best regards,<br>MariKerja Activity Tracker</p>
+    <p>Best regards,<br>Klakoan Activity Tracker</p>
 </body>
 </html>

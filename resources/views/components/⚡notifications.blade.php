@@ -7,47 +7,6 @@ new class extends Component
 {
     public $isOpen = false;
 
-    public function mount()
-    {
-        if (auth()->check()) {
-            $user = auth()->user();
-            if ($user->notifications()->count() === 0) {
-                // Seed 5 sample notifications
-                $user->notifications()->createMany([
-                    [
-                        'title' => 'Welcome to MariKerja! 🚀',
-                        'body' => 'Thank you for using Activity Tracker. You can now monitor and track your daily tasks in real-time.',
-                        'type' => 'info',
-                        'created_at' => now()->subHours(24),
-                    ],
-                    [
-                        'title' => 'New: Help & Support Center',
-                        'body' => 'Need help? Click the question mark icon at the bottom-left to access FAQs, guides, or submit bug reports.',
-                        'type' => 'success',
-                        'created_at' => now()->subHours(8),
-                    ],
-                    [
-                        'title' => 'Daily Reports Activated',
-                        'body' => 'Your workspace is now configured to automatically summarize and email your activity logs daily.',
-                        'type' => 'info',
-                        'created_at' => now()->subHours(2),
-                    ],
-                    [
-                        'title' => 'Multi-Tenancy Security',
-                        'body' => 'All your projects, categories, and logs are now fully isolated and encrypted per user account.',
-                        'type' => 'success',
-                        'created_at' => now()->subMinutes(45),
-                    ],
-                    [
-                        'title' => 'System Update: v1.1.0',
-                        'body' => 'We successfully migrated to Semantic Versioning v1.1.0 with a new design layout.',
-                        'type' => 'info',
-                        'created_at' => now()->subMinutes(5),
-                    ],
-                ]);
-            }
-        }
-    }
 
     public function toggle()
     {
@@ -131,23 +90,38 @@ new class extends Component
                         <div class="flex items-center justify-between text-[11px] text-zinc-400 dark:text-zinc-500 mb-1.5">
                             <div class="flex items-center gap-1.5">
                                 <div class="size-3.5 rounded bg-zinc-800 dark:bg-zinc-200 flex items-center justify-center">
-                                    <span class="text-[8px] font-bold text-white dark:text-zinc-900">M</span>
+                                    <span class="text-[8px] font-bold text-white dark:text-zinc-900">K</span>
                                 </div>
-                                <span class="font-medium text-zinc-650 dark:text-zinc-450 uppercase tracking-wider text-[9px]">MariKerja</span>
+                                <span class="font-medium text-zinc-650 dark:text-zinc-450 uppercase tracking-wider text-[9px]">Klakoan</span>
                                 <span>•</span>
                                 <span>{{ $notif->created_at->diffForHumans(null, true) }}</span>
                             </div>
                             
-                            @if(!$notif->read_at)
-                                <button wire:click="markAsRead({{ $notif->id }})" class="opacity-0 group-hover:opacity-100 text-zinc-400 hover:text-zinc-650 dark:hover:text-zinc-200 transition-opacity duration-150 cursor-pointer">
-                                    <flux:icon name="check" class="size-3.5" />
-                                </button>
-                            @endif
+                            <!-- Type Indicator Badge -->
+                            <div class="text-[8px] font-bold uppercase tracking-wider">
+                                @if($notif->type === 'success')
+                                    <span class="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 px-1.5 py-0.5 rounded">success</span>
+                                @elseif($notif->type === 'warning')
+                                    <span class="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 px-1.5 py-0.5 rounded">warning</span>
+                                @else
+                                    <span class="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 px-1.5 py-0.5 rounded">info</span>
+                                @endif
+                            </div>
                         </div>
 
                         <!-- Banner Title & Body -->
                         <h4 class="text-xs font-semibold text-zinc-800 dark:text-zinc-200 mb-0.5">{{ $notif->title }}</h4>
                         <p class="text-[11px] leading-snug text-zinc-500 dark:text-zinc-400">{{ $notif->body }}</p>
+
+                        <!-- Action Button (Bottom) -->
+                        @if(!$notif->read_at)
+                            <div class="flex justify-end mt-2 pt-1 border-t border-zinc-100/50 dark:border-zinc-800/20">
+                                <button wire:click="markAsRead({{ $notif->id }})" class="opacity-0 group-hover:opacity-100 flex items-center gap-1 text-[10px] text-zinc-400 hover:text-zinc-650 dark:hover:text-zinc-200 transition-opacity duration-150 cursor-pointer bg-zinc-100/50 dark:bg-zinc-800/40 hover:bg-zinc-100 dark:hover:bg-zinc-800 px-2 py-1 rounded-lg">
+                                    <flux:icon name="check" class="size-3" />
+                                    <span>Mark as read</span>
+                                </button>
+                            </div>
+                        @endif
                     </div>
                 @empty
                     <div class="flex flex-col items-center justify-center py-12 text-center space-y-2">

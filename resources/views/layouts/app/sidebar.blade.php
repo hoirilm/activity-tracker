@@ -26,6 +26,12 @@
                 <flux:sidebar.item icon="flag" :href="route('issues')" :current="request()->routeIs('issues')" :badge="$openAdminIssues ?: null" wire:navigate>
                     {{ __('Issues') }}
                 </flux:sidebar.item>
+                <flux:sidebar.item icon="users" :href="route('members')" :current="request()->routeIs('members')" wire:navigate>
+                    {{ __('Members') }}
+                </flux:sidebar.item>
+                <flux:sidebar.item icon="megaphone" :href="route('broadcast')" :current="request()->routeIs('broadcast')" wire:navigate>
+                    {{ __('Broadcast') }}
+                </flux:sidebar.item>
                 @endif
                 
 

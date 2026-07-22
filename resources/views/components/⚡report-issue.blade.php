@@ -16,10 +16,30 @@ new class extends Component
             'description' => 'required|string',
         ]);
 
-        auth()->user()->issues()->create([
+        $user = auth()->user();
+        $issue = $user->issues()->create([
             'title' => $this->title,
             'description' => $this->description,
         ]);
+
+        // Notify the user themselves
+        $user->notifications()->create([
+            'title' => 'Laporan Bug Diterima 🐛',
+            'body' => "Terima kasih! Laporan bug Anda terkait '{$issue->formatted_title}' telah diterima oleh Administrator.",
+            'type' => 'info',
+        ]);
+
+        // Notify all administrators
+        $admins = \App\Models\User::where('is_admin', true)->get();
+        foreach ($admins as $admin) {
+            if ($admin->id !== $user->id) {
+                $admin->notifications()->create([
+                    'title' => 'Laporan Bug Baru ⚠️',
+                    'body' => "Pengguna {$user->name} melaporkan bug baru: '{$issue->formatted_title}'.",
+                    'type' => 'warning',
+                ]);
+            }
+        }
 
         $this->reset(['title', 'description']);
         $this->success = true;

@@ -12,4 +12,14 @@ class Issue extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function getTicketIdAttribute()
+    {
+        return sprintf('TKT-%04d', $this->id);
+    }
+
+    public function getFormattedTitleAttribute()
+    {
+        return "[{$this->ticket_id}] - {$this->title}";
+    }
 }

@@ -6,6 +6,8 @@ use Carbon\Carbon;
 
 new class extends Component
 {
+    public $chartPeriod = 'daily';
+
     public function getTodayDurationProperty()
     {
         $activities = auth()->user()->activities()
@@ -51,38 +53,89 @@ new class extends Component
             ->get();
     }
 
-    public function getDailyStatsProperty()
+    public function updatedChartPeriod()
     {
-        // Get last 7 days including today
-        $days = collect();
-        for ($i = 6; $i >= 0; $i--) {
-            $days->push(Carbon::today()->subDays($i)->format('Y-m-d'));
-        }
+        $this->dispatch('chart-updated', stats: $this->chartStats);
+    }
 
-        $activities = auth()->user()->activities()
-            ->whereNotNull('end_time')
-            ->whereDate('start_time', '>=', Carbon::today()->subDays(6))
-            ->get();
+    public function getChartStatsProperty()
+    {
+        if ($this->chartPeriod === 'monthly') {
+            // Last 30 days
+            $days = collect();
+            for ($i = 29; $i >= 0; $i--) {
+                $days->push(Carbon::today()->subDays($i)->format('Y-m-d'));
+            }
 
-        $chartData = $days->map(function ($day) use ($activities) {
-            $dailyActivities = $activities->filter(function ($activity) use ($day) {
-                return $activity->start_time->format('Y-m-d') === $day;
+            $activities = auth()->user()->activities()
+                ->whereNotNull('end_time')
+                ->whereDate('start_time', '>=', Carbon::today()->subDays(29))
+                ->get();
+
+            $chartData = $days->map(function ($day) use ($activities) {
+                $dailyActivities = $activities->filter(function ($activity) use ($day) {
+                    return $activity->start_time->format('Y-m-d') === $day;
+                });
+                return round($this->sumSeconds($dailyActivities) / 3600, 2);
             });
-            $seconds = $this->sumSeconds($dailyActivities);
-            // Convert to hours (float)
-            return round($seconds / 3600, 2);
-        });
 
-        return [
-            'labels' => $days->map(fn($day) => Carbon::parse($day)->format('D, M d'))->toArray(),
-            'data' => $chartData->toArray(),
-        ];
+            return [
+                'labels' => $days->map(fn($day) => Carbon::parse($day)->format('M d'))->toArray(),
+                'data' => $chartData->toArray(),
+            ];
+        } elseif ($this->chartPeriod === 'yearly') {
+            // 12 months of current year
+            $months = collect();
+            for ($i = 11; $i >= 0; $i--) {
+                $months->push(Carbon::today()->subMonths($i)->format('Y-m'));
+            }
+
+            $activities = auth()->user()->activities()
+                ->whereNotNull('end_time')
+                ->where('start_time', '>=', Carbon::today()->subMonths(11)->startOfMonth())
+                ->get();
+
+            $chartData = $months->map(function ($month) use ($activities) {
+                $monthlyActivities = $activities->filter(function ($activity) use ($month) {
+                    return $activity->start_time->format('Y-m') === $month;
+                });
+                return round($this->sumSeconds($monthlyActivities) / 3600, 2);
+            });
+
+            return [
+                'labels' => $months->map(fn($m) => Carbon::parse($m . '-01')->format('M Y'))->toArray(),
+                'data' => $chartData->toArray(),
+            ];
+        } else {
+            // Daily (last 7 days)
+            $days = collect();
+            for ($i = 6; $i >= 0; $i--) {
+                $days->push(Carbon::today()->subDays($i)->format('Y-m-d'));
+            }
+
+            $activities = auth()->user()->activities()
+                ->whereNotNull('end_time')
+                ->whereDate('start_time', '>=', Carbon::today()->subDays(6))
+                ->get();
+
+            $chartData = $days->map(function ($day) use ($activities) {
+                $dailyActivities = $activities->filter(function ($activity) use ($day) {
+                    return $activity->start_time->format('Y-m-d') === $day;
+                });
+                return round($this->sumSeconds($dailyActivities) / 3600, 2);
+            });
+
+            return [
+                'labels' => $days->map(fn($day) => Carbon::parse($day)->format('D, M d'))->toArray(),
+                'data' => $chartData->toArray(),
+            ];
+        }
     }
 
     public function getProjectStatsProperty()
     {
         $activities = auth()->user()->activities()
-            ->with('project')
+            ->with(['project', 'category'])
             ->whereNotNull('end_time')
             ->whereBetween('start_time', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
             ->get();
@@ -90,9 +143,24 @@ new class extends Component
         if ($activities->isEmpty()) return collect();
 
         $projectGroups = $activities->groupBy('project_id')->map(function ($group) {
+            $projectTotalSeconds = $this->sumSeconds($group);
+            
+            // Calculate category breakdown inside this project
+            $categoryGroups = $group->groupBy('category_id')->map(function ($catGroup) use ($projectTotalSeconds) {
+                $catSeconds = $this->sumSeconds($catGroup);
+                $catPercentage = $projectTotalSeconds > 0 ? round(($catSeconds / $projectTotalSeconds) * 100) : 0;
+                return [
+                    'name' => $catGroup->first()->category->name ?? 'Uncategorized',
+                    'seconds' => $catSeconds,
+                    'duration' => $this->formatDuration($catSeconds),
+                    'percentage' => $catPercentage,
+                ];
+            })->sortByDesc('seconds')->values()->toArray();
+
             return [
-                'name' => $group->first()->project->name,
-                'seconds' => $this->sumSeconds($group),
+                'name' => $group->first()->project->name ?? 'Unnamed Project',
+                'seconds' => $projectTotalSeconds,
+                'categories' => $categoryGroups,
             ];
         });
 
@@ -106,6 +174,7 @@ new class extends Component
                 'seconds' => $group['seconds'],
                 'duration' => $this->formatDuration($group['seconds']),
                 'percentage' => $percentage,
+                'categories' => $group['categories'],
             ];
         })->sortByDesc('seconds')->values();
     }
@@ -168,65 +237,84 @@ new class extends Component
 };
 ?>
 
-<div class="flex h-full w-full flex-col gap-6 p-4 text-neutral-900 dark:text-neutral-100 max-w-5xl mx-auto mt-2">
+<div class="flex h-full w-full flex-col gap-6 p-4 text-neutral-900 dark:text-neutral-100 max-w-5xl mx-auto mt-4">
 
     <!-- Header -->
-    <div class="flex flex-col gap-1">
-        <h1 class="text-2xl font-bold tracking-tight">Dashboard</h1>
-        <p class="text-neutral-500 dark:text-neutral-400 text-sm">Welcome back! Here's a summary of your activity.</p>
+    <div class="border-b border-zinc-200 dark:border-zinc-800 pb-4">
+        <h2 class="text-xl font-semibold tracking-tight">Dashboard</h2>
+        <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">Welcome back, {{ auth()->user()->name }}! Here is a summary of your tracked work.</p>
     </div>
 
     <!-- Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl p-5 shadow-sm">
-            <div class="text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-1">Today's Total</div>
-            <div class="text-3xl font-bold tracking-tight text-indigo-600 dark:text-indigo-400">{{ $this->todayDuration }}</div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Card 1 -->
+        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-xs flex items-center gap-4">
+            <div class="size-11 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100/50 dark:border-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+                <flux:icon name="clock" class="size-5" />
+            </div>
+            <div>
+                <div class="text-[11px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Today's Total</div>
+                <div class="text-2xl font-bold tracking-tight text-indigo-600 dark:text-indigo-400 mt-0.5">{{ $this->todayDuration }}</div>
+            </div>
         </div>
         
-        <div class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl p-5 shadow-sm">
-            <div class="text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-1">This Week</div>
-            <div class="text-3xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">{{ $this->weekDuration }}</div>
+        <!-- Card 2 -->
+        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-xs flex items-center gap-4">
+            <div class="size-11 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200/50 dark:border-zinc-800/40 flex items-center justify-center text-zinc-550 dark:text-zinc-400 shrink-0">
+                <flux:icon name="calendar-days" class="size-5" />
+            </div>
+            <div>
+                <div class="text-[11px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">This Week</div>
+                <div class="text-2xl font-bold tracking-tight text-zinc-850 dark:text-zinc-150 mt-0.5">{{ $this->weekDuration }}</div>
+            </div>
         </div>
 
-        <div class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl p-5 shadow-sm">
-            <div class="text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-1">Active Projects (Week)</div>
-            <div class="text-3xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">{{ $this->activeProjectsCount }}</div>
+        <!-- Card 3 -->
+        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-xs flex items-center gap-4">
+            <div class="size-11 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200/50 dark:border-zinc-800/40 flex items-center justify-center text-zinc-550 dark:text-zinc-400 shrink-0">
+                <flux:icon name="briefcase" class="size-5" />
+            </div>
+            <div>
+                <div class="text-[11px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Active Projects (Week)</div>
+                <div class="text-2xl font-bold tracking-tight text-zinc-850 dark:text-zinc-150 mt-0.5">{{ $this->activeProjectsCount }}</div>
+            </div>
         </div>
     </div>
 
     <!-- Running Activities -->
     @if($this->runningActivities->count() > 0)
-    <div class="mt-4">
-        <h2 class="text-lg font-semibold tracking-tight mb-3 flex items-center gap-2">
+    <div class="mt-2">
+        <h2 class="text-sm font-semibold text-zinc-850 dark:text-zinc-150 mb-3 flex items-center gap-2">
             <span class="relative flex h-2.5 w-2.5">
               <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
             </span>
-            Currently Working On
+            <span>Currently Working On</span>
         </h2>
         <div class="grid gap-3">
             @foreach($this->runningActivities as $running)
-                <div wire:key="running-{{ $running->id }}" class="group relative overflow-hidden rounded-xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/50 dark:bg-emerald-900/10 p-5 shadow-sm flex justify-between items-center" 
+                <div wire:key="running-{{ $running->id }}" class="group relative overflow-hidden rounded-2xl border border-emerald-100 dark:border-emerald-900/30 bg-emerald-50/50 dark:bg-emerald-950/10 p-5 shadow-xs flex justify-between items-center" 
                      x-data="{ elapsed: '00:00:00', start: new Date('{{ $running->start_time->toISOString() }}').getTime() }"
                      x-init="setInterval(() => { 
-                         let diff = Math.floor((new Date().getTime() - start) / 1000);
-                         let h = Math.floor(diff / 3600).toString().padStart(2, '0');
-                         let m = Math.floor((diff % 3600) / 60).toString().padStart(2, '0');
-                         let s = (diff % 60).toString().padStart(2, '0');
-                         elapsed = `${h}:${m}:${s}`;
-                     }, 1000)">
+                          let diff = Math.floor((new Date().getTime() - start) / 1000);
+                          let h = Math.floor(diff / 3600).toString().padStart(2, '0');
+                          let m = Math.floor((diff % 3600) / 60).toString().padStart(2, '0');
+                          let s = (diff % 60).toString().padStart(2, '0');
+                          elapsed = `${h}:${m}:${s}`;
+                      }, 1000)">
                     <div>
-                        <div class="font-medium text-lg">{{ $running->detail }}</div>
-                        <div class="text-sm text-neutral-600 dark:text-neutral-400 mt-1 flex items-center gap-2">
-                            <span><span class="font-medium text-neutral-900 dark:text-neutral-200">{{ $running->project->name }}</span> &bull; {{ $running->category->name }}</span>
+                        <div class="font-medium text-base text-zinc-850 dark:text-zinc-150">{{ $running->detail }}</div>
+                        <div class="text-xs text-neutral-500 dark:text-neutral-400 mt-1 flex items-center gap-1.5">
+                            <flux:icon name="folder" class="size-3.5 shrink-0" />
+                            <span><span class="font-medium text-neutral-700 dark:text-neutral-300">{{ $running->project->name }}</span> &bull; {{ $running->category->name }}</span>
                             @if($running->is_parallel) 
-                                <span class="bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-300 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-semibold">Parallel</span> 
+                                <span class="bg-indigo-100 dark:bg-indigo-950/40 text-indigo-800 dark:text-indigo-400 text-[9px] uppercase tracking-wider px-2 py-0.5 rounded font-semibold ml-2">Parallel</span> 
                             @endif
                         </div>
                     </div>
                     <div class="flex items-center gap-5">
-                        <div class="font-mono text-2xl text-emerald-700 dark:text-emerald-400 font-bold tracking-tight" x-text="elapsed"></div>
-                        <flux:button variant="danger" wire:click="stopActivity({{ $running->id }})" title="Stop Activity">Stop</flux:button>
+                        <div class="font-mono text-2xl text-emerald-600 dark:text-emerald-455 font-bold tracking-tight" x-text="elapsed"></div>
+                        <flux:button variant="danger" wire:click="stopActivity({{ $running->id }})" size="sm" class="cursor-pointer" title="Stop Activity">Stop</flux:button>
                     </div>
                 </div>
             @endforeach
@@ -234,25 +322,31 @@ new class extends Component
     </div>
     @endif
 
-    <!-- Insights Section -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-2">
+    <!-- Insights Cards -->
         
-        <!-- Weekly Chart -->
-        <div class="lg:col-span-2 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl p-5 shadow-sm"
-             x-data="{ stats: @js($this->dailyStats) }"
+        <!-- Activity Chart (Daily, Monthly, Yearly) -->
+        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xs"
+             x-data="{ chart: null }"
+             x-on:chart-updated.window="
+                if (chart) {
+                    chart.data.labels = $event.detail.stats.labels;
+                    chart.data.datasets[0].data = $event.detail.stats.data;
+                    chart.update();
+                }
+             "
              x-init="
                 const ctx = $refs.canvas;
                 const isDarkMode = document.documentElement.classList.contains('dark');
-                const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
+                const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)';
                 const textColor = isDarkMode ? '#a3a3a3' : '#737373';
                 
-                new Chart(ctx, {
+                chart = new Chart(ctx, {
                     type: 'bar',
                     data: {
-                        labels: stats.labels,
+                        labels: @js($this->chartStats['labels']),
                         datasets: [{
                             label: 'Hours Worked',
-                            data: stats.data,
+                            data: @js($this->chartStats['data']),
                             backgroundColor: '#6366f1', // indigo-500
                             borderRadius: 6,
                             barThickness: 'flex',
@@ -296,61 +390,117 @@ new class extends Component
                     }
                 });
              ">
-            <h2 class="text-lg font-semibold tracking-tight mb-4">Activity (Last 7 Days)</h2>
-            <div class="relative h-64 w-full">
+            <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-4">
+                <h3 class="text-sm font-semibold text-zinc-850 dark:text-zinc-150 flex items-center gap-2">
+                    <flux:icon name="chart-bar" class="size-4.5 text-zinc-500" />
+                    <span>Activity Overview (Hours)</span>
+                </h3>
+                
+                <!-- Period Toggle Tabs -->
+                <div class="flex bg-zinc-100 dark:bg-zinc-800/80 rounded-lg p-0.5 self-start sm:self-auto shrink-0">
+                    <button type="button" wire:click="$set('chartPeriod', 'daily')" 
+                            class="text-[10px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider transition-colors cursor-pointer {{ $chartPeriod === 'daily' ? 'bg-white dark:bg-zinc-900 shadow-xs text-zinc-900 dark:text-zinc-100' : 'text-zinc-450 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200' }}">
+                        Daily
+                    </button>
+                    <button type="button" wire:click="$set('chartPeriod', 'monthly')" 
+                            class="text-[10px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider transition-colors cursor-pointer {{ $chartPeriod === 'monthly' ? 'bg-white dark:bg-zinc-900 shadow-xs text-zinc-900 dark:text-zinc-100' : 'text-zinc-450 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200' }}">
+                        Monthly
+                    </button>
+                    <button type="button" wire:click="$set('chartPeriod', 'yearly')" 
+                            class="text-[10px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider transition-colors cursor-pointer {{ $chartPeriod === 'yearly' ? 'bg-white dark:bg-zinc-900 shadow-xs text-zinc-900 dark:text-zinc-100' : 'text-zinc-450 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200' }}">
+                        Yearly
+                    </button>
+                </div>
+            </div>
+            
+            <div wire:ignore class="relative h-64 w-full">
                 <canvas x-ref="canvas"></canvas>
             </div>
             <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         </div>
 
         <!-- Project Distribution -->
-        <div class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl p-5 shadow-sm">
-            <h2 class="text-lg font-semibold tracking-tight mb-4">Time Allocation (This Week)</h2>
+        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xs">
+            <h3 class="text-sm font-semibold text-zinc-850 dark:text-zinc-150 mb-4 flex items-center gap-2">
+                <flux:icon name="chart-pie" class="size-4.5 text-zinc-500" />
+                <span>Time Allocation</span>
+            </h3>
             
             @if($this->projectStats->count() > 0)
-                <div class="space-y-5">
+                <div class="space-y-4">
                     @foreach($this->projectStats as $stat)
-                        <div>
-                            <div class="flex justify-between text-sm mb-1.5">
-                                <span class="font-medium text-neutral-900 dark:text-neutral-100">{{ $stat['name'] }}</span>
-                                <span class="text-neutral-500 dark:text-neutral-400">{{ $stat['duration'] }} ({{ $stat['percentage'] }}%)</span>
-                            </div>
-                            <div class="w-full bg-neutral-100 dark:bg-neutral-800 rounded-full h-2">
-                                <div class="bg-indigo-500 h-2 rounded-full" style="width: {{ $stat['percentage'] }}%"></div>
+                        <div x-data="{ open: false }" class="space-y-2">
+                            <!-- Project Toggle Row -->
+                            <button type="button" @click="open = !open" class="w-full text-left focus:outline-none group cursor-pointer block">
+                                <div class="flex items-center justify-between text-xs mb-1.5">
+                                    <div class="flex items-center gap-1 font-semibold text-zinc-800 dark:text-zinc-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                                        <flux:icon name="chevron-right" class="size-3 text-zinc-400 transition-transform duration-200" ::class="open && 'rotate-90'" />
+                                        <span>{{ $stat['name'] }}</span>
+                                    </div>
+                                    <span class="text-zinc-450 dark:text-zinc-500 font-mono text-[11px] group-hover:text-zinc-700 dark:group-hover:text-zinc-305 transition-colors">{{ $stat['duration'] }} ({{ $stat['percentage'] }}%)</span>
+                                </div>
+                                <div class="w-full bg-zinc-100 dark:bg-zinc-800/80 rounded-full h-1.5">
+                                    <div class="bg-indigo-500 h-1.5 rounded-full transition-all duration-300" style="width: {{ $stat['percentage'] }}%"></div>
+                                </div>
+                            </button>
+
+                            <!-- Nested Categories Allocation -->
+                            <div x-show="open" 
+                                 x-collapse
+                                 class="pl-4 pr-1 space-y-2 border-l border-zinc-100 dark:border-zinc-800/50 ml-1.5 mt-2" 
+                                 style="display: none;">
+                                 @foreach($stat['categories'] as $cat)
+                                     <div class="space-y-1">
+                                         <div class="flex justify-between text-[10px]">
+                                             <span class="text-zinc-600 dark:text-zinc-400 font-medium">{{ $cat['name'] }}</span>
+                                             <span class="text-zinc-450 dark:text-zinc-500 font-mono">{{ $cat['duration'] }} ({{ $cat['percentage'] }}%)</span>
+                                         </div>
+                                         <div class="w-full bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-150/20 dark:border-zinc-850/20 rounded-full h-1">
+                                             <div class="bg-emerald-500 h-1 rounded-full animate-width" style="width: {{ $cat['percentage'] }}%"></div>
+                                         </div>
+                                     </div>
+                                 @endforeach
                             </div>
                         </div>
                     @endforeach
                 </div>
             @else
                 <div class="h-full flex flex-col items-center justify-center text-center text-neutral-500 dark:text-neutral-400 space-y-3 py-10">
-                    <flux:icon.chart-pie class="w-10 h-10 text-neutral-300 dark:text-neutral-700" />
-                    <p class="text-sm">No project data for this week yet.</p>
+                    <flux:icon name="chart-pie" class="w-10 h-10 text-neutral-300 dark:text-neutral-700" />
+                    <p class="text-xs">No project data for this week yet.</p>
                 </div>
             @endif
         </div>
-    </div>
 
     <!-- Recent History -->
-    <div class="mt-4">
-        <div class="flex items-center justify-between mb-3">
-            <h2 class="text-lg font-semibold tracking-tight">Recent History</h2>
-            <flux:button variant="subtle" size="sm" href="{{ route('tracker') }}" wire:navigate>View All</flux:button>
+    <div class="flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+            <h3 class="text-sm font-semibold text-zinc-850 dark:text-zinc-150 flex items-center gap-2">
+                <flux:icon name="clock" class="size-4.5 text-zinc-500" />
+                <span>Recent History</span>
+            </h3>
+            <flux:button variant="subtle" size="xs" href="{{ route('tracker') }}" wire:navigate class="cursor-pointer">View All</flux:button>
         </div>
         
-        <div class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl overflow-hidden shadow-sm">
+        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-xs">
             @if($this->recentActivities->count() > 0)
-                <div class="divide-y divide-neutral-200 dark:divide-neutral-800">
+                <div class="divide-y divide-zinc-100 dark:divide-zinc-800/40">
                     @foreach($this->recentActivities as $activity)
-                        <div class="p-4 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors flex justify-between items-center group">
-                            <div>
-                                <div class="font-medium text-neutral-900 dark:text-neutral-100">{{ $activity->detail }}</div>
-                                <div class="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
-                                    {{ $activity->project->name }} &bull; {{ $activity->category->name }}
+                        <div class="p-4 hover:bg-zinc-50/50 dark:hover:bg-zinc-950/15 transition-colors flex justify-between items-center group">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <div class="size-9 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200/50 dark:border-zinc-800/40 flex items-center justify-center text-zinc-500 dark:text-zinc-400 shrink-0">
+                                    <flux:icon name="folder" class="size-4.5" />
+                                </div>
+                                <div class="truncate">
+                                    <div class="font-medium text-sm text-zinc-850 dark:text-zinc-150 truncate">{{ $activity->detail }}</div>
+                                    <div class="text-[11px] text-zinc-400 dark:text-zinc-500 mt-0.5 truncate flex items-center gap-1.5">
+                                        <span>{{ $activity->project->name }} &bull; {{ $activity->category->name }}</span>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="text-right">
-                                <div class="font-mono font-semibold text-neutral-700 dark:text-neutral-300">{{ $activity->duration }}</div>
-                                <div class="text-xs text-neutral-400 dark:text-neutral-500 mt-1">
+                            <div class="text-right shrink-0">
+                                <div class="font-mono text-sm font-semibold text-zinc-700 dark:text-zinc-300">{{ $activity->duration }}</div>
+                                <div class="text-[10px] text-zinc-400 dark:text-zinc-500 mt-0.5">
                                     {{ Carbon::parse($activity->start_time)->isToday() ? 'Today' : Carbon::parse($activity->start_time)->format('M d') }}, {{ $activity->start_time->format('H:i') }}
                                 </div>
                             </div>
@@ -358,8 +508,9 @@ new class extends Component
                     @endforeach
                 </div>
             @else
-                <div class="p-8 text-center text-sm text-neutral-500 dark:text-neutral-400">
-                    No recent activities found. Start tracking to see your history!
+                <div class="p-10 text-center text-xs text-neutral-400 flex flex-col items-center gap-2">
+                    <flux:icon name="clock" class="size-8 text-neutral-300 dark:text-neutral-700" />
+                    <span>No recent activities found. Start tracking to see your history!</span>
                 </div>
             @endif
         </div>

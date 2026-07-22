@@ -24,6 +24,12 @@
                 <flux:navbar.item icon="bug-ant" :href="route('issues')" :current="request()->routeIs('issues')" wire:navigate>
                     {{ __('Issues') }}
                 </flux:navbar.item>
+                <flux:navbar.item icon="users" :href="route('members')" :current="request()->routeIs('members')" wire:navigate>
+                    {{ __('Members') }}
+                </flux:navbar.item>
+                <flux:navbar.item icon="megaphone" :href="route('broadcast')" :current="request()->routeIs('broadcast')" wire:navigate>
+                    {{ __('Broadcast') }}
+                </flux:navbar.item>
                 @endif
             </flux:navbar>
 
@@ -91,6 +97,12 @@
                     @if(auth()->check() && auth()->user()->is_admin)
                     <flux:sidebar.item icon="bug-ant" :href="route('issues')" :current="request()->routeIs('issues')" wire:navigate>
                         {{ __('Issues') }}
+                    </flux:sidebar.item>
+                    <flux:sidebar.item icon="users" :href="route('members')" :current="request()->routeIs('members')" wire:navigate>
+                        {{ __('Members') }}
+                    </flux:sidebar.item>
+                    <flux:sidebar.item icon="megaphone" :href="route('broadcast')" :current="request()->routeIs('broadcast')" wire:navigate>
+                        {{ __('Broadcast') }}
                     </flux:sidebar.item>
                     @endif
                 </flux:sidebar.group>
