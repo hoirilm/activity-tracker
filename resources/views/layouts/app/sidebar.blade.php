@@ -113,33 +113,37 @@
             </flux:toast.group>
         @endpersist
         
-        <!-- Floating Action Menu Bottom Left for Desktop -->
+        <!-- Floating Action Menu Top Right for Desktop -->
         @if(auth()->check())
-        <div x-data="{ open: false }" @click.outside="open = false" class="report-bug-container fixed z-50 hidden lg:block">
-            <!-- Menu Options (Floats above the button) -->
+        <div x-data="{ open: false }" @click.outside="open = false" class="fixed top-4 right-[4.25rem] z-40 hidden lg:block">
+            <!-- Menu Options (Floats below the button) -->
             <div x-show="open" 
                  x-transition:enter="transition ease-out duration-150"
-                 x-transition:enter-start="opacity-0 translate-y-2 scale-95"
+                 x-transition:enter-start="opacity-0 -translate-y-2 scale-95"
                  x-transition:enter-end="opacity-100 translate-y-0 scale-100"
                  x-transition:leave="transition ease-in duration-100"
                  x-transition:leave-start="opacity-100 translate-y-0 scale-100"
-                 x-transition:leave-end="opacity-0 translate-y-2 scale-95"
-                 class="absolute bottom-12 left-0 mb-2 w-56 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-lg py-1.5 z-50 origin-bottom-left"
+                 x-transition:leave-end="opacity-0 -translate-y-2 scale-95"
+                 class="absolute top-12 right-0 mt-2 w-56 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-lg py-1.5 z-50 origin-top-right"
                  style="display: none;">
                 
                 <div class="px-3 py-1.5 text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Help & Support</div>
                 
                 <!-- Help -->
-                <a href="{{ route('help') }}" wire:navigate @click="open = false" class="flex items-center gap-2 px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors duration-150">
-                    <flux:icon name="question-mark-circle" class="size-4 text-zinc-400 dark:text-zinc-500" />
-                    <span>Help Center</span>
-                </a>
+                <flux:modal.trigger name="help-modal">
+                    <button @click="open = false" class="w-full flex items-center gap-2 px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors duration-150 text-left cursor-pointer">
+                        <flux:icon name="question-mark-circle" class="size-4 text-zinc-400 dark:text-zinc-500" />
+                        <span>Help Center</span>
+                    </button>
+                </flux:modal.trigger>
                 
                 <!-- FAQ -->
-                <a href="{{ route('faq') }}" wire:navigate @click="open = false" class="flex items-center gap-2 px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors duration-150">
-                    <flux:icon name="information-circle" class="size-4 text-zinc-400 dark:text-zinc-500" />
-                    <span>FAQ</span>
-                </a>
+                <flux:modal.trigger name="faq-modal">
+                    <button @click="open = false" class="w-full flex items-center gap-2 px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors duration-150 text-left cursor-pointer">
+                        <flux:icon name="information-circle" class="size-4 text-zinc-400 dark:text-zinc-500" />
+                        <span>FAQ</span>
+                    </button>
+                </flux:modal.trigger>
 
                 <hr class="my-1 border-zinc-100 dark:border-zinc-800" />
 
@@ -169,6 +173,8 @@
         @endif
         
         <livewire:report-issue />
+        <livewire:notifications />
+        @include('partials.help-modals')
 
         @fluxScripts
     </body>

@@ -64,13 +64,3 @@ select:focus[data-flux-control] {
 /* \[:where(&)\]:size-4 {
     @apply size-4;
 } */
-
-.report-bug-container {
-    bottom: 1.5rem;
-    left: calc(16rem + 1.5rem);
-    transition: left 0.2s ease-in-out;
-}
-
-body:has(ui-sidebar[data-flux-sidebar-collapsed-desktop]) .report-bug-container {
-    left: calc(3.5rem + 1.5rem);
-}

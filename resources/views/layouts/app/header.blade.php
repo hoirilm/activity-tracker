@@ -116,7 +116,9 @@
             </flux:toast.group>
         @endpersist
         
-        <livewire:⚡report-issue />
+        <livewire:report-issue />
+        <livewire:notifications />
+        @include('partials.help-modals')
 
         @fluxScripts
     </body>

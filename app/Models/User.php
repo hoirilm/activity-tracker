@@ -79,4 +79,9 @@ class User extends Authenticatable implements PasskeyUser
     {
         return $this->hasMany(Issue::class);
     }
+
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class)->orderBy('created_at', 'desc');
+    }
 }

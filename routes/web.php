@@ -9,9 +9,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('tracker', 'tracker')->name('tracker');
     Route::view('manage', 'manage')->name('manage');
 
-    Route::view('faq', 'faq')->name('faq');
-    Route::view('help', 'help')->name('help');
-
     Route::get('issues', function () {
         if (!auth()->user()->is_admin) {
             abort(403);
