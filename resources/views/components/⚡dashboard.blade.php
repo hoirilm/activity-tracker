@@ -199,7 +199,7 @@ new class extends Component
         </h2>
         <div class="grid gap-3">
             @foreach($this->runningActivities as $running)
-                <div class="group relative overflow-hidden rounded-xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/50 dark:bg-emerald-900/10 p-5 shadow-sm flex justify-between items-center" 
+                <div wire:key="running-{{ $running->id }}" class="group relative overflow-hidden rounded-xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/50 dark:bg-emerald-900/10 p-5 shadow-sm flex justify-between items-center" 
                      x-data="{ elapsed: '00:00:00', start: new Date('{{ $running->start_time->toISOString() }}').getTime() }"
                      x-init="setInterval(() => { 
                          let diff = Math.floor((new Date().getTime() - start) / 1000);
