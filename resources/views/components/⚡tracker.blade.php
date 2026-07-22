@@ -21,6 +21,11 @@ new class extends Component
     public $importFile;
     public $startDate;
     public $endDate;
+    
+    public $editingActivityId = null;
+    public $editStartTime;
+    public $editEndTime;
+    public $showEditModal = false;
 
     public function mount()
     {
@@ -117,6 +122,50 @@ new class extends Component
         Excel::import(new ActivitiesImport, $this->importFile);
         $this->importFile = null;
         session()->flash('message', 'Activities imported successfully.');
+    }
+
+    public function editActivity($id)
+    {
+        $activity = Activity::find($id);
+        if ($activity) {
+            $this->editingActivityId = $activity->id;
+            $this->editStartTime = $activity->start_time->format('Y-m-d\TH:i');
+            $this->editEndTime = $activity->end_time ? $activity->end_time->format('Y-m-d\TH:i') : null;
+            $this->showEditModal = true;
+        }
+    }
+
+    public function updateActivityTime()
+    {
+        $this->validate([
+            'editStartTime' => 'required|date',
+            'editEndTime' => 'required|date|after_or_equal:editStartTime',
+        ]);
+
+        $activity = Activity::find($this->editingActivityId);
+        if ($activity) {
+            $activity->update([
+                'start_time' => Carbon::parse($this->editStartTime),
+                'end_time' => Carbon::parse($this->editEndTime),
+            ]);
+            
+            $this->showEditModal = false;
+            $this->editingActivityId = null;
+        }
+    }
+
+    public function cancelEdit()
+    {
+        $this->showEditModal = false;
+        $this->editingActivityId = null;
+    }
+
+    public function deleteActivity($id)
+    {
+        $activity = Activity::find($id);
+        if ($activity) {
+            $activity->delete();
+        }
     }
 };
 ?>
@@ -302,11 +351,39 @@ new class extends Component
                                 </div>
                                 <div class="text-left md:text-right w-full md:w-auto flex flex-row md:flex-col justify-between items-center md:items-end">
                                     <div class="font-mono text-lg font-semibold text-neutral-700 dark:text-neutral-300">{{ $activity->duration }}</div>
-                                    <div class="text-xs text-neutral-400 dark:text-neutral-500 md:mt-1">
+                                    <div class="text-xs text-neutral-400 dark:text-neutral-500 md:mt-1 flex items-center gap-1">
                                         {{ $activity->start_time->format('H:i') }} - {{ $activity->end_time->format('H:i') }}
+                                        <button wire:click="editActivity({{ $activity->id }})" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 p-0.5" title="Edit Time">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                        </button>
+                                        <flux:modal.trigger name="delete-activity-{{ $activity->id }}">
+                                            <button class="hover:text-red-600 dark:hover:text-red-400 transition-colors rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 p-0.5" title="Delete Activity">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                            </button>
+                                        </flux:modal.trigger>
                                     </div>
                                 </div>
                             </div>
+
+                            <flux:modal name="delete-activity-{{ $activity->id }}" class="min-w-[22rem] backdrop:backdrop-blur-sm z-[200]">
+                                <div class="space-y-6">
+                                    <div>
+                                        <flux:heading size="lg">Delete Activity?</flux:heading>
+                                        <flux:text class="mt-2">
+                                            Are you sure you want to delete this activity? <br>
+                                            <strong>{{ $activity->detail }}</strong>
+                                        </flux:text>
+                                    </div>
+                                    <div class="flex justify-end gap-2">
+                                        <flux:modal.close>
+                                            <flux:button variant="ghost">Cancel</flux:button>
+                                        </flux:modal.close>
+                                        <flux:modal.close>
+                                            <flux:button variant="danger" wire:click="deleteActivity({{ $activity->id }})">Delete</flux:button>
+                                        </flux:modal.close>
+                                    </div>
+                                </div>
+                            </flux:modal>
                         @endif
                     @endforeach
                 </div>
@@ -337,5 +414,46 @@ new class extends Component
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
             Back to top
         </button>
+    </div>
+
+    <!-- Edit Time Modal -->
+    <div x-data="{ show: @entangle('showEditModal') }" x-show="show" style="display: none;" class="relative z-[100]">
+        <!-- Backdrop -->
+        <div x-show="show" x-transition.opacity class="fixed inset-0 bg-neutral-900/50 backdrop-blur-sm"></div>
+        
+        <!-- Modal -->
+        <div class="fixed inset-0 flex items-center justify-center p-4 sm:p-6 z-[101]">
+            <div x-show="show"
+                 @click.outside="$wire.cancelEdit()"
+                 x-transition:enter="ease-out duration-300" 
+                 x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
+                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
+                 x-transition:leave="ease-in duration-200" 
+                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" 
+                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 class="bg-white dark:bg-neutral-900 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-800 w-full max-w-sm overflow-hidden text-left relative">
+                <div class="p-6">
+                    <h3 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-4">Edit Activity Time</h3>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Start Time</label>
+                            <input type="datetime-local" wire:model="editStartTime" class="w-full rounded-lg border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm sm:text-sm cursor-pointer py-2 px-3 transition-colors">
+                            @error('editStartTime') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">End Time</label>
+                            <input type="datetime-local" wire:model="editEndTime" class="w-full rounded-lg border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm sm:text-sm cursor-pointer py-2 px-3 transition-colors">
+                            @error('editEndTime') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-neutral-50 dark:bg-neutral-900/50 px-6 py-4 flex justify-end gap-3 border-t border-neutral-200 dark:border-neutral-800">
+                    <flux:button variant="subtle" wire:click="cancelEdit">Cancel</flux:button>
+                    <flux:button variant="primary" wire:click="updateActivityTime">Save Changes</flux:button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
