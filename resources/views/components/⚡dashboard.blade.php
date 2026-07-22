@@ -8,7 +8,8 @@ new class extends Component
 {
     public function getTodayDurationProperty()
     {
-        $activities = Activity::whereNotNull('end_time')
+        $activities = auth()->user()->activities()
+            ->whereNotNull('end_time')
             ->whereDate('start_time', Carbon::today())
             ->get();
         return $this->formatDuration($this->sumSeconds($activities));
@@ -16,7 +17,8 @@ new class extends Component
 
     public function getWeekDurationProperty()
     {
-        $activities = Activity::whereNotNull('end_time')
+        $activities = auth()->user()->activities()
+            ->whereNotNull('end_time')
             ->whereBetween('start_time', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
             ->get();
         return $this->formatDuration($this->sumSeconds($activities));
@@ -24,14 +26,16 @@ new class extends Component
 
     public function getActiveProjectsCountProperty()
     {
-        return Activity::whereBetween('start_time', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
+        return auth()->user()->activities()
+            ->whereBetween('start_time', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
             ->distinct('project_id')
             ->count('project_id');
     }
 
     public function getRunningActivitiesProperty()
     {
-        return Activity::with(['project', 'category'])
+        return auth()->user()->activities()
+            ->with(['project', 'category'])
             ->whereNull('end_time')
             ->orderBy('start_time', 'desc')
             ->get();
@@ -39,7 +43,8 @@ new class extends Component
 
     public function getRecentActivitiesProperty()
     {
-        return Activity::with(['project', 'category'])
+        return auth()->user()->activities()
+            ->with(['project', 'category'])
             ->whereNotNull('end_time')
             ->orderBy('end_time', 'desc')
             ->take(5)
@@ -54,7 +59,8 @@ new class extends Component
             $days->push(Carbon::today()->subDays($i)->format('Y-m-d'));
         }
 
-        $activities = Activity::whereNotNull('end_time')
+        $activities = auth()->user()->activities()
+            ->whereNotNull('end_time')
             ->whereDate('start_time', '>=', Carbon::today()->subDays(6))
             ->get();
 
@@ -75,7 +81,8 @@ new class extends Component
 
     public function getProjectStatsProperty()
     {
-        $activities = Activity::with('project')
+        $activities = auth()->user()->activities()
+            ->with('project')
             ->whereNotNull('end_time')
             ->whereBetween('start_time', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
             ->get();
@@ -153,7 +160,7 @@ new class extends Component
 
     public function stopActivity($id)
     {
-        $activity = Activity::find($id);
+        $activity = auth()->user()->activities()->find($id);
         if ($activity && !$activity->end_time) {
             $activity->update(['end_time' => now()]);
         }

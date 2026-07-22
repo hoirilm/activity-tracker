@@ -11,16 +11,18 @@ class ActivitiesExport implements FromCollection, WithHeadings, WithMapping
 {
     protected $startDate;
     protected $endDate;
+    protected $userId;
 
-    public function __construct($startDate = null, $endDate = null)
+    public function __construct($startDate = null, $endDate = null, $userId = null)
     {
         $this->startDate = $startDate;
         $this->endDate = $endDate;
+        $this->userId = $userId ?? auth()->id();
     }
 
     public function collection()
     {
-        $query = Activity::with(['project', 'category']);
+        $query = Activity::with(['project', 'category'])->where('user_id', $this->userId);
 
         if ($this->startDate) {
             $query->whereDate('start_time', '>=', $this->startDate);

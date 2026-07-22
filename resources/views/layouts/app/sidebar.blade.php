@@ -20,6 +20,15 @@
                 <flux:sidebar.item icon="cog-8-tooth" :href="route('manage')" :current="request()->routeIs('manage')" wire:navigate>
                     {{ __('Manage') }}
                 </flux:sidebar.item>
+                
+                @if(auth()->check() && auth()->user()->is_admin)
+                @php $openAdminIssues = App\Models\Issue::where('status', 'open')->count(); @endphp
+                <flux:sidebar.item icon="flag" :href="route('issues')" :current="request()->routeIs('issues')" :badge="$openAdminIssues ?: null" wire:navigate>
+                    {{ __('Issues') }}
+                </flux:sidebar.item>
+                @endif
+                
+
             </flux:sidebar.nav>
 
             <flux:spacer />
@@ -103,6 +112,17 @@
                 <flux:toast />
             </flux:toast.group>
         @endpersist
+        
+        <!-- Floating Button Top Right for Desktop -->
+        @if(auth()->check())
+        <div class="fixed top-4 right-4 z-50 hidden lg:block">
+            <flux:modal.trigger name="report-issue-modal">
+                <flux:button variant="subtle" icon="flag" class="shadow-md rounded-full px-4">Report Bug</flux:button>
+            </flux:modal.trigger>
+        </div>
+        @endif
+        
+        <livewire:report-issue />
 
         @fluxScripts
     </body>

@@ -19,11 +19,22 @@
                 <flux:navbar.item icon="cog-8-tooth" :href="route('manage')" :current="request()->routeIs('manage')" wire:navigate>
                     {{ __('Manage') }}
                 </flux:navbar.item>
+                
+                @if(auth()->check() && auth()->user()->is_admin)
+                <flux:navbar.item icon="bug-ant" :href="route('issues')" :current="request()->routeIs('issues')" wire:navigate>
+                    {{ __('Issues') }}
+                </flux:navbar.item>
+                @endif
             </flux:navbar>
 
             <flux:spacer />
 
             <flux:navbar class="me-1.5 space-x-0.5 rtl:space-x-reverse py-0!">
+                @if(auth()->check())
+                <flux:modal.trigger name="report-issue-modal">
+                    <flux:navbar.item class="!h-10 [&>div>svg]:size-5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20" icon="bug-ant" href="#" :label="__('Report Issue')" />
+                </flux:modal.trigger>
+                @endif
                 <flux:tooltip :content="__('Search')" position="bottom">
                     <flux:navbar.item class="!h-10 [&>div>svg]:size-5" icon="magnifying-glass" href="#" :label="__('Search')" />
                 </flux:tooltip>
@@ -68,6 +79,20 @@
                     <flux:sidebar.item icon="cog-8-tooth" :href="route('manage')" :current="request()->routeIs('manage')" wire:navigate>
                         {{ __('Manage') }}
                     </flux:sidebar.item>
+                    
+                    @if(auth()->check())
+                        <flux:modal.trigger name="report-issue-modal">
+                            <flux:sidebar.item icon="bug-ant" class="text-red-500 hover:text-red-600">
+                                {{ __('Report Issue') }}
+                            </flux:sidebar.item>
+                        </flux:modal.trigger>
+                    @endif
+                    
+                    @if(auth()->check() && auth()->user()->is_admin)
+                    <flux:sidebar.item icon="bug-ant" :href="route('issues')" :current="request()->routeIs('issues')" wire:navigate>
+                        {{ __('Issues') }}
+                    </flux:sidebar.item>
+                    @endif
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 
@@ -90,6 +115,8 @@
                 <flux:toast />
             </flux:toast.group>
         @endpersist
+        
+        <livewire:⚡report-issue />
 
         @fluxScripts
     </body>

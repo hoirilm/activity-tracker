@@ -41,4 +41,9 @@ class Activity extends Model
         
         return sprintf('%02d:%02d:%02d', ($diff->days * 24) + $diff->h, $diff->i, $diff->s);
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

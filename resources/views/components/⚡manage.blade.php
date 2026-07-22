@@ -19,12 +19,12 @@ new class extends Component
 
     public function getProjectsProperty()
     {
-        return Project::all();
+        return auth()->user()->projects()->get();
     }
 
     public function getCategoriesProperty()
     {
-        return Category::all();
+        return auth()->user()->categories()->get();
     }
 
     public function addProject()
@@ -34,7 +34,7 @@ new class extends Component
             'projectClient' => 'nullable|string|max:255',
         ]);
 
-        Project::create([
+        auth()->user()->projects()->create([
             'name' => $this->projectName,
             'client_name' => $this->projectClient ?: null,
         ]);
@@ -49,7 +49,7 @@ new class extends Component
             'categoryName' => 'required|string|max:255',
         ]);
 
-        Category::create([
+        auth()->user()->categories()->create([
             'name' => $this->categoryName,
         ]);
 
@@ -59,7 +59,7 @@ new class extends Component
 
     public function editProject($id)
     {
-        $project = Project::find($id);
+        $project = auth()->user()->projects()->find($id);
         if ($project) {
             $this->editingProjectId = $id;
             $this->editingProjectName = $project->name;
@@ -74,7 +74,7 @@ new class extends Component
             'editingProjectClient' => 'nullable|string|max:255',
         ]);
 
-        Project::find($this->editingProjectId)?->update([
+        auth()->user()->projects()->find($this->editingProjectId)?->update([
             'name' => $this->editingProjectName,
             'client_name' => $this->editingProjectClient ?: null,
         ]);
@@ -90,7 +90,7 @@ new class extends Component
 
     public function editCategory($id)
     {
-        $category = Category::find($id);
+        $category = auth()->user()->categories()->find($id);
         if ($category) {
             $this->editingCategoryId = $id;
             $this->editingCategoryName = $category->name;
@@ -103,7 +103,7 @@ new class extends Component
             'editingCategoryName' => 'required|string|max:255',
         ]);
 
-        Category::find($this->editingCategoryId)?->update([
+        auth()->user()->categories()->find($this->editingCategoryId)?->update([
             'name' => $this->editingCategoryName,
         ]);
 
@@ -118,12 +118,12 @@ new class extends Component
 
     public function deleteProject($id)
     {
-        Project::find($id)?->delete();
+        auth()->user()->projects()->find($id)?->delete();
     }
 
     public function deleteCategory($id)
     {
-        Category::find($id)?->delete();
+        auth()->user()->categories()->find($id)?->delete();
     }
 };
 ?>

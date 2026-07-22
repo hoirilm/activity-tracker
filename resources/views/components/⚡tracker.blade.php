@@ -29,23 +29,23 @@ new class extends Component
 
     public function mount()
     {
-        $this->project_id = Project::first()->id ?? null;
-        $this->category_id = Category::first()->id ?? null;
+        $this->project_id = Project::where('user_id', auth()->id())->first()->id ?? null;
+        $this->category_id = Category::where('user_id', auth()->id())->first()->id ?? null;
     }
 
     public function getProjectsProperty()
     {
-        return Project::all();
+        return Project::where('user_id', auth()->id())->get();
     }
 
     public function getCategoriesProperty()
     {
-        return Category::all();
+        return Category::where('user_id', auth()->id())->get();
     }
 
     public function getActivitiesProperty()
     {
-        $query = Activity::with(['project', 'category']);
+        $query = auth()->user()->activities()->with(['project', 'category']);
 
         if ($this->startDate) {
             $query->whereDate('start_time', '>=', $this->startDate);
@@ -64,7 +64,7 @@ new class extends Component
 
     public function getRunningActivitiesProperty()
     {
-        return Activity::with(['project', 'category'])
+        return auth()->user()->activities()->with(['project', 'category'])
             ->whereNull('end_time')
             ->orderBy('start_time', 'desc')
             ->get();
@@ -80,12 +80,12 @@ new class extends Component
 
         if (!$this->is_parallel) {
             // Stop all non-parallel running activities
-            Activity::whereNull('end_time')
+            auth()->user()->activities()->whereNull('end_time')
                 ->where('is_parallel', false)
                 ->update(['end_time' => now()]);
         }
 
-        Activity::create([
+        auth()->user()->activities()->create([
             'project_id' => $this->project_id,
             'category_id' => $this->category_id,
             'detail' => $this->detail,
@@ -98,7 +98,7 @@ new class extends Component
 
     public function stopActivity($id)
     {
-        $activity = Activity::find($id);
+        $activity = auth()->user()->activities()->find($id);
         if ($activity && !$activity->end_time) {
             $activity->update(['end_time' => now()]);
         }
@@ -126,7 +126,7 @@ new class extends Component
 
     public function editActivity($id)
     {
-        $activity = Activity::find($id);
+        $activity = auth()->user()->activities()->find($id);
         if ($activity) {
             $this->editingActivityId = $activity->id;
             $this->editStartTime = $activity->start_time->format('Y-m-d\TH:i');
@@ -142,7 +142,7 @@ new class extends Component
             'editEndTime' => 'required|date|after_or_equal:editStartTime',
         ]);
 
-        $activity = Activity::find($this->editingActivityId);
+        $activity = auth()->user()->activities()->find($this->editingActivityId);
         if ($activity) {
             $activity->update([
                 'start_time' => Carbon::parse($this->editStartTime),
@@ -162,7 +162,7 @@ new class extends Component
 
     public function deleteActivity($id)
     {
-        $activity = Activity::find($id);
+        $activity = auth()->user()->activities()->find($id);
         if ($activity) {
             $activity->delete();
         }
