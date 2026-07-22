@@ -80,16 +80,24 @@ new class extends Component
             ->whereBetween('start_time', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
             ->get();
 
-        $totalSeconds = $this->sumSeconds($activities);
-        if ($totalSeconds == 0) return collect();
+        if ($activities->isEmpty()) return collect();
 
-        return $activities->groupBy('project_id')->map(function ($group) use ($totalSeconds) {
-            $seconds = $this->sumSeconds($group);
-            $percentage = round(($seconds / $totalSeconds) * 100);
+        $projectGroups = $activities->groupBy('project_id')->map(function ($group) {
             return [
                 'name' => $group->first()->project->name,
-                'seconds' => $seconds,
-                'duration' => $this->formatDuration($seconds),
+                'seconds' => $this->sumSeconds($group),
+            ];
+        });
+
+        $totalSecondsForPercentage = $projectGroups->sum('seconds');
+        if ($totalSecondsForPercentage == 0) return collect();
+
+        return $projectGroups->map(function ($group) use ($totalSecondsForPercentage) {
+            $percentage = round(($group['seconds'] / $totalSecondsForPercentage) * 100);
+            return [
+                'name' => $group['name'],
+                'seconds' => $group['seconds'],
+                'duration' => $this->formatDuration($group['seconds']),
                 'percentage' => $percentage,
             ];
         })->sortByDesc('seconds')->values();
@@ -97,9 +105,39 @@ new class extends Component
 
     private function sumSeconds($activities)
     {
-        return $activities->sum(function ($activity) {
-            return $activity->start_time->diffInSeconds($activity->end_time);
-        });
+        if ($activities->isEmpty()) return 0;
+        
+        $intervals = $activities->map(function ($activity) {
+            return [
+                'start' => $activity->start_time->getTimestamp(),
+                'end' => $activity->end_time->getTimestamp(),
+            ];
+        })->sortBy('start')->values();
+        
+        $merged = [];
+        $currentStart = $intervals[0]['start'];
+        $currentEnd = $intervals[0]['end'];
+        
+        for ($i = 1; $i < $intervals->count(); $i++) {
+            $start = $intervals[$i]['start'];
+            $end = $intervals[$i]['end'];
+            
+            if ($start <= $currentEnd) {
+                $currentEnd = max($currentEnd, $end);
+            } else {
+                $merged[] = ['start' => $currentStart, 'end' => $currentEnd];
+                $currentStart = $start;
+                $currentEnd = $end;
+            }
+        }
+        $merged[] = ['start' => $currentStart, 'end' => $currentEnd];
+        
+        $totalSeconds = 0;
+        foreach ($merged as $interval) {
+            $totalSeconds += ($interval['end'] - $interval['start']);
+        }
+        
+        return $totalSeconds;
     }
 
     private function formatDuration($seconds)
