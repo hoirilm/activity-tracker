@@ -113,12 +113,58 @@
             </flux:toast.group>
         @endpersist
         
-        <!-- Floating Button Top Right for Desktop -->
+        <!-- Floating Action Menu Bottom Left for Desktop -->
         @if(auth()->check())
-        <div class="fixed top-4 right-4 z-50 hidden lg:block">
-            <flux:modal.trigger name="report-issue-modal">
-                <flux:button variant="subtle" icon="flag" class="shadow-md rounded-full px-4">Report Bug</flux:button>
-            </flux:modal.trigger>
+        <div x-data="{ open: false }" @click.outside="open = false" class="report-bug-container fixed z-50 hidden lg:block">
+            <!-- Menu Options (Floats above the button) -->
+            <div x-show="open" 
+                 x-transition:enter="transition ease-out duration-150"
+                 x-transition:enter-start="opacity-0 translate-y-2 scale-95"
+                 x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                 x-transition:leave="transition ease-in duration-100"
+                 x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                 x-transition:leave-end="opacity-0 translate-y-2 scale-95"
+                 class="absolute bottom-12 left-0 mb-2 w-56 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-lg py-1.5 z-50 origin-bottom-left"
+                 style="display: none;">
+                
+                <div class="px-3 py-1.5 text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Help & Support</div>
+                
+                <!-- Help -->
+                <a href="{{ route('help') }}" wire:navigate @click="open = false" class="flex items-center gap-2 px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors duration-150">
+                    <flux:icon name="question-mark-circle" class="size-4 text-zinc-400 dark:text-zinc-500" />
+                    <span>Help Center</span>
+                </a>
+                
+                <!-- FAQ -->
+                <a href="{{ route('faq') }}" wire:navigate @click="open = false" class="flex items-center gap-2 px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors duration-150">
+                    <flux:icon name="information-circle" class="size-4 text-zinc-400 dark:text-zinc-500" />
+                    <span>FAQ</span>
+                </a>
+
+                <hr class="my-1 border-zinc-100 dark:border-zinc-800" />
+
+                <flux:modal.trigger name="report-issue-modal">
+                    <button @click="open = false" class="flex w-full items-center gap-2 px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors duration-150 text-left cursor-pointer">
+                        <flux:icon name="bug-ant" class="size-4 text-zinc-400 dark:text-zinc-500" />
+                        <span>Report Bug</span>
+                    </button>
+                </flux:modal.trigger>
+            </div>
+
+            <!-- Trigger Button (Question Mark Icon) -->
+            <button @click="open = !open" 
+                    type="button"
+                    class="shadow-lg flex items-center justify-center size-10 rounded-full bg-zinc-800 hover:bg-zinc-700 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-900 transition-all duration-300 transform active:scale-95 cursor-pointer"
+                    :class="open ? 'rotate-180 bg-zinc-650 dark:bg-zinc-350!' : ''">
+                <!-- Question mark icon -->
+                <svg x-show="!open" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="size-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
+                </svg>
+                <!-- Close (X) icon when open -->
+                <svg x-show="open" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="size-5" style="display: none;">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                </svg>
+            </button>
         </div>
         @endif
         
