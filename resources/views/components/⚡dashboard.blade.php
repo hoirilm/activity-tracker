@@ -60,7 +60,30 @@ new class extends Component
 
     public function getChartStatsProperty()
     {
-        if ($this->chartPeriod === 'monthly') {
+        if ($this->chartPeriod === 'weekly') {
+            // Last 7 days
+            $days = collect();
+            for ($i = 6; $i >= 0; $i--) {
+                $days->push(Carbon::today()->subDays($i)->format('Y-m-d'));
+            }
+
+            $activities = auth()->user()->activities()
+                ->whereNotNull('end_time')
+                ->whereDate('start_time', '>=', Carbon::today()->subDays(6))
+                ->get();
+
+            $chartData = $days->map(function ($day) use ($activities) {
+                $dailyActivities = $activities->filter(function ($activity) use ($day) {
+                    return $activity->start_time->format('Y-m-d') === $day;
+                });
+                return round($this->sumSeconds($dailyActivities) / 3600, 2);
+            });
+
+            return [
+                'labels' => $days->map(fn($day) => Carbon::parse($day)->format('D, M d'))->toArray(),
+                'data' => $chartData->toArray(),
+            ];
+        } elseif ($this->chartPeriod === 'monthly') {
             // Last 30 days
             $days = collect();
             for ($i = 29; $i >= 0; $i--) {
@@ -107,27 +130,43 @@ new class extends Component
                 'data' => $chartData->toArray(),
             ];
         } else {
-            // Daily (last 7 days)
-            $days = collect();
-            for ($i = 6; $i >= 0; $i--) {
-                $days->push(Carbon::today()->subDays($i)->format('Y-m-d'));
+            // Daily (Today's hours)
+            $hours = collect();
+            for ($i = 0; $i < 24; $i++) {
+                $hours->push($i);
             }
-
+            
             $activities = auth()->user()->activities()
                 ->whereNotNull('end_time')
-                ->whereDate('start_time', '>=', Carbon::today()->subDays(6))
+                ->whereDate('start_time', Carbon::today())
                 ->get();
 
-            $chartData = $days->map(function ($day) use ($activities) {
-                $dailyActivities = $activities->filter(function ($activity) use ($day) {
-                    return $activity->start_time->format('Y-m-d') === $day;
+            $hourlyData = $hours->map(function ($hour) use ($activities) {
+                $hourlyActivities = $activities->filter(function ($activity) use ($hour) {
+                    return $activity->start_time->hour == $hour;
                 });
-                return round($this->sumSeconds($dailyActivities) / 3600, 2);
+                return round($this->sumSeconds($hourlyActivities) / 3600, 2);
             });
 
+            $activeHours = $hours->filter(function ($hour) use ($hourlyData) {
+                return $hourlyData[$hour] > 0;
+            });
+            
+            $startHour = $activeHours->min() ?? 9;
+            $endHour = $activeHours->max() ?? 17;
+            if ($endHour <= $startHour) $endHour = $startHour + 8;
+            if ($endHour > 23) $endHour = 23;
+            
+            $labels = [];
+            $data = [];
+            for ($h = $startHour; $h <= $endHour; $h++) {
+                $labels[] = sprintf('%02d:00', $h);
+                $data[] = $hourlyData[$h];
+            }
+
             return [
-                'labels' => $days->map(fn($day) => Carbon::parse($day)->format('D, M d'))->toArray(),
-                'data' => $chartData->toArray(),
+                'labels' => $labels,
+                'data' => $data,
             ];
         }
     }
@@ -324,9 +363,12 @@ new class extends Component
 
     <!-- Insights Cards -->
         
-        <!-- Activity Chart (Daily, Monthly, Yearly) -->
-        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xs"
-             x-data="{ chart: null }"
+        <!-- Activity Chart (Daily, Weekly, Monthly, Yearly) -->
+        <div wire:ignore class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xs"
+             x-data="{ 
+                 period: 'daily',
+                 chart: null 
+             }"
              x-on:chart-updated.window="
                 if (chart) {
                     chart.data.labels = $event.detail.stats.labels;
@@ -398,22 +440,30 @@ new class extends Component
                 
                 <!-- Period Toggle Tabs -->
                 <div class="flex bg-zinc-100 dark:bg-zinc-800/80 rounded-lg p-0.5 self-start sm:self-auto shrink-0">
-                    <button type="button" wire:click="$set('chartPeriod', 'daily')" 
-                            class="text-[10px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider transition-colors cursor-pointer {{ $chartPeriod === 'daily' ? 'bg-white dark:bg-zinc-900 shadow-xs text-zinc-900 dark:text-zinc-100' : 'text-zinc-450 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200' }}">
+                    <button type="button" @click="period = 'daily'; $wire.set('chartPeriod', 'daily')" 
+                            class="text-[10px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                            :class="period === 'daily' ? 'bg-white dark:bg-zinc-900 shadow-xs text-zinc-900 dark:text-zinc-100' : 'text-zinc-450 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200'">
                         Daily
                     </button>
-                    <button type="button" wire:click="$set('chartPeriod', 'monthly')" 
-                            class="text-[10px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider transition-colors cursor-pointer {{ $chartPeriod === 'monthly' ? 'bg-white dark:bg-zinc-900 shadow-xs text-zinc-900 dark:text-zinc-100' : 'text-zinc-450 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200' }}">
+                    <button type="button" @click="period = 'weekly'; $wire.set('chartPeriod', 'weekly')" 
+                            class="text-[10px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                            :class="period === 'weekly' ? 'bg-white dark:bg-zinc-900 shadow-xs text-zinc-900 dark:text-zinc-100' : 'text-zinc-450 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200'">
+                        Weekly
+                    </button>
+                    <button type="button" @click="period = 'monthly'; $wire.set('chartPeriod', 'monthly')" 
+                            class="text-[10px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                            :class="period === 'monthly' ? 'bg-white dark:bg-zinc-900 shadow-xs text-zinc-900 dark:text-zinc-100' : 'text-zinc-450 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200'">
                         Monthly
                     </button>
-                    <button type="button" wire:click="$set('chartPeriod', 'yearly')" 
-                            class="text-[10px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider transition-colors cursor-pointer {{ $chartPeriod === 'yearly' ? 'bg-white dark:bg-zinc-900 shadow-xs text-zinc-900 dark:text-zinc-100' : 'text-zinc-450 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200' }}">
+                    <button type="button" @click="period = 'yearly'; $wire.set('chartPeriod', 'yearly')" 
+                            class="text-[10px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                            :class="period === 'yearly' ? 'bg-white dark:bg-zinc-900 shadow-xs text-zinc-900 dark:text-zinc-100' : 'text-zinc-450 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200'">
                         Yearly
                     </button>
                 </div>
             </div>
             
-            <div wire:ignore class="relative h-64 w-full">
+            <div class="relative h-64 w-full">
                 <canvas x-ref="canvas"></canvas>
             </div>
             <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
