@@ -4,6 +4,43 @@ Proyek ini menggunakan [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v2.0.0] - 2026-07-23 🚀
+
+Versi ini merupakan pembaruan mayor yang menghadirkan dukungan multibahasa (Internationalization), sistem notifikasi bergaya macOS, panel manajemen anggota (Member Management), pusat siaran pengumuman (Broadcast Manager), integrasi autentikasi Passkey (WebAuthn), serta penyempurnaan UX form dan optimasi basis data.
+
+### ✨ Fitur Baru & Pembaruan Utama (Major Features)
+
+#### 1. Dukungan Multibahasa (Multi-Language i18n)
+- **Pemilih Bahasa (Language Switcher)**: Menambahkan fitur peralihan bahasa dinamis antara Bahasa Indonesia (`id`) dan Bahasa Inggris (`en`) melalui kontrol rute `/lang/{locale}` dan middleware `SetLocale`.
+- **Kamus Bahasa Lengkap**: Penyediaan berkas penerjemahan di direktori `lang/id` dan `lang/en` untuk halaman utama (*welcome page*), navigasi sidebar, dan komponen aplikasi.
+
+#### 2. Sistem Notifikasi Bergaya macOS (`⚡notifications`)
+- **Laci Notifikasi Slide-over**: Antarmuka melayang ber-ikon lonceng dengan *badge count* jumlah notifikasi belum dibaca (*unread count*).
+- **Manajemen Notifikasi**: Pengguna dapat menandai notifikasi sebagai dibaca (*mark as read*) atau menghapus seluruh riwayat notifikasi (*clear all*).
+- **Tabel Database Notifikasi**: Skema database `notifications` khusus untuk menyimpan judul, isi, tipe (*info*, *success*, *warning*, *danger*), dan stempel waktu baca (*read_at*).
+
+#### 3. Panel Manajemen Anggota Admin (`⚡member-manager`)
+- **Halaman Manajemen Anggota (`/members`)**: Fitur khusus administrator untuk mengelola hak akses seluruh anggota workspace.
+- **Filter & Pencarian**: Filter cepat berdasarkan peran (*All*, *Admin*, *Member*) serta pencarian real-time berdasarkan nama atau email.
+- **Promosi & Demosi Administrator**: Mengubah peran user secara instan dengan pencegahan *self-lockout* dan pengiriman notifikasi otomatis kepada user terkait ("Hak Akses Diperbarui 👑").
+
+#### 4. Manajer Siaran Pengumuman Admin (`⚡broadcast-manager`)
+- **Halaman Broadcast Pengumuman (`/broadcast`)**: Administrator dapat mengirimkan pesan pengumuman/sistem notifikasi secara massal ke seluruh pengguna atau pengguna tertentu.
+- **Pilihan Tipe Notifikasi**: Mendukung berbagai jenis pesan (Info, Success, Warning, Danger) untuk komunikasi internal tim.
+
+#### 5. Integrasi Passkey WebAuthn
+- **Autentikasi Tanpa Sandi (Passkeys)**: Mengintegrasikan Laravel Fortify Passkey (`PasskeyUser`, `PasskeyAuthenticatable`) dan komponen UI `<x-passkey-registration />` serta `<x-passkey-verify />` untuk registrasi dan verifikasi kredensial biomekanik/perangkat.
+
+#### 6. Pencarian Tiket Isu Canggih (`⚡issue-manager`)
+- **Filter & Pencarian Tiket**: Mendukung pencarian spesifik menggunakan format tiket (`TKT-xxxx`), judul, deskripsi, maupun nama pembuat isu pada halaman manajemen tiket (`/issues`).
+
+### 🛡️ Keamanan & Penyempurnaan UX Form
+
+- **Penonaktifan Auto-Fill Input (`autocomplete="off"`)**: Menambahkan atribut `autocomplete="off"` pada tag form dan input halaman Login, Registrasi, dan Lupa Password untuk mencegah pop-up teks riwayat masa lalu dari browser tanpa menghilangkan *placeholder*.
+- **Fresh Database Setup & Seeder Admin**: Pembersihan dan penataan ulang seeder basis data agar secara default menghasilkan 1 akun administrator utama (`admin@klakoan.com`).
+
+---
+
 ## [v1.1.0] - 2026-07-22 🚀
 
 Versi ini memperkenalkan pembaruan besar yang mencakup sistem multi-tenancy pengguna, peran administrator, modul pelaporan isu/bug terintegrasi, laporan aktivitas harian otomatis, dan fitur Help Center interaktif.
@@ -30,6 +67,7 @@ Versi ini memperkenalkan pembaruan besar yang mencakup sistem multi-tenancy peng
 - **Penjadwal Tugas (Scheduler)**: Menambahkan perintah scheduler di `routes/console.php` untuk memicu pengiriman email laporan harian secara otomatis.
 
 ### 🎨 Peningkatan & Perbaikan (Aesthetics & Improvements)
+
 - **Penyelarasan Warna Tema (Zinc Color)**: Mengganti warna merah pemicu bug lama menjadi warna primer arang (`bg-zinc-800` / `bg-zinc-100`) agar selaras dengan skema warna minimalis bawaan website.
 - **Perbaikan Kontras Mode Gelap**: Mengoreksi kelas warna kartu bantuan dari `dark:bg-zinc-850/50` menjadi `dark:bg-zinc-800/50` untuk memastikan keterbacaan teks putih di atas latar belakang abu-abu gelap.
 
