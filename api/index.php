@@ -1,5 +1,10 @@
 <?php
 
+// Fix HTTPS detection behind Vercel reverse proxy
+if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+    $_SERVER['HTTPS'] = 'on';
+}
+
 // Ensure required temporary directories exist in Vercel serverless environment
 $tmpDirs = [
     '/tmp/storage/framework/views',
