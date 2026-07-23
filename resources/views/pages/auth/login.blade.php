@@ -7,7 +7,7 @@
 
         <x-passkey-verify />
 
-        <form method="POST" action="{{ route('login.store') }}" class="flex flex-col gap-6">
+        <form method="POST" action="{{ route('login.store') }}" class="flex flex-col gap-6" autocomplete="off">
             @csrf
 
             <!-- Email Address -->
@@ -18,7 +18,7 @@
                 type="email"
                 required
                 autofocus
-                autocomplete="email"
+                autocomplete="off"
                 placeholder="email@example.com"
             />
 
@@ -29,7 +29,7 @@
                     :label="__('Password')"
                     type="password"
                     required
-                    autocomplete="current-password"
+                    autocomplete="off"
                     :placeholder="__('Password')"
                     viewable
                 />
