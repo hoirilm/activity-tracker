@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    environment:
+      APP_NAME: "Activity Tracker"
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_KEY: "base64:CltlTz+LMTp6Jh6gdQS1XJ9KngffwGPIDePede4cmXc="
+      APP_URL: "http://localhost:8080"
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: activity_tracker
+      DB_USERNAME: postgres
+      DB_PASSWORD: secretpassword
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: activity_tracker
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secretpassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
