@@ -344,12 +344,14 @@ new class extends Component
         <div wire:ignore class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xs relative overflow-hidden"
              x-data="{
                  period: 'weekly',
-                 chart: null,
                  isDark: document.documentElement.classList.contains('dark'),
                  initChart(labels, data) {
-                     if (this.chart) {
-                         this.chart.destroy();
-                         this.chart = null;
+                     let chart = this.$refs.canvas.chartInstance;
+                     if (chart) {
+                         chart.data.labels = labels;
+                         chart.data.datasets[0].data = data;
+                         chart.update();
+                         return;
                      }
                      const canvas = this.$refs.canvas;
                      const ctx = canvas.getContext('2d');
@@ -367,7 +369,7 @@ new class extends Component
                      const gridColor = this.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)';
                      const textColor = this.isDark ? '#a3a3a3' : '#737373';
                      
-                     this.chart = new Chart(ctx, {
+                     this.$refs.canvas.chartInstance = new Chart(ctx, {
                          type: 'line',
                          data: {
                              labels: labels,
