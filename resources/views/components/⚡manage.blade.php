@@ -152,7 +152,7 @@ new class extends Component
             </div>
 
             <!-- Add Project Card -->
-            <div class="border border-zinc-200 dark:border-zinc-800 rounded-2xl bg-white dark:bg-zinc-900 p-5 shadow-xs">
+            <div class="border border-zinc-200 dark:border-zinc-800 rounded-2xl bg-zinc-50 dark:bg-zinc-900 p-5 shadow-xs">
                 <form wire:submit.prevent="addProject" class="space-y-3">
                     <flux:input wire:model="projectName" placeholder="Project Name" icon="briefcase" required size="sm" autocomplete="off" />
                     <div class="flex gap-2 items-center">
@@ -176,7 +176,7 @@ new class extends Component
             <!-- Projects List -->
             <div class="space-y-3">
                 @forelse($this->projects as $project)
-                    <div class="group relative overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 shadow-xs hover:shadow-sm hover:border-zinc-300 dark:hover:border-zinc-700 transition-all duration-200">
+                    <div class="group relative overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 p-4 shadow-xs hover:shadow-sm hover:border-zinc-300 dark:hover:border-zinc-700 transition-all duration-200">
                         @if($this->editingProjectId === $project->id)
                             <form wire:submit.prevent="updateProject" class="space-y-3">
                                 <flux:input wire:model="editingProjectName" placeholder="Project Name" required size="sm" autocomplete="off" />
@@ -235,7 +235,7 @@ new class extends Component
                         </flux:modal>
                     </div>
                 @empty
-                    <div class="text-xs text-neutral-400 text-center py-10 border border-dashed border-neutral-200 dark:border-neutral-800 rounded-xl flex flex-col items-center gap-2 bg-white dark:bg-zinc-900/50">
+                    <div class="text-xs text-neutral-400 text-center py-10 border border-dashed border-neutral-200 dark:border-neutral-800 rounded-xl flex flex-col items-center gap-2 bg-zinc-50 dark:bg-zinc-900/50">
                         <flux:icon name="folder" class="size-8 text-neutral-350 dark:text-neutral-600" />
                         <span>No projects found. Create one above.</span>
                     </div>
@@ -257,7 +257,7 @@ new class extends Component
             </div>
 
             <!-- Add Category Card -->
-            <div class="border border-zinc-200 dark:border-zinc-800 rounded-2xl bg-white dark:bg-zinc-900 p-5 shadow-xs">
+            <div class="border border-zinc-200 dark:border-zinc-800 rounded-2xl bg-zinc-50 dark:bg-zinc-900 p-5 shadow-xs">
                 <form wire:submit.prevent="addCategory" class="flex gap-2 items-center">
                     <div class="flex-1">
                         <flux:input wire:model="categoryName" placeholder="Category Name" icon="tag" required size="sm" autocomplete="off" />
@@ -278,7 +278,7 @@ new class extends Component
             <!-- Categories List -->
             <div class="space-y-3">
                 @forelse($this->categories as $category)
-                    <div class="group relative overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 shadow-xs hover:shadow-sm hover:border-zinc-300 dark:hover:border-zinc-700 transition-all duration-200">
+                    <div class="group relative overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 p-4 shadow-xs hover:shadow-sm hover:border-zinc-300 dark:hover:border-zinc-700 transition-all duration-200">
                         @if($this->editingCategoryId === $category->id)
                             <form wire:submit.prevent="updateCategory" class="space-y-3">
                                 <flux:input wire:model="editingCategoryName" placeholder="Category Name" required size="sm" autocomplete="off" />
@@ -330,7 +330,7 @@ new class extends Component
                         </flux:modal>
                     </div>
                 @empty
-                    <div class="text-xs text-neutral-400 text-center py-10 border border-dashed border-neutral-200 dark:border-neutral-800 rounded-xl flex flex-col items-center gap-2 bg-white dark:bg-zinc-900/50">
+                    <div class="text-xs text-neutral-400 text-center py-10 border border-dashed border-neutral-200 dark:border-neutral-800 rounded-xl flex flex-col items-center gap-2 bg-zinc-50 dark:bg-zinc-900/50">
                         <flux:icon name="tag" class="size-8 text-neutral-350 dark:text-neutral-600" />
                         <span>No categories found. Create one above.</span>
                     </div>

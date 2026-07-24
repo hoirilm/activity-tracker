@@ -1,7 +1,21 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         @include('partials.head')
+        <style>
+            /* Smooth Sidebar Animation (Gemini-style) */
+            ui-sidebar {
+                transition: width 400ms cubic-bezier(0.2, 0, 0, 1), 
+                            padding 400ms cubic-bezier(0.2, 0, 0, 1) !important;
+                will-change: width;
+                overflow-x: hidden !important; /* Prevent text wrapping glitches */
+            }
+            
+            /* Smooth layout shift for main content area */
+            body {
+                transition: grid-template-columns 400ms cubic-bezier(0.2, 0, 0, 1) !important;
+            }
+        </style>
     </head>
     <body class="min-h-screen bg-white dark:bg-zinc-800">
         <flux:sidebar sticky collapsible class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">

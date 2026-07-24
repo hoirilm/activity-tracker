@@ -38,11 +38,11 @@ new class extends Component
 };
 ?>
 
-<div>
+<div x-data="{ show: false }">
     <!-- Floating Bell Icon Trigger Button -->
     @if(auth()->check())
     <div class="fixed top-4 right-4 z-40 hidden lg:block">
-        <button wire:click="toggle" 
+        <button @click="show = !show" 
                 type="button" 
                 class="shadow-md flex items-center justify-center size-10 rounded-full bg-zinc-800 hover:bg-zinc-700 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-900 transition-all duration-300 transform active:scale-95 cursor-pointer relative">
             <flux:icon name="bell" class="size-5" />
@@ -56,9 +56,8 @@ new class extends Component
     @endif
 
     <!-- macOS style Notification Drawer -->
-    <div x-data="{ show: @entangle('isOpen') }" 
-         x-show="show"
-         @click.outside="show = false; $wire.set('isOpen', false)"
+    <div x-show="show"
+         @click.outside="show = false"
          x-transition:enter="transition ease-out duration-300"
          x-transition:enter-start="translate-x-full"
          x-transition:enter-end="translate-x-0"
@@ -75,7 +74,7 @@ new class extends Component
                     <flux:icon name="bell" class="size-5 text-zinc-500 dark:text-zinc-400" />
                     <span class="text-sm font-semibold text-zinc-800 dark:text-zinc-200">Notification Center</span>
                 </div>
-                <button @click="show = false; $wire.set('isOpen', false)" class="text-zinc-400 hover:text-zinc-650 dark:hover:text-zinc-200 transition-colors cursor-pointer">
+                <button @click="show = false" class="text-zinc-400 hover:text-zinc-650 dark:hover:text-zinc-200 transition-colors cursor-pointer">
                     <flux:icon name="x-mark" class="size-5" />
                 </button>
             </div>
@@ -84,7 +83,7 @@ new class extends Component
             <div class="space-y-3">
                 @forelse($this->notifications as $notif)
                     <div wire:key="notif-{{ $notif->id }}" 
-                         class="group relative bg-white/85 dark:bg-zinc-900/80 border border-zinc-200/40 dark:border-zinc-800/30 backdrop-blur-md rounded-2xl p-3.5 shadow-xs hover:shadow-sm transition-all duration-200 {{ $notif->read_at ? 'opacity-60' : '' }}">
+                         class="group relative bg-zinc-50/85 dark:bg-zinc-900/80 border border-zinc-200/40 dark:border-zinc-800/30 backdrop-blur-md rounded-2xl p-3.5 shadow-xs hover:shadow-sm transition-all duration-200 {{ $notif->read_at ? 'opacity-60' : '' }}">
                         
                         <!-- macOS Banner Header -->
                         <div class="flex items-center justify-between text-[11px] text-zinc-400 dark:text-zinc-500 mb-1.5">

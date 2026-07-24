@@ -88,15 +88,15 @@ new class extends Component
             <!-- Role Filter Segmented Control -->
             <div class="flex bg-zinc-100 dark:bg-zinc-800/80 rounded-lg p-0.5 shrink-0">
                 <button type="button" wire:click="$set('roleFilter', 'all')" 
-                        class="text-[10px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider transition-colors cursor-pointer {{ $roleFilter === 'all' ? 'bg-white dark:bg-zinc-900 shadow-xs text-zinc-900 dark:text-zinc-100' : 'text-zinc-450 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200' }}">
+                        class="text-[10px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider transition-colors cursor-pointer {{ $roleFilter === 'all' ? 'bg-zinc-50 dark:bg-zinc-900 shadow-xs text-zinc-900 dark:text-zinc-100' : 'text-zinc-450 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200' }}">
                     All
                 </button>
                 <button type="button" wire:click="$set('roleFilter', 'admin')" 
-                        class="text-[10px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider transition-colors cursor-pointer {{ $roleFilter === 'admin' ? 'bg-white dark:bg-zinc-900 shadow-xs text-zinc-900 dark:text-zinc-100' : 'text-zinc-450 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200' }}">
+                        class="text-[10px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider transition-colors cursor-pointer {{ $roleFilter === 'admin' ? 'bg-zinc-50 dark:bg-zinc-900 shadow-xs text-zinc-900 dark:text-zinc-100' : 'text-zinc-450 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200' }}">
                     Admin
                 </button>
                 <button type="button" wire:click="$set('roleFilter', 'member')" 
-                        class="text-[10px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider transition-colors cursor-pointer {{ $roleFilter === 'member' ? 'bg-white dark:bg-zinc-900 shadow-xs text-zinc-900 dark:text-zinc-100' : 'text-zinc-450 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200' }}">
+                        class="text-[10px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider transition-colors cursor-pointer {{ $roleFilter === 'member' ? 'bg-zinc-50 dark:bg-zinc-900 shadow-xs text-zinc-900 dark:text-zinc-100' : 'text-zinc-450 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200' }}">
                     Member
                 </button>
             </div>
@@ -131,7 +131,7 @@ new class extends Component
     <!-- Member Cards List -->
     <div class="grid gap-4">
         @forelse($this->members as $member)
-            <div wire:key="member-{{ $member->id }}" class="group relative overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 p-4 shadow-xs hover:shadow-sm hover:border-zinc-300 dark:hover:border-zinc-700 transition-all duration-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div wire:key="member-{{ $member->id }}" class="group relative overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 p-4 shadow-xs hover:shadow-sm hover:border-zinc-300 dark:hover:border-zinc-700 transition-all duration-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 
                 <!-- Account / User Column -->
                 <div class="flex items-center gap-3.5 flex-1 min-w-0">
@@ -174,7 +174,7 @@ new class extends Component
                 </div>
             </div>
         @empty
-            <div class="text-xs text-neutral-400 text-center py-16 border border-dashed border-neutral-200 dark:border-neutral-800 rounded-xl flex flex-col items-center gap-2 bg-white dark:bg-zinc-900/50">
+            <div class="text-xs text-neutral-400 text-center py-16 border border-dashed border-neutral-200 dark:border-neutral-800 rounded-xl flex flex-col items-center gap-2 bg-zinc-50 dark:bg-zinc-900/50">
                 <flux:icon name="users" class="size-8 text-neutral-300 dark:text-neutral-750" />
                 <span>No members found matching your search or filters.</span>
             </div>

@@ -180,7 +180,7 @@ new class extends Component
     </div>
 
     <!-- Sticky form -->
-    <div class="sticky top-0 z-10 overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 shadow-xs mb-4"
+    <div class="sticky top-0 z-10 overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 p-5 shadow-xs mb-4"
          x-data="{}"
          @keydown.window.prevent.ctrl.slash="$refs.detailInput.focus()"
          @keydown.window.ctrl.enter="$wire.startActivity()">
@@ -267,7 +267,7 @@ new class extends Component
                 <div x-data="{ open: false }" class="relative" @click.outside="open = false">
                     <!-- Trigger Button -->
                     <button type="button" @click="open = !open" 
-                            class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors shadow-xs cursor-pointer">
+                            class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors shadow-xs cursor-pointer">
                         <flux:icon name="calendar" class="size-4 text-zinc-400 dark:text-zinc-500" />
                         <span>
                             @if($startDate && $endDate)
@@ -300,7 +300,7 @@ new class extends Component
                          x-transition:leave="transition ease-in duration-75"
                          x-transition:leave-start="transform opacity-100 scale-100"
                          x-transition:leave-end="transform opacity-0 scale-95"
-                         class="absolute right-0 sm:left-0 mt-2 z-50 w-64 origin-top-right rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 shadow-lg"
+                         class="absolute right-0 sm:left-0 mt-2 z-50 w-64 origin-top-right rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 p-4 shadow-lg"
                          style="display: none;">
                          
                          <div class="space-y-4">
@@ -367,7 +367,7 @@ new class extends Component
                          x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                          style="display: none;">
                          
-                        <div @click.outside="showExportModal = false" class="bg-white dark:bg-neutral-900 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-800 w-full max-w-sm overflow-hidden text-left">
+                        <div @click.outside="showExportModal = false" class="bg-zinc-50 dark:bg-neutral-900 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-800 w-full max-w-sm overflow-hidden text-left">
                             <div class="p-6">
                                 <h3 class="text-base font-semibold text-neutral-900 dark:text-neutral-100 mb-1">Export Activities</h3>
                                 <p class="text-xs text-neutral-550 dark:text-neutral-450 mb-6">Select a date range to export your activities. Leave blank to export all history.</p>
@@ -420,9 +420,9 @@ new class extends Component
                     </h4>
                     <div class="flex flex-col gap-3">
                         @foreach($dayActivities as $activity)
-                            <div wire:key="activity-{{ $activity->id }}" class="group relative overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 shadow-xs hover:shadow-sm hover:border-zinc-300 dark:hover:border-zinc-700 transition-all duration-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                            <div wire:key="activity-{{ $activity->id }}" class="group relative overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 p-4 shadow-xs hover:shadow-sm hover:border-zinc-300 dark:hover:border-zinc-700 transition-all duration-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                                 <div class="flex items-center gap-3 min-w-0 flex-1">
-                                    <div class="size-9 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200/50 dark:border-zinc-800/40 flex items-center justify-center text-zinc-500 dark:text-zinc-400 shrink-0">
+                                    <div class="size-9 rounded-lg bg-white dark:bg-zinc-950 border border-zinc-200/50 dark:border-zinc-800/40 flex items-center justify-center text-zinc-500 dark:text-zinc-400 shrink-0">
                                         <flux:icon name="folder" class="size-4.5" />
                                     </div>
                                     <div class="truncate">
@@ -481,7 +481,7 @@ new class extends Component
                     </div>
                 </div>
             @empty
-                <div class="text-center py-16 text-xs text-neutral-400 border border-dashed border-neutral-200 dark:border-neutral-800 rounded-xl bg-white dark:bg-zinc-900/50 flex flex-col items-center gap-2">
+                <div class="text-center py-16 text-xs text-neutral-400 border border-dashed border-neutral-200 dark:border-neutral-800 rounded-xl bg-zinc-50 dark:bg-zinc-900/50 flex flex-col items-center gap-2">
                     <flux:icon name="clock" class="size-8 text-neutral-300 dark:text-neutral-700" />
                     <span>No activity history found. Start tracking your tasks above!</span>
                 </div>
@@ -525,7 +525,7 @@ new class extends Component
                  x-transition:leave="ease-in duration-200" 
                  x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" 
                  x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                 class="bg-white dark:bg-neutral-900 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-800 w-full max-w-sm overflow-hidden text-left relative">
+                 class="bg-zinc-50 dark:bg-neutral-900 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-800 w-full max-w-sm overflow-hidden text-left relative">
                 <div class="p-6">
                     <h3 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-4">Edit Activity Time</h3>
                     

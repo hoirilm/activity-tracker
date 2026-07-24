@@ -83,15 +83,15 @@ new class extends Component
             <!-- Status Filter Segmented Control -->
             <div class="flex bg-zinc-100 dark:bg-zinc-800/80 rounded-lg p-0.5 shrink-0">
                 <button type="button" wire:click="$set('statusFilter', 'all')" 
-                        class="text-[10px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider transition-colors cursor-pointer {{ $statusFilter === 'all' ? 'bg-white dark:bg-zinc-900 shadow-xs text-zinc-900 dark:text-zinc-100' : 'text-zinc-450 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200' }}">
+                        class="text-[10px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider transition-colors cursor-pointer {{ $statusFilter === 'all' ? 'bg-zinc-50 dark:bg-zinc-900 shadow-xs text-zinc-900 dark:text-zinc-100' : 'text-zinc-450 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200' }}">
                     All
                 </button>
                 <button type="button" wire:click="$set('statusFilter', 'open')" 
-                        class="text-[10px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider transition-colors cursor-pointer {{ $statusFilter === 'open' ? 'bg-white dark:bg-zinc-900 shadow-xs text-zinc-900 dark:text-zinc-100' : 'text-zinc-450 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200' }}">
+                        class="text-[10px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider transition-colors cursor-pointer {{ $statusFilter === 'open' ? 'bg-zinc-50 dark:bg-zinc-900 shadow-xs text-zinc-900 dark:text-zinc-100' : 'text-zinc-450 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200' }}">
                     Open
                 </button>
                 <button type="button" wire:click="$set('statusFilter', 'closed')" 
-                        class="text-[10px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider transition-colors cursor-pointer {{ $statusFilter === 'closed' ? 'bg-white dark:bg-zinc-900 shadow-xs text-zinc-900 dark:text-zinc-100' : 'text-zinc-450 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200' }}">
+                        class="text-[10px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider transition-colors cursor-pointer {{ $statusFilter === 'closed' ? 'bg-zinc-50 dark:bg-zinc-900 shadow-xs text-zinc-900 dark:text-zinc-100' : 'text-zinc-450 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200' }}">
                     Solved
                 </button>
             </div>
@@ -117,7 +117,7 @@ new class extends Component
         @forelse($this->issues as $issue)
             <div wire:key="issue-{{ $issue->id }}" 
                  class="group relative overflow-hidden rounded-2xl border p-5 shadow-xs transition-all duration-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4
-                 {{ $issue->status === 'closed' ? 'border-zinc-200/60 bg-zinc-50/50 dark:border-zinc-800/40 dark:bg-zinc-950/10 opacity-75 hover:opacity-100' : 'border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-sm' }}
+                 {{ $issue->status === 'closed' ? 'border-zinc-200/60 bg-zinc-50/50 dark:border-zinc-800/40 dark:bg-zinc-950/10 opacity-75 hover:opacity-100' : 'border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-sm' }}
                  ">
                 <div class="flex items-start gap-4 flex-1 min-w-0">
                     <!-- Icon container -->
@@ -157,7 +157,7 @@ new class extends Component
                 </div>
             </div>
         @empty
-            <div class="text-xs text-neutral-400 text-center py-16 border border-dashed border-neutral-200 dark:border-neutral-800 rounded-xl flex flex-col items-center gap-2 bg-white dark:bg-zinc-900/50">
+            <div class="text-xs text-neutral-400 text-center py-16 border border-dashed border-neutral-200 dark:border-neutral-800 rounded-xl flex flex-col items-center gap-2 bg-zinc-50 dark:bg-zinc-900/50">
                 <flux:icon name="bug-ant" class="size-8 text-neutral-300 dark:text-neutral-750" />
                 <span>No issues found matching your search.</span>
             </div>

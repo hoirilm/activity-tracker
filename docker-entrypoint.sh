@@ -9,7 +9,7 @@ chmod -R 777 storage bootstrap/cache
 if [ "$RUN_MIGRATIONS" = "true" ] || [ -n "$DB_HOST" ]; then
     echo "Running database migrations..."
     php artisan migrate --force || echo "Migration skipped or failed"
-    php artisan db:seed --class=AdminUserSeeder --force || echo "Seeder skipped"
+    php artisan db:seed --force || echo "Seeder skipped"
 fi
 
 # Optimization caching for production
