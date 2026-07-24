@@ -106,29 +106,6 @@ new class extends Component
                 'labels' => $days->map(fn($day) => Carbon::parse($day)->format('M d'))->toArray(),
                 'data' => $chartData->toArray(),
             ];
-        } elseif ($this->chartPeriod === 'yearly') {
-            // 12 months of current year
-            $months = collect();
-            for ($i = 11; $i >= 0; $i--) {
-                $months->push(Carbon::today()->subMonths($i)->format('Y-m'));
-            }
-
-            $activities = auth()->user()->activities()
-                ->whereNotNull('end_time')
-                ->where('start_time', '>=', Carbon::today()->subMonths(11)->startOfMonth())
-                ->get();
-
-            $chartData = $months->map(function ($month) use ($activities) {
-                $monthlyActivities = $activities->filter(function ($activity) use ($month) {
-                    return $activity->start_time->format('Y-m') === $month;
-                });
-                return round($this->sumSeconds($monthlyActivities) / 3600, 2);
-            });
-
-            return [
-                'labels' => $months->map(fn($m) => Carbon::parse($m . '-01')->format('M Y'))->toArray(),
-                'data' => $chartData->toArray(),
-            ];
         } else {
             // Daily (Today's hours)
             $hours = collect();
@@ -364,7 +341,7 @@ new class extends Component
     <!-- Insights Cards -->
         
         <!-- Activity Chart (Daily, Weekly, Monthly, Yearly) -->
-        <div wire:ignore class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xs"
+        <div wire:ignore class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xs relative overflow-hidden"
              x-data="{
                  period: 'weekly',
                  chart: null,
@@ -374,42 +351,76 @@ new class extends Component
                          this.chart.destroy();
                          this.chart = null;
                      }
-                     const ctx = this.$refs.canvas;
-                     const gridColor = this.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)';
+                     const canvas = this.$refs.canvas;
+                     const ctx = canvas.getContext('2d');
+                     
+                     // Create a sleek gradient for the area chart
+                     const gradient = ctx.createLinearGradient(0, 0, 0, canvas.parentElement.offsetHeight || 300);
+                     if (this.isDark) {
+                         gradient.addColorStop(0, 'rgba(99, 102, 241, 0.3)'); // Indigo 500
+                         gradient.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
+                     } else {
+                         gradient.addColorStop(0, 'rgba(99, 102, 241, 0.15)');
+                         gradient.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
+                     }
+
+                     const gridColor = this.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)';
                      const textColor = this.isDark ? '#a3a3a3' : '#737373';
+                     
                      this.chart = new Chart(ctx, {
-                         type: 'bar',
+                         type: 'line',
                          data: {
                              labels: labels,
                              datasets: [{
                                  label: 'Hours Worked',
                                  data: data,
-                                 backgroundColor: '#6366f1',
-                                 borderRadius: 6,
-                                 barThickness: 'flex',
-                                 maxBarThickness: 45,
+                                 borderColor: '#6366f1',
+                                 backgroundColor: gradient,
+                                 borderWidth: 2.5,
+                                 fill: true,
+                                 tension: 0.4, // Smooth bezier curves
+                                 pointBackgroundColor: this.isDark ? '#18181b' : '#ffffff',
+                                 pointBorderColor: '#6366f1',
+                                 pointBorderWidth: 2,
+                                 pointRadius: 0, // Hide points by default
+                                 pointHoverRadius: 5, // Show on hover
+                                 pointHoverBackgroundColor: '#6366f1',
+                                 pointHoverBorderColor: '#ffffff',
+                                 pointHoverBorderWidth: 2,
+                                 pointHitRadius: 10,
                              }]
                          },
                          options: {
                              responsive: true,
                              maintainAspectRatio: false,
-                             animation: { duration: 400 },
+                             animation: { 
+                                 duration: 1200,
+                                 easing: 'easeOutQuart'
+                             },
+                             interaction: {
+                                 mode: 'index',
+                                 intersect: false,
+                             },
                              plugins: {
                                  legend: { display: false },
                                  tooltip: {
-                                     backgroundColor: this.isDark ? '#262626' : '#ffffff',
-                                     titleColor: this.isDark ? '#f5f5f5' : '#171717',
-                                     bodyColor: this.isDark ? '#d4d4d4' : '#525252',
-                                     borderColor: this.isDark ? '#404040' : '#e5e5e5',
+                                     backgroundColor: this.isDark ? 'rgba(24, 24, 27, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                                     titleColor: this.isDark ? '#f4f4f5' : '#18181b',
+                                     bodyColor: this.isDark ? '#d4d4d8' : '#52525b',
+                                     borderColor: this.isDark ? '#3f3f46' : '#e4e4e7',
                                      borderWidth: 1,
-                                     padding: 10,
+                                     padding: 12,
                                      displayColors: false,
+                                     titleFont: { size: 13, weight: '600', family: 'ui-sans-serif, system-ui, sans-serif' },
+                                     bodyFont: { size: 12, family: 'ui-sans-serif, system-ui, sans-serif' },
+                                     boxPadding: 4,
                                      callbacks: {
                                          label: function(context) {
                                              let val = context.raw;
                                              let h = Math.floor(val);
                                              let m = Math.round((val - h) * 60);
-                                             return ` ${h}h ${m}m`;
+                                             if (h === 0 && m === 0) return ' No activity';
+                                             return ` ⏱ ${h}h ${m}m`;
                                          }
                                      }
                                  }
@@ -417,12 +428,25 @@ new class extends Component
                              scales: {
                                  y: {
                                      beginAtZero: true,
-                                     grid: { color: gridColor },
-                                     ticks: { color: textColor }
+                                     border: { display: false },
+                                     grid: { 
+                                         color: gridColor,
+                                         drawBorder: false,
+                                     },
+                                     ticks: { 
+                                         color: textColor,
+                                         padding: 10,
+                                         font: { size: 11 }
+                                     }
                                  },
                                  x: {
-                                     grid: { display: false },
-                                     ticks: { color: textColor }
+                                     border: { display: false },
+                                     grid: { display: false, drawBorder: false },
+                                     ticks: { 
+                                         color: textColor,
+                                         padding: 10,
+                                         font: { size: 11 }
+                                     }
                                  }
                              }
                          }
@@ -448,11 +472,6 @@ new class extends Component
                             class="text-[10px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider transition-colors cursor-pointer"
                             :class="period === 'monthly' ? 'bg-white dark:bg-zinc-900 shadow-xs text-zinc-900 dark:text-zinc-100' : 'text-zinc-450 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200'">
                         Monthly
-                    </button>
-                    <button type="button" @click="period = 'yearly'; $wire.set('chartPeriod', 'yearly')" 
-                            class="text-[10px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider transition-colors cursor-pointer"
-                            :class="period === 'yearly' ? 'bg-white dark:bg-zinc-900 shadow-xs text-zinc-900 dark:text-zinc-100' : 'text-zinc-450 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200'">
-                        Yearly
                     </button>
                 </div>
             </div>

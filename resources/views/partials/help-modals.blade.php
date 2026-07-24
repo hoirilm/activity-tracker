@@ -154,7 +154,7 @@
                             <flux:icon name="chevron-down" class="size-4 text-zinc-400 shrink-0 transition-transform duration-200" ::class="open === 'd1' && 'rotate-180'" />
                         </button>
                         <div x-show="open === 'd1'" x-collapse class="px-4 pb-3 text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed" style="display:none">
-                            The bar chart visualizes your total tracked hours per period. Use the <strong>Weekly / Monthly / Yearly</strong> toggle buttons to switch between a 7-day view, 30-day view, or 12-month view — all update smoothly without reloading the page.
+                            The area chart visualizes your total tracked hours per period. Use the <strong>Weekly / Monthly</strong> toggle buttons to switch between a 7-day view or 30-day view — all update smoothly without reloading the page.
                         </div>
                     </div>
                     <div>
