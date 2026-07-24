@@ -14,5 +14,6 @@ storage/logs/*
 tests
 Dockerfile
 .dockerignore
-release-notes.md
 prd.md
+bootstrap/cache/*
+!bootstrap/cache/.gitignore
