@@ -37,6 +37,8 @@ class AppServiceProvider extends ServiceProvider
     {
         Date::use(CarbonImmutable::class);
 
+        \Illuminate\Database\Eloquent\Model::preventLazyLoading(!app()->isProduction());
+
         DB::prohibitDestructiveCommands(
             app()->isProduction(),
         );
