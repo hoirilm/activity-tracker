@@ -63,7 +63,7 @@ new class extends Component
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         <!-- Left Side: Form (Spans 2 columns) -->
-        <div class="lg:col-span-2 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 p-6 shadow-xs">
+        <div class="lg:col-span-2 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-50 dark:bg-zinc-900 p-6 shadow-xs">
             <h3 class="text-sm font-semibold text-zinc-800 dark:text-zinc-200 mb-4 flex items-center gap-2">
                 <flux:icon name="pencil-square" class="size-4 text-zinc-500" />
                 <span>Compose Announcement</span>
@@ -107,7 +107,7 @@ new class extends Component
             
             <div class="border border-dashed border-zinc-300 dark:border-zinc-800 rounded-xl p-5 bg-zinc-50/50 dark:bg-zinc-950/20 flex items-center justify-center min-h-[220px]">
                 <!-- macOS Style Glass Banner Card -->
-                <div class="w-full max-w-[280px] bg-white/90 dark:bg-zinc-900/90 border border-zinc-200/50 dark:border-zinc-800/40 backdrop-blur-md rounded-2xl p-4 shadow-md transition-all duration-300 transform hover:scale-[1.02]">
+                <div class="w-full max-w-[280px] bg-zinc-50/90 dark:bg-zinc-900/90 border border-zinc-200/50 dark:border-zinc-800/40 backdrop-blur-md rounded-2xl p-4 shadow-md transition-all duration-300 transform hover:scale-[1.02]">
                     <!-- Header -->
                     <div class="flex items-center justify-between text-[10px] text-zinc-400 dark:text-zinc-500 mb-2">
                         <div class="flex items-center gap-1.5">

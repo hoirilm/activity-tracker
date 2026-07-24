@@ -264,7 +264,7 @@ new class extends Component
     <!-- Summary Cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <!-- Card 1 -->
-        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-xs flex items-center gap-4">
+        <div class="bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-xs flex items-center gap-4">
             <div class="size-11 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100/50 dark:border-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
                 <flux:icon name="clock" class="size-5" />
             </div>
@@ -275,7 +275,7 @@ new class extends Component
         </div>
         
         <!-- Card 2 -->
-        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-xs flex items-center gap-4">
+        <div class="bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-xs flex items-center gap-4">
             <div class="size-11 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200/50 dark:border-zinc-800/40 flex items-center justify-center text-zinc-550 dark:text-zinc-400 shrink-0">
                 <flux:icon name="calendar-days" class="size-5" />
             </div>
@@ -286,7 +286,7 @@ new class extends Component
         </div>
 
         <!-- Card 3 -->
-        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-xs flex items-center gap-4">
+        <div class="bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-xs flex items-center gap-4">
             <div class="size-11 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200/50 dark:border-zinc-800/40 flex items-center justify-center text-zinc-550 dark:text-zinc-400 shrink-0">
                 <flux:icon name="briefcase" class="size-5" />
             </div>
@@ -341,7 +341,7 @@ new class extends Component
     <!-- Insights Cards -->
         
         <!-- Activity Chart (Daily, Weekly, Monthly, Yearly) -->
-        <div wire:ignore class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xs relative overflow-hidden"
+        <div wire:ignore class="bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xs relative overflow-hidden"
              x-data="{
                  period: 'weekly',
                  isDark: document.documentElement.classList.contains('dark'),
@@ -467,12 +467,12 @@ new class extends Component
                 <div class="flex bg-zinc-100 dark:bg-zinc-800/80 rounded-lg p-0.5 self-start sm:self-auto shrink-0">
                     <button type="button" @click="period = 'weekly'; $wire.set('chartPeriod', 'weekly')" 
                             class="text-[10px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider transition-colors cursor-pointer"
-                            :class="period === 'weekly' ? 'bg-white dark:bg-zinc-900 shadow-xs text-zinc-900 dark:text-zinc-100' : 'text-zinc-450 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200'">
+                            :class="period === 'weekly' ? 'bg-zinc-50 dark:bg-zinc-900 shadow-xs text-zinc-900 dark:text-zinc-100' : 'text-zinc-450 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200'">
                         Weekly
                     </button>
                     <button type="button" @click="period = 'monthly'; $wire.set('chartPeriod', 'monthly')" 
                             class="text-[10px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider transition-colors cursor-pointer"
-                            :class="period === 'monthly' ? 'bg-white dark:bg-zinc-900 shadow-xs text-zinc-900 dark:text-zinc-100' : 'text-zinc-450 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200'">
+                            :class="period === 'monthly' ? 'bg-zinc-50 dark:bg-zinc-900 shadow-xs text-zinc-900 dark:text-zinc-100' : 'text-zinc-450 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200'">
                         Monthly
                     </button>
                 </div>
@@ -485,7 +485,7 @@ new class extends Component
         </div>
 
         <!-- Project Distribution -->
-        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xs">
+        <div class="bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xs">
             <h3 class="text-sm font-semibold text-zinc-850 dark:text-zinc-150 mb-4 flex items-center gap-2">
                 <flux:icon name="chart-pie" class="size-4.5 text-zinc-500" />
                 <span>Time Allocation</span>
@@ -547,7 +547,7 @@ new class extends Component
             <flux:button variant="subtle" size="xs" href="{{ route('tracker') }}" wire:navigate class="cursor-pointer">View All</flux:button>
         </div>
         
-        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-xs">
+        <div class="bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-xs">
             @if($this->recentActivities->count() > 0)
                 <div class="divide-y divide-zinc-100 dark:divide-zinc-800/40">
                     @foreach($this->recentActivities as $activity)

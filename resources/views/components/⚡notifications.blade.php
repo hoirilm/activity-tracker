@@ -84,7 +84,7 @@ new class extends Component
             <div class="space-y-3">
                 @forelse($this->notifications as $notif)
                     <div wire:key="notif-{{ $notif->id }}" 
-                         class="group relative bg-white/85 dark:bg-zinc-900/80 border border-zinc-200/40 dark:border-zinc-800/30 backdrop-blur-md rounded-2xl p-3.5 shadow-xs hover:shadow-sm transition-all duration-200 {{ $notif->read_at ? 'opacity-60' : '' }}">
+                         class="group relative bg-zinc-50/85 dark:bg-zinc-900/80 border border-zinc-200/40 dark:border-zinc-800/30 backdrop-blur-md rounded-2xl p-3.5 shadow-xs hover:shadow-sm transition-all duration-200 {{ $notif->read_at ? 'opacity-60' : '' }}">
                         
                         <!-- macOS Banner Header -->
                         <div class="flex items-center justify-between text-[11px] text-zinc-400 dark:text-zinc-500 mb-1.5">
