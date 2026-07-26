@@ -157,11 +157,11 @@ new class extends Component
             <div class="border border-zinc-200 dark:border-zinc-800 rounded-2xl bg-zinc-50 dark:bg-zinc-900 p-5 shadow-xs hover:shadow-md transition-shadow duration-300">
                 <form wire:submit.prevent="addProject" class="space-y-3">
                     <flux:input wire:model="projectName" placeholder="Project Name" icon="briefcase" required size="sm" autocomplete="off" />
-                    <div class="flex gap-2 items-center">
-                        <div class="flex-1">
+                    <div class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
+                        <div class="flex-1 w-full">
                             <flux:input wire:model="projectClient" placeholder="Client Name (Optional)" icon="user" size="sm" autocomplete="off" />
                         </div>
-                        <flux:button variant="primary" type="submit" size="sm" class="cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white dark:bg-indigo-500 dark:hover:bg-indigo-600 border-none px-4 active:scale-95 transition-all duration-200">
+                        <flux:button variant="primary" type="submit" size="sm" class="w-full sm:w-auto cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white dark:bg-indigo-500 dark:hover:bg-indigo-600 border-none px-4 active:scale-95 transition-all duration-200">
                             Add
                         </flux:button>
                     </div>
@@ -260,11 +260,11 @@ new class extends Component
 
             <!-- Add Category Card -->
             <div class="border border-zinc-200 dark:border-zinc-800 rounded-2xl bg-zinc-50 dark:bg-zinc-900 p-5 shadow-xs hover:shadow-md transition-shadow duration-300">
-                <form wire:submit.prevent="addCategory" class="flex gap-2 items-center">
-                    <div class="flex-1">
+                <form wire:submit.prevent="addCategory" class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
+                    <div class="flex-1 w-full">
                         <flux:input wire:model="categoryName" placeholder="Category Name" icon="tag" required size="sm" autocomplete="off" />
                     </div>
-                    <flux:button variant="primary" type="submit" size="sm" class="cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white dark:bg-indigo-500 dark:hover:bg-indigo-600 border-none px-4 active:scale-95 transition-all duration-200">
+                    <flux:button variant="primary" type="submit" size="sm" class="w-full sm:w-auto cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white dark:bg-indigo-500 dark:hover:bg-indigo-600 border-none px-4 active:scale-95 transition-all duration-200">
                         Add
                     </flux:button>
                 </form>

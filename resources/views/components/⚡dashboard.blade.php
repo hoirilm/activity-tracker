@@ -253,6 +253,13 @@ new class extends Component
 };
 ?>
 
+<style>
+.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #e4e4e7; border-radius: 9999px; }
+:is(.dark .custom-scrollbar::-webkit-scrollbar-thumb) { background: #3f3f46; }
+</style>
+
 <div class="flex h-full w-full flex-col gap-6 p-4 text-neutral-900 dark:text-neutral-100 max-w-5xl mx-auto mt-4">
 
     <!-- Header -->
@@ -309,7 +316,7 @@ new class extends Component
         </h2>
         <div class="grid gap-3">
             @foreach($this->runningActivities as $running)
-                <div wire:key="running-{{ $running->id }}" class="group relative overflow-hidden rounded-2xl border border-emerald-100 dark:border-emerald-900/30 bg-emerald-50/50 dark:bg-emerald-950/10 p-5 shadow-xs flex justify-between items-center" 
+                <div wire:key="running-{{ $running->id }}" class="group relative overflow-hidden rounded-2xl border border-emerald-100 dark:border-emerald-900/30 bg-emerald-50/50 dark:bg-emerald-950/10 p-5 shadow-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0" 
                      x-data="{ elapsed: '00:00:00', start: new Date('{{ $running->start_time->toISOString() }}').getTime() }"
                      x-init="setInterval(() => { 
                           let diff = Math.floor((new Date().getTime() - start) / 1000);
@@ -328,7 +335,7 @@ new class extends Component
                             @endif
                         </div>
                     </div>
-                    <div class="flex items-center gap-5">
+                    <div class="flex items-center gap-5 w-full sm:w-auto justify-between sm:justify-end mt-2 sm:mt-0">
                         <div class="font-mono text-2xl text-emerald-600 dark:text-emerald-455 font-bold tracking-tight" x-text="elapsed"></div>
                         <flux:button variant="danger" wire:click="stopActivity({{ $running->id }})" size="sm" class="cursor-pointer" title="Stop Activity">Stop</flux:button>
                     </div>
@@ -339,9 +346,10 @@ new class extends Component
     @endif
 
     <!-- Insights Cards -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         <!-- Activity Chart (Daily, Weekly, Monthly, Yearly) -->
-        <div wire:ignore class="bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xs relative overflow-hidden"
+        <div wire:ignore class="lg:col-span-2 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xs relative overflow-hidden"
              x-data="{
                  period: 'weekly',
                  isDark: document.documentElement.classList.contains('dark'),
@@ -485,14 +493,16 @@ new class extends Component
         </div>
 
         <!-- Project Distribution -->
-        <div class="bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xs">
-            <h3 class="text-sm font-semibold text-zinc-850 dark:text-zinc-150 mb-4 flex items-center gap-2">
+        <div class="bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xs flex flex-col">
+            <h3 class="text-sm font-semibold text-zinc-850 dark:text-zinc-150 mb-4 flex items-center gap-2 shrink-0">
                 <flux:icon name="chart-pie" class="size-4.5 text-zinc-500" />
                 <span>Time Allocation</span>
             </h3>
             
             @if($this->projectStats->count() > 0)
-                <div class="space-y-4">
+                <div class="flex-1 relative min-h-0">
+                    <div class="absolute inset-0 overflow-y-auto pr-2 custom-scrollbar">
+                        <div class="space-y-4">
                     @foreach($this->projectStats as $stat)
                         <div x-data="{ open: false }" class="space-y-2">
                             <!-- Project Toggle Row -->
@@ -528,14 +538,17 @@ new class extends Component
                             </div>
                         </div>
                     @endforeach
+                        </div>
+                    </div>
                 </div>
             @else
-                <div class="h-full flex flex-col items-center justify-center text-center text-neutral-500 dark:text-neutral-400 space-y-3 py-10">
+                <div class="flex-1 flex flex-col items-center justify-center text-center text-neutral-500 dark:text-neutral-400 space-y-3 py-10">
                     <flux:icon name="chart-pie" class="w-10 h-10 text-neutral-300 dark:text-neutral-700" />
                     <p class="text-xs">No project data for this week yet.</p>
                 </div>
             @endif
         </div>
+    </div>
 
     <!-- Recent History -->
     <div class="flex flex-col gap-3">
@@ -551,7 +564,7 @@ new class extends Component
             @if($this->recentActivities->count() > 0)
                 <div class="divide-y divide-zinc-100 dark:divide-zinc-800/40">
                     @foreach($this->recentActivities as $activity)
-                        <div class="p-4 hover:bg-zinc-50/50 dark:hover:bg-zinc-950/15 transition-colors flex justify-between items-center group">
+                        <div class="p-4 hover:bg-zinc-50/50 dark:hover:bg-zinc-950/15 transition-colors flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 group">
                             <div class="flex items-center gap-3 min-w-0">
                                 <div class="size-9 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200/50 dark:border-zinc-800/40 flex items-center justify-center text-zinc-500 dark:text-zinc-400 shrink-0">
                                     <flux:icon name="folder" class="size-4.5" />
@@ -563,9 +576,9 @@ new class extends Component
                                     </div>
                                 </div>
                             </div>
-                            <div class="text-right shrink-0">
+                            <div class="w-full sm:w-auto text-left sm:text-right shrink-0 mt-1 sm:mt-0 flex flex-row sm:flex-col justify-between sm:justify-start items-center sm:items-end">
                                 <div class="font-mono text-sm font-semibold text-zinc-700 dark:text-zinc-300">{{ $activity->duration }}</div>
-                                <div class="text-[10px] text-zinc-400 dark:text-zinc-500 mt-0.5">
+                                <div class="text-[10px] text-zinc-400 dark:text-zinc-500 sm:mt-0.5">
                                     {{ Carbon::parse($activity->start_time)->isToday() ? 'Today' : Carbon::parse($activity->start_time)->format('M d') }}, {{ $activity->start_time->format('H:i') }}
                                 </div>
                             </div>

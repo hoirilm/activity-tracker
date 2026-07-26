@@ -249,7 +249,7 @@ new class extends Component
                             @endif
                         </div>
                     </div>
-                    <div class="flex items-center gap-5 w-full md:w-auto justify-between md:justify-end">
+                    <div class="flex items-center gap-5 w-full md:w-auto justify-between md:justify-end mt-3 md:mt-0">
                         <div class="font-mono text-2xl text-emerald-600 dark:text-emerald-455 font-bold tracking-tight" x-text="elapsed"></div>
                         <flux:button variant="danger" wire:click="stopActivity({{ $running->id }})" size="sm" class="cursor-pointer active:scale-95 transition-all duration-200" title="Stop Activity">Stop</flux:button>
                     </div>
@@ -440,7 +440,7 @@ new class extends Component
                                         </div>
                                     </div>
                                 </div>
-                                <div class="flex items-center gap-3 shrink-0 w-full md:w-auto justify-between md:justify-end">
+                                <div class="flex items-center gap-3 shrink-0 w-full md:w-auto justify-between md:justify-end mt-3 md:mt-0">
                                     <!-- Time and Duration Info -->
                                     <div class="font-mono flex items-center gap-2">
                                         <span class="text-[10px] text-zinc-450 dark:text-zinc-500 font-semibold">{{ $activity->start_time->format('H:i') }} - {{ $activity->end_time->format('H:i') }}</span>

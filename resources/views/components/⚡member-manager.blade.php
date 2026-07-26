@@ -159,7 +159,7 @@ new class extends Component
                 </div>
 
                 <!-- Action Button Column -->
-                <div class="w-full md:w-auto flex justify-end shrink-0">
+                <div class="w-full md:w-auto flex justify-end shrink-0 mt-3 md:mt-0">
                     @if(auth()->id() === $member->id)
                         <flux:button variant="subtle" size="sm" disabled class="cursor-not-allowed">Self-editing restricted</flux:button>
                     @else

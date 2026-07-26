@@ -150,7 +150,7 @@ new class extends Component
                     </div>
                 </div>
                 
-                <div class="w-full md:w-auto flex justify-end shrink-0">
+                <div class="w-full md:w-auto flex justify-end shrink-0 mt-3 md:mt-0">
                     @if($issue->status === 'open')
                         <flux:button variant="danger" wire:click="toggleStatus({{ $issue->id }})" size="sm" class="cursor-pointer active:scale-95 transition-all duration-200">Mark as Closed</flux:button>
                     @else
