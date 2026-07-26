@@ -1,4 +1,4 @@
-# ⏱️ Klakoan Time Tracker (v3.0.0)
+# ⏱️ Klakoan Time Tracker
 
 ![License](https://img.shields.io/badge/License-MIT-blue.svg)
 ![Laravel](https://img.shields.io/badge/Laravel-13.x-FF2D20.svg?logo=laravel)
