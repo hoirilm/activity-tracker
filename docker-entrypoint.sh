@@ -22,7 +22,7 @@ php artisan view:cache
 # Dynamically add Nginx port based on Railway's $PORT variable
 export PORT=${PORT:-8080}
 echo "Railway assigned PORT: $PORT"
-sed -i "/listen 3000;/a \    listen ${PORT};" /etc/nginx/http.d/default.conf
+sed -i "s/server {/server {\n    listen ${PORT};/g" /etc/nginx/http.d/default.conf
 
 echo "--- NGINX CONFIG ---"
 cat /etc/nginx/http.d/default.conf
