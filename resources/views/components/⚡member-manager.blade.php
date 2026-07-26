@@ -52,6 +52,12 @@ new class extends Component
 
         $user = User::findOrFail($userId);
         $user->is_admin = !$user->is_admin;
+        
+        // If they are promoted to admin, reset their tour status so they see the admin tour
+        if ($user->is_admin) {
+            $user->has_seen_tour = false;
+        }
+
         $user->save();
 
         // Create notification for the target user
