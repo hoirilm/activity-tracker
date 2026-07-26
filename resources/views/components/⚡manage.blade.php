@@ -128,15 +128,17 @@ new class extends Component
 };
 ?>
 
-<div class="flex h-full w-full flex-col gap-6 p-4 text-neutral-900 dark:text-neutral-100 max-w-5xl mx-auto mt-4">
+<div class="flex h-full w-full flex-col gap-6 p-4 text-neutral-900 dark:text-neutral-100 max-w-5xl mx-auto mt-4" x-data="{ mounted: false }" x-init="setTimeout(() => mounted = true, 50)">
     <!-- Header -->
-    <div class="border-b border-zinc-200 dark:border-zinc-800 pb-4">
+    <div class="border-b border-zinc-200 dark:border-zinc-800 pb-4 transition-all duration-700 ease-out"
+         :class="mounted ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'">
         <h2 class="text-xl font-semibold tracking-tight">Workspace Management</h2>
         <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">Organize and manage your projects, clients, and categories for tracking.</p>
     </div>
 
     <!-- Grid Container -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 transition-all duration-700 ease-out delay-100"
+         :class="mounted ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'">
         
         <!-- Projects Section -->
         <div class="flex flex-col gap-4">
@@ -152,14 +154,14 @@ new class extends Component
             </div>
 
             <!-- Add Project Card -->
-            <div class="border border-zinc-200 dark:border-zinc-800 rounded-2xl bg-zinc-50 dark:bg-zinc-900 p-5 shadow-xs">
+            <div class="border border-zinc-200 dark:border-zinc-800 rounded-2xl bg-zinc-50 dark:bg-zinc-900 p-5 shadow-xs hover:shadow-md transition-shadow duration-300">
                 <form wire:submit.prevent="addProject" class="space-y-3">
                     <flux:input wire:model="projectName" placeholder="Project Name" icon="briefcase" required size="sm" autocomplete="off" />
                     <div class="flex gap-2 items-center">
                         <div class="flex-1">
                             <flux:input wire:model="projectClient" placeholder="Client Name (Optional)" icon="user" size="sm" autocomplete="off" />
                         </div>
-                        <flux:button variant="primary" type="submit" size="sm" class="cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white dark:bg-indigo-500 dark:hover:bg-indigo-600 border-none px-4">
+                        <flux:button variant="primary" type="submit" size="sm" class="cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white dark:bg-indigo-500 dark:hover:bg-indigo-600 border-none px-4 active:scale-95 transition-all duration-200">
                             Add
                         </flux:button>
                     </div>
@@ -176,7 +178,7 @@ new class extends Component
             <!-- Projects List -->
             <div class="space-y-3">
                 @forelse($this->projects as $project)
-                    <div class="group relative overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 p-4 shadow-xs hover:shadow-sm hover:border-zinc-300 dark:hover:border-zinc-700 transition-all duration-200">
+                    <div wire:key="project-{{ $project->id }}" class="group relative overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 p-4 shadow-xs hover:shadow-md hover:border-zinc-300 dark:hover:border-zinc-700 hover:-translate-y-0.5 transition-all duration-300" wire:transition.slide.up>
                         @if($this->editingProjectId === $project->id)
                             <form wire:submit.prevent="updateProject" class="space-y-3">
                                 <flux:input wire:model="editingProjectName" placeholder="Project Name" required size="sm" autocomplete="off" />
@@ -257,12 +259,12 @@ new class extends Component
             </div>
 
             <!-- Add Category Card -->
-            <div class="border border-zinc-200 dark:border-zinc-800 rounded-2xl bg-zinc-50 dark:bg-zinc-900 p-5 shadow-xs">
+            <div class="border border-zinc-200 dark:border-zinc-800 rounded-2xl bg-zinc-50 dark:bg-zinc-900 p-5 shadow-xs hover:shadow-md transition-shadow duration-300">
                 <form wire:submit.prevent="addCategory" class="flex gap-2 items-center">
                     <div class="flex-1">
                         <flux:input wire:model="categoryName" placeholder="Category Name" icon="tag" required size="sm" autocomplete="off" />
                     </div>
-                    <flux:button variant="primary" type="submit" size="sm" class="cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white dark:bg-indigo-500 dark:hover:bg-indigo-600 border-none px-4">
+                    <flux:button variant="primary" type="submit" size="sm" class="cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white dark:bg-indigo-500 dark:hover:bg-indigo-600 border-none px-4 active:scale-95 transition-all duration-200">
                         Add
                     </flux:button>
                 </form>
@@ -278,7 +280,7 @@ new class extends Component
             <!-- Categories List -->
             <div class="space-y-3">
                 @forelse($this->categories as $category)
-                    <div class="group relative overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 p-4 shadow-xs hover:shadow-sm hover:border-zinc-300 dark:hover:border-zinc-700 transition-all duration-200">
+                    <div wire:key="category-{{ $category->id }}" class="group relative overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 p-4 shadow-xs hover:shadow-md hover:border-zinc-300 dark:hover:border-zinc-700 hover:-translate-y-0.5 transition-all duration-300" wire:transition.slide.up>
                         @if($this->editingCategoryId === $category->id)
                             <form wire:submit.prevent="updateCategory" class="space-y-3">
                                 <flux:input wire:model="editingCategoryName" placeholder="Category Name" required size="sm" autocomplete="off" />

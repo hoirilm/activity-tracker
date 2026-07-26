@@ -76,9 +76,10 @@ new class extends Component
 };
 ?>
 
-<div class="flex h-full w-full flex-col gap-6 p-4 text-neutral-900 dark:text-neutral-100 max-w-5xl mx-auto mt-4">
+<div class="flex h-full w-full flex-col gap-6 p-4 text-neutral-900 dark:text-neutral-100 max-w-5xl mx-auto mt-4" x-data="{ mounted: false }" x-init="setTimeout(() => mounted = true, 50)">
     <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-4">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-4 transition-all duration-700 ease-out"
+         :class="mounted ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'">
         <div>
             <h2 class="text-xl font-semibold tracking-tight">Member Management</h2>
             <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">Manage user access roles and admin statuses in this workspace.</p>
@@ -129,9 +130,10 @@ new class extends Component
     @endif
 
     <!-- Member Cards List -->
-    <div class="grid gap-4">
+    <div class="grid gap-4 transition-all duration-700 ease-out delay-100"
+         :class="mounted ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'">
         @forelse($this->members as $member)
-            <div wire:key="member-{{ $member->id }}" class="group relative overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 p-4 shadow-xs hover:shadow-sm hover:border-zinc-300 dark:hover:border-zinc-700 transition-all duration-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div wire:key="member-{{ $member->id }}" class="group relative overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 p-4 shadow-xs hover:shadow-md hover:border-zinc-300 dark:hover:border-zinc-700 hover:-translate-y-0.5 transition-all duration-300 flex flex-col md:flex-row justify-between items-start md:items-center gap-4" wire:transition.slide.up>
                 
                 <!-- Account / User Column -->
                 <div class="flex items-center gap-3.5 flex-1 min-w-0">
@@ -162,11 +164,11 @@ new class extends Component
                         <flux:button variant="subtle" size="sm" disabled class="cursor-not-allowed">Self-editing restricted</flux:button>
                     @else
                         @if($member->is_admin)
-                            <flux:button wire:click="toggleAdmin({{ $member->id }})" variant="danger" size="sm" class="cursor-pointer">
+                            <flux:button wire:click="toggleAdmin({{ $member->id }})" variant="danger" size="sm" class="cursor-pointer active:scale-95 transition-all duration-200">
                                 Revoke Admin
                             </flux:button>
                         @else
-                            <flux:button wire:click="toggleAdmin({{ $member->id }})" variant="filled" size="sm" class="cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white dark:bg-indigo-500 dark:hover:bg-indigo-600 border-none">
+                            <flux:button wire:click="toggleAdmin({{ $member->id }})" variant="filled" size="sm" class="cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white dark:bg-indigo-500 dark:hover:bg-indigo-600 border-none active:scale-95 transition-all duration-200">
                                 Make Admin
                             </flux:button>
                         @endif

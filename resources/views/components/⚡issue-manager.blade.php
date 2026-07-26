@@ -71,9 +71,10 @@ new class extends Component
 };
 ?>
 
-<div class="flex h-full w-full flex-col gap-6 p-4 text-neutral-900 dark:text-neutral-100 max-w-5xl mx-auto mt-4">
+<div class="flex h-full w-full flex-col gap-6 p-4 text-neutral-900 dark:text-neutral-100 max-w-5xl mx-auto mt-4" x-data="{ mounted: false }" x-init="setTimeout(() => mounted = true, 50)">
     <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-4">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-4 transition-all duration-700 ease-out"
+         :class="mounted ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'">
         <div>
             <h2 class="text-xl font-semibold tracking-tight">Issue Management</h2>
             <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">Track, review, and manage bugs and feedback submitted by users.</p>
@@ -113,12 +114,13 @@ new class extends Component
         </div>
     @endif
 
-    <div class="grid gap-4">
+    <div class="grid gap-4 transition-all duration-700 ease-out delay-100"
+         :class="mounted ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'">
         @forelse($this->issues as $issue)
             <div wire:key="issue-{{ $issue->id }}" 
-                 class="group relative overflow-hidden rounded-2xl border p-5 shadow-xs transition-all duration-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4
-                 {{ $issue->status === 'closed' ? 'border-zinc-200/60 bg-zinc-50/50 dark:border-zinc-800/40 dark:bg-zinc-950/10 opacity-75 hover:opacity-100' : 'border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-sm' }}
-                 ">
+                 class="group relative overflow-hidden rounded-2xl border p-5 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col md:flex-row justify-between items-start md:items-center gap-4
+                 {{ $issue->status === 'closed' ? 'border-zinc-200/60 bg-zinc-50/50 dark:border-zinc-800/40 dark:bg-zinc-950/10 opacity-75 hover:opacity-100' : 'border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-700' }}
+                 " wire:transition.slide.up>
                 <div class="flex items-start gap-4 flex-1 min-w-0">
                     <!-- Icon container -->
                     @if($issue->status === 'open')
@@ -150,9 +152,9 @@ new class extends Component
                 
                 <div class="w-full md:w-auto flex justify-end shrink-0">
                     @if($issue->status === 'open')
-                        <flux:button variant="danger" wire:click="toggleStatus({{ $issue->id }})" size="sm" class="cursor-pointer">Mark as Closed</flux:button>
+                        <flux:button variant="danger" wire:click="toggleStatus({{ $issue->id }})" size="sm" class="cursor-pointer active:scale-95 transition-all duration-200">Mark as Closed</flux:button>
                     @else
-                        <flux:button variant="subtle" wire:click="toggleStatus({{ $issue->id }})" size="sm" class="cursor-pointer">Re-open</flux:button>
+                        <flux:button variant="subtle" wire:click="toggleStatus({{ $issue->id }})" size="sm" class="cursor-pointer active:scale-95 transition-all duration-200">Re-open</flux:button>
                     @endif
                 </div>
             </div>
