@@ -5,11 +5,12 @@ set -e
 mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache bootstrap/cache
 chmod -R 777 storage bootstrap/cache
 
-# Run migrations automatically if database is accessible
-if [ "$RUN_MIGRATIONS" = "true" ] || [ -n "$DB_HOST" ]; then
+# Run migrations automatically only if explicitly requested
+if [ "$RUN_MIGRATIONS" = "true" ]; then
     echo "Running database migrations..."
     php artisan migrate --force || echo "Migration skipped or failed"
-    php artisan db:seed --force || echo "Seeder skipped"
+    # Seeders should only be run on fresh setups. Commented out to prevent data duplication on shared DB.
+    # php artisan db:seed --force || echo "Seeder skipped"
 fi
 
 # Optimization caching for production
