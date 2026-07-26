@@ -64,7 +64,7 @@
     }
 
     /* Remove the default bright border on checkboxes in dark mode */
-    html.dark [data-flux-checkbox-indicator] {
+    html.dark [ui-checkbox]:not([data-checked]) [data-flux-checkbox-indicator] {
         border-color: transparent !important;
         background-color: rgba(255, 255, 255, 0.05) !important;
     }
