@@ -13,7 +13,7 @@ Versi ini menghadirkan fitur *Onboarding Tour* interaktif untuk memandu pengguna
 - **Admin-Specific Tour Logic**: Alur tur yang pintar dan mampu mendeteksi tingkat akses pengguna. *Administrator* akan mendapatkan 3 langkah tambahan (Issues, Members, Broadcast).
 - **Tour Reset on Promotion**: Logika otomatis yang akan mereset status tur pengguna jika mereka dipromosikan menjadi Administrator, memastikan mereka mendapatkan panduan fitur admin.
 - **Konsistensi Bahasa (English)**: Seluruh teks pada tur telah diterjemahkan secara rapi ke bahasa Inggris agar konsisten dengan antarmuka aplikasi.
-- **Email & Password Reset Prep**: Standardisasi variabel lingkungan SMTP di `.env.production` (Port 587/465, TLS/SSL) untuk mendukung pengiriman email sungguhan saat mengatur ulang kata sandi.
+- **Integrasi Resend API untuk Email**: Mengganti protokol SMTP standar dengan integrasi resmi pihak ketiga **Resend API** (`resend/resend-php`) untuk mengirim email (*Reset Password*). Hal ini diimplementasikan untuk melewati *error* Gateway Timeout (504) akibat pemblokiran *port* SMTP *outbound* pada layanan *cloud hosting* seperti Railway.
 
 ---
 
