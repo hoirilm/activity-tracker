@@ -1,8 +1,8 @@
 # ⏱️ Klakoan Time Tracker (v3.0.0)
 
 ![License](https://img.shields.io/badge/License-MIT-blue.svg)
-![Laravel](https://img.shields.io/badge/Laravel-11.x-FF2D20.svg?logo=laravel)
-![Livewire](https://img.shields.io/badge/Livewire-3.x-FB70A9.svg?logo=livewire)
+![Laravel](https://img.shields.io/badge/Laravel-13.x-FF2D20.svg?logo=laravel)
+![Livewire](https://img.shields.io/badge/Livewire-4.x-FB70A9.svg?logo=livewire)
 ![TailwindCSS](https://img.shields.io/badge/Tailwind-v4.0-38B2AC.svg?logo=tailwind-css)
 
 **Klakoan Time Tracker** adalah aplikasi manajemen waktu dan pelacakan produktivitas berdesain premium yang dibangun menggunakan ekosistem TALL stack modern. Aplikasi ini dirancang untuk tim dan individu yang membutuhkan pencatatan waktu yang cepat, pengorganisasian proyek yang rapi, serta pelaporan yang terstruktur.
@@ -25,8 +25,8 @@ Pada versi **3.0.0**, aplikasi ini menggunakan tema eksklusif *Graphite Monochro
 
 ## 💻 Teknologi (Tech Stack)
 
-* **Backend**: Laravel 11 (PHP 8.2+)
-* **Frontend**: Livewire 3, Alpine.js, Tailwind CSS v4
+* **Backend**: Laravel 13 (PHP 8.3+)
+* **Frontend**: Livewire 4, Alpine.js, Tailwind CSS v4
 * **UI Components**: Flux UI (Pro)
 * **Database**: PostgreSQL (Dioptimalkan untuk koneksi *pooler* seperti Neon DB)
 * **Infrastruktur**: Docker, Nginx
