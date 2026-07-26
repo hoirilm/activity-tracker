@@ -30,8 +30,8 @@ new class extends Component
                         {
                             element: '#tour-dashboard',
                             popover: {
-                                title: 'Beranda',
-                                description: 'Di sini Anda bisa melihat ringkasan aktivitas dan progres pekerjaan Anda.',
+                                title: 'Dashboard',
+                                description: 'Here you can see a summary of your activities and work progress.',
                                 side: 'right',
                                 align: 'start'
                             }
@@ -40,7 +40,7 @@ new class extends Component
                             element: '#tour-tracker',
                             popover: {
                                 title: 'Time Tracker',
-                                description: 'Mulai rekam waktu aktivitas Anda di sini. Jangan lupa dimatikan kalau sudah selesai!',
+                                description: 'Start recording your activity time here. Don\'t forget to stop it when you\'re done!',
                                 side: 'right',
                                 align: 'start'
                             }
@@ -48,8 +48,8 @@ new class extends Component
                         {
                             element: '#tour-manage',
                             popover: {
-                                title: 'Manajemen',
-                                description: 'Atur Proyek, Kategori, dan Daftar Pekerjaan Anda di menu ini.',
+                                title: 'Manage',
+                                description: 'Manage your Projects, Categories, and Tasks in this menu.',
                                 side: 'right',
                                 align: 'start'
                             }
@@ -61,7 +61,7 @@ new class extends Component
                             element: '#tour-issues',
                             popover: {
                                 title: 'Issues (Admin)',
-                                description: 'Kelola laporan bug dan keluhan dari pengguna.',
+                                description: 'Manage bug reports and feedback submitted by users.',
                                 side: 'right',
                                 align: 'start'
                             }
@@ -70,7 +70,7 @@ new class extends Component
                             element: '#tour-members',
                             popover: {
                                 title: 'Members (Admin)',
-                                description: 'Kelola hak akses pengguna, jadikan admin, atau cabut akses.',
+                                description: 'Manage user roles and assign Administrator privileges here.',
                                 side: 'right',
                                 align: 'start'
                             }
@@ -79,7 +79,7 @@ new class extends Component
                             element: '#tour-broadcast',
                             popover: {
                                 title: 'Broadcast (Admin)',
-                                description: 'Kirim pengumuman massal ke seluruh pengguna.',
+                                description: 'Send mass announcements and notifications to all users.',
                                 side: 'right',
                                 align: 'start'
                             }
@@ -89,8 +89,8 @@ new class extends Component
                     tourSteps.push({
                         element: '#tour-help-button',
                         popover: {
-                            title: 'Butuh Bantuan?',
-                            description: 'Jika Anda menemukan bug atau bingung cara menggunakan aplikasi, klik tombol ini.',
+                            title: 'Need Help?',
+                            description: 'If you encounter any bugs or need help using the app, click this button.',
                             side: 'left',
                             align: 'center'
                         }
@@ -102,9 +102,9 @@ new class extends Component
                         allowClose: true,
                         stagePadding: 4,
                         stageRadius: 8,
-                        doneBtnText: 'Selesai',
-                        nextBtnText: 'Lanjut',
-                        prevBtnText: 'Kembali',
+                        doneBtnText: 'Done',
+                        nextBtnText: 'Next',
+                        prevBtnText: 'Back',
                         onDestroyed: () => {
                             @this.call('finishTour');
                         },
