@@ -76,8 +76,8 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Expose port 8080
-EXPOSE 8080
+# Port is dynamically assigned by Railway via $PORT
+# EXPOSE is removed to prevent Railway from overriding the dynamic port
 
 # Set entrypoint
 ENTRYPOINT ["docker-entrypoint.sh"]
