@@ -28,6 +28,9 @@ echo "--- NGINX CONFIG ---"
 cat /etc/nginx/http.d/default.conf
 echo "--------------------"
 
+echo "Fixing storage permissions..."
+chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+
 # Start supervisor
 echo "Starting Nginx & PHP-FPM..."
 exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
