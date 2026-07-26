@@ -19,6 +19,11 @@ php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
+# Dynamically update Nginx port based on Railway's $PORT variable (fallback to 8080)
+export PORT=${PORT:-8080}
+sed -i "s/listen 8080;/listen ${PORT};/g" /etc/nginx/http.d/default.conf
+sed -i "s/listen \[::\]:8080;/listen \[::\]:${PORT};/g" /etc/nginx/http.d/default.conf
+
 # Start supervisor
 echo "Starting Nginx & PHP-FPM..."
 exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
