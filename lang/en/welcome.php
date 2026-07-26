@@ -5,7 +5,7 @@ return [
     'nav_security'          => 'Security',
     'nav_register'          => 'Sign Up',
     'hero_badge'            => 'Real-Time Tracking Ready to Use',
-    'hero_title'            => 'Track Work Time <span class="text-slate-600 dark:text-slate-500">Smarter</span>, Boost Results',
+    'hero_title'            => 'Track Work Time <span class="text-zinc-700 dark:text-zinc-400">Smarter</span>, Boost Results',
     'hero_desc'             => 'Start tracking your activities in real-time, effortlessly manage multiple projects, and get automated daily productivity insights to optimize your time.',
     'hero_cta_dashboard'    => 'Go to Dashboard',
     'hero_cta_start'        => 'Get Started Free',
