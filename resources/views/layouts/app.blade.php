@@ -9,4 +9,5 @@
             </p>
         </footer>
     </flux:main>
+    <livewire:onboarding-tour />
 </x-layouts::app.sidebar>

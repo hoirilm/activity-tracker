@@ -64,3 +64,39 @@ select:focus[data-flux-control] {
 /* \[:where(&)\]:size-4 {
     @apply size-4;
 } */
+
+/* Driver.js Premium Dark Mode Overrides */
+html.dark .driver-popover {
+    @apply bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl p-5 text-white max-w-sm font-sans;
+}
+html.dark .driver-popover-title {
+    @apply text-white font-semibold text-lg tracking-tight mb-2;
+}
+html.dark .driver-popover-description {
+    @apply text-zinc-400 text-sm leading-relaxed;
+}
+html.dark .driver-popover-footer {
+    @apply mt-5 flex items-center justify-between border-t border-zinc-800 pt-4;
+}
+html.dark .driver-popover-progress-text {
+    @apply text-zinc-500 text-xs font-medium;
+}
+html.dark .driver-popover-navigation-btns {
+    @apply flex gap-2;
+}
+html.dark .driver-popover-prev-btn {
+    @apply px-3 py-1.5 text-xs font-medium rounded-md text-zinc-300 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 transition-colors cursor-pointer !text-shadow-none;
+}
+html.dark .driver-popover-next-btn {
+    @apply px-3 py-1.5 text-xs font-medium rounded-md text-zinc-900 bg-white hover:bg-zinc-200 transition-colors cursor-pointer !text-shadow-none;
+}
+html.dark .driver-popover-arrow {
+    @apply border-zinc-700;
+}
+html.dark .driver-popover-arrow:after {
+    @apply border-zinc-900;
+}
+html.dark .driver-popover-close-btn {
+    @apply text-zinc-400 hover:text-white transition-colors cursor-pointer top-3 right-3;
+}
+

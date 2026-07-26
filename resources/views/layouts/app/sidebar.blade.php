@@ -25,25 +25,25 @@
             </flux:sidebar.header>
 
             <flux:sidebar.nav>
-                <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
+                <flux:sidebar.item id="tour-dashboard" icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
                     {{ __('Dashboard') }}
                 </flux:sidebar.item>
-                <flux:sidebar.item icon="clock" :href="route('tracker')" :current="request()->routeIs('tracker')" wire:navigate>
+                <flux:sidebar.item id="tour-tracker" icon="clock" :href="route('tracker')" :current="request()->routeIs('tracker')" wire:navigate>
                     {{ __('Tracker') }}
                 </flux:sidebar.item>
-                <flux:sidebar.item icon="cog-8-tooth" :href="route('manage')" :current="request()->routeIs('manage')" wire:navigate>
+                <flux:sidebar.item id="tour-manage" icon="cog-8-tooth" :href="route('manage')" :current="request()->routeIs('manage')" wire:navigate>
                     {{ __('Manage') }}
                 </flux:sidebar.item>
                 
                 @if(auth()->check() && auth()->user()->is_admin)
                 @php $openAdminIssues = App\Models\Issue::where('status', 'open')->count(); @endphp
-                <flux:sidebar.item icon="flag" :href="route('issues')" :current="request()->routeIs('issues')" :badge="$openAdminIssues ?: null" wire:navigate>
+                <flux:sidebar.item id="tour-issues" icon="flag" :href="route('issues')" :current="request()->routeIs('issues')" :badge="$openAdminIssues ?: null" wire:navigate>
                     {{ __('Issues') }}
                 </flux:sidebar.item>
-                <flux:sidebar.item icon="users" :href="route('members')" :current="request()->routeIs('members')" wire:navigate>
+                <flux:sidebar.item id="tour-members" icon="users" :href="route('members')" :current="request()->routeIs('members')" wire:navigate>
                     {{ __('Members') }}
                 </flux:sidebar.item>
-                <flux:sidebar.item icon="megaphone" :href="route('broadcast')" :current="request()->routeIs('broadcast')" wire:navigate>
+                <flux:sidebar.item id="tour-broadcast" icon="megaphone" :href="route('broadcast')" :current="request()->routeIs('broadcast')" wire:navigate>
                     {{ __('Broadcast') }}
                 </flux:sidebar.item>
                 @endif
@@ -178,6 +178,7 @@
             <!-- Trigger Button (Question Mark Icon) -->
             <button @click="open = !open" 
                     type="button"
+                    id="tour-help-button"
                     class="shadow-lg flex items-center justify-center size-10 rounded-full bg-zinc-800 hover:bg-zinc-700 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-900 transition-all duration-300 transform active:scale-95 cursor-pointer"
                     :class="open ? 'rotate-180 bg-zinc-650 dark:bg-zinc-350!' : ''">
                 <!-- Question mark icon -->
