@@ -3,21 +3,21 @@
     <head>
         @include('partials.head')
     </head>
-    <body class="bg-zinc-50 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 antialiased selection:bg-orange-500 selection:text-white">
+    <body class="bg-zinc-50 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 antialiased selection:bg-slate-500 selection:text-white">
         <!-- Navigation -->
         <header class="sticky top-0 z-50 w-full border-b border-zinc-200/80 dark:border-zinc-800/80 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <x-app-logo-icon class="size-8 text-orange-600 dark:text-orange-500" />
+                    <x-app-logo-icon class="size-8 text-slate-600 dark:text-slate-500" />
                     <span class="font-bold text-xl tracking-tight text-zinc-900 dark:text-white">
                         {{ config('app.name', 'Activity Tracker') }}
                     </span>
                 </div>
                 
                 <nav class="hidden md:flex items-center gap-6">
-                    <a href="#features" class="text-sm font-medium text-zinc-600 hover:text-orange-600 dark:text-zinc-400 dark:hover:text-orange-500 transition-colors">{{ __('welcome.nav_features') }}</a>
-                    <a href="#workflow" class="text-sm font-medium text-zinc-600 hover:text-orange-600 dark:text-zinc-400 dark:hover:text-orange-500 transition-colors">{{ __('welcome.nav_workflow') }}</a>
-                    <a href="#security" class="text-sm font-medium text-zinc-600 hover:text-orange-600 dark:text-zinc-400 dark:hover:text-orange-500 transition-colors">{{ __('welcome.nav_security') }}</a>
+                    <a href="#features" class="text-sm font-medium text-zinc-600 hover:text-slate-600 dark:text-zinc-400 dark:hover:text-slate-500 transition-colors">{{ __('welcome.nav_features') }}</a>
+                    <a href="#workflow" class="text-sm font-medium text-zinc-600 hover:text-slate-600 dark:text-zinc-400 dark:hover:text-slate-500 transition-colors">{{ __('welcome.nav_workflow') }}</a>
+                    <a href="#security" class="text-sm font-medium text-zinc-600 hover:text-slate-600 dark:text-zinc-400 dark:hover:text-slate-500 transition-colors">{{ __('welcome.nav_security') }}</a>
                 </nav>
 
                 <div class="flex items-center gap-3">
@@ -37,14 +37,14 @@
                         @auth
                             <a
                                 href="{{ route('dashboard') }}"
-                                class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-orange-600 hover:bg-orange-500 dark:bg-orange-500 dark:hover:bg-orange-400 rounded-lg shadow-sm transition-all"
+                                class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-slate-600 hover:bg-slate-500 dark:bg-slate-500 dark:hover:bg-slate-400 rounded-lg shadow-sm transition-all"
                             >
                                 Dashboard
                             </a>
                         @else
                             <a
                                 href="{{ route('login') }}"
-                                class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-orange-600 dark:hover:text-orange-500 transition-colors"
+                                class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-slate-600 dark:hover:text-slate-500 transition-colors"
                             >
                                 Log in
                             </a>
@@ -52,7 +52,7 @@
                             @if (Route::has('register'))
                                 <a
                                     href="{{ route('register') }}"
-                                    class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-orange-600 hover:bg-orange-500 dark:bg-orange-500 dark:hover:bg-orange-400 rounded-lg shadow-sm transition-all"
+                                    class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-slate-600 hover:bg-slate-500 dark:bg-slate-500 dark:hover:bg-slate-400 rounded-lg shadow-sm transition-all"
                                 >
                                     {{ __('welcome.nav_register') }}
                                 </a>
@@ -69,8 +69,8 @@
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
                     <!-- Hero Text -->
                     <div class="lg:col-span-6 text-center lg:text-left">
-                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20 mb-6">
-                            <span class="flex h-2 w-2 rounded-full bg-orange-500 animate-pulse"></span>
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-slate-500/10 text-slate-600 dark:text-slate-400 border border-slate-500/20 mb-6">
+                            <span class="flex h-2 w-2 rounded-full bg-slate-500 animate-pulse"></span>
                             {{ __('welcome.hero_badge') }}
                         </div>
                         <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-zinc-900 dark:text-white leading-[1.1] mb-6">
@@ -81,11 +81,11 @@
                         </p>
                         <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
                             @auth
-                                <a href="{{ route('dashboard') }}" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3.5 text-base font-semibold text-white bg-orange-600 hover:bg-orange-500 dark:bg-orange-500 dark:hover:bg-orange-400 rounded-xl shadow-lg shadow-orange-500/20 hover:shadow-orange-500/30 transition-all">
+                                <a href="{{ route('dashboard') }}" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3.5 text-base font-semibold text-white bg-slate-600 hover:bg-slate-500 dark:bg-slate-500 dark:hover:bg-slate-400 rounded-xl shadow-lg shadow-slate-500/20 hover:shadow-slate-500/30 transition-all">
                                     {{ __('welcome.hero_cta_dashboard') }}
                                 </a>
                             @else
-                                <a href="{{ route('register') }}" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3.5 text-base font-semibold text-white bg-orange-600 hover:bg-orange-500 dark:bg-orange-500 dark:hover:bg-orange-400 rounded-xl shadow-lg shadow-orange-500/20 hover:shadow-orange-500/30 transition-all">
+                                <a href="{{ route('register') }}" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3.5 text-base font-semibold text-white bg-slate-600 hover:bg-slate-500 dark:bg-slate-500 dark:hover:bg-slate-400 rounded-xl shadow-lg shadow-slate-500/20 hover:shadow-slate-500/30 transition-all">
                                     {{ __('welcome.hero_cta_start') }}
                                 </a>
                                 <a href="#features" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3.5 text-base font-semibold text-zinc-700 dark:text-zinc-300 bg-zinc-200/50 hover:bg-zinc-200 dark:bg-zinc-800/50 dark:hover:bg-zinc-800 rounded-xl transition-all">
@@ -115,7 +115,7 @@
                     <div class="lg:col-span-6">
                         <div class="relative mx-auto max-w-[500px] lg:max-w-none">
                             <!-- Background glow -->
-                            <div class="absolute -inset-4 bg-orange-500/10 rounded-3xl blur-2xl dark:bg-orange-500/5"></div>
+                            <div class="absolute -inset-4 bg-slate-500/10 rounded-3xl blur-2xl dark:bg-slate-500/5"></div>
                             
                             <!-- App Mockup Container -->
                             <div class="relative bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
@@ -132,17 +132,17 @@
                                 <!-- Mockup Content -->
                                 <div class="p-6 space-y-6">
                                     <!-- Running Timer Card -->
-                                    <div class="p-4 rounded-xl border border-orange-200 bg-orange-50/50 dark:border-orange-950/50 dark:bg-orange-950/20 flex items-center justify-between">
+                                    <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/50 dark:border-slate-950/50 dark:bg-slate-950/20 flex items-center justify-between">
                                         <div class="space-y-1">
-                                            <span class="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wider">{{ __('welcome.mockup_running_label') }}</span>
+                                            <span class="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">{{ __('welcome.mockup_running_label') }}</span>
                                             <h4 class="font-bold text-zinc-900 dark:text-white text-sm sm:text-base">{{ __('welcome.mockup_running_title') }}</h4>
                                             <div class="flex gap-2">
                                                 <span class="inline-flex px-2 py-0.5 rounded text-[10px] bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-medium">{{ __('welcome.mockup_running_project') }}</span>
-                                                <span class="inline-flex px-2 py-0.5 rounded text-[10px] bg-orange-100 dark:bg-orange-900/50 text-orange-600 dark:text-orange-400 font-medium">{{ __('welcome.mockup_running_cat') }}</span>
+                                                <span class="inline-flex px-2 py-0.5 rounded text-[10px] bg-slate-100 dark:bg-slate-900/50 text-slate-600 dark:text-slate-400 font-medium">{{ __('welcome.mockup_running_cat') }}</span>
                                             </div>
                                         </div>
                                         <div class="text-right">
-                                            <div class="font-mono text-2xl font-bold text-orange-600 dark:text-orange-500 animate-pulse">01:42:35</div>
+                                            <div class="font-mono text-2xl font-bold text-slate-600 dark:text-slate-500 animate-pulse">01:42:35</div>
                                             <button class="mt-2 px-3 py-1 rounded bg-red-600 text-white text-xs font-semibold hover:bg-red-500 transition-colors">
                                                 {{ __('welcome.mockup_stop') }}
                                             </button>
@@ -207,8 +207,8 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                     <!-- Feature 1 -->
-                    <div class="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800/80 hover:border-orange-500/50 dark:hover:border-orange-500/50 transition-all hover:-translate-y-1">
-                        <div class="w-12 h-12 rounded-xl bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center mb-6">
+                    <div class="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800/80 hover:border-slate-500/50 dark:hover:border-slate-500/50 transition-all hover:-translate-y-1">
+                        <div class="w-12 h-12 rounded-xl bg-slate-500/10 text-slate-600 dark:text-slate-400 flex items-center justify-center mb-6">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         </div>
                         <h3 class="text-lg font-bold text-zinc-900 dark:text-white mb-2">{{ __('welcome.feature1_title') }}</h3>
@@ -218,8 +218,8 @@
                     </div>
 
                     <!-- Feature 2 -->
-                    <div class="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800/80 hover:border-orange-500/50 dark:hover:border-orange-500/50 transition-all hover:-translate-y-1">
-                        <div class="w-12 h-12 rounded-xl bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center mb-6">
+                    <div class="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800/80 hover:border-slate-500/50 dark:hover:border-slate-500/50 transition-all hover:-translate-y-1">
+                        <div class="w-12 h-12 rounded-xl bg-slate-500/10 text-slate-600 dark:text-slate-400 flex items-center justify-center mb-6">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                         </div>
                         <h3 class="text-lg font-bold text-zinc-900 dark:text-white mb-2">{{ __('welcome.feature2_title') }}</h3>
@@ -229,8 +229,8 @@
                     </div>
 
                     <!-- Feature 3 -->
-                    <div class="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800/80 hover:border-orange-500/50 dark:hover:border-orange-500/50 transition-all hover:-translate-y-1">
-                        <div class="w-12 h-12 rounded-xl bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center mb-6">
+                    <div class="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800/80 hover:border-slate-500/50 dark:hover:border-slate-500/50 transition-all hover:-translate-y-1">
+                        <div class="w-12 h-12 rounded-xl bg-slate-500/10 text-slate-600 dark:text-slate-400 flex items-center justify-center mb-6">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                         </div>
                         <h3 class="text-lg font-bold text-zinc-900 dark:text-white mb-2">{{ __('welcome.feature3_title') }}</h3>
@@ -240,8 +240,8 @@
                     </div>
 
                     <!-- Feature 4 -->
-                    <div class="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800/80 hover:border-orange-500/50 dark:hover:border-orange-500/50 transition-all hover:-translate-y-1">
-                        <div class="w-12 h-12 rounded-xl bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center mb-6">
+                    <div class="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800/80 hover:border-slate-500/50 dark:hover:border-slate-500/50 transition-all hover:-translate-y-1">
+                        <div class="w-12 h-12 rounded-xl bg-slate-500/10 text-slate-600 dark:text-slate-400 flex items-center justify-center mb-6">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                         </div>
                         <h3 class="text-lg font-bold text-zinc-900 dark:text-white mb-2">{{ __('welcome.feature4_title') }}</h3>
@@ -268,7 +268,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
                     <!-- Step 1 -->
                     <div class="text-center space-y-4">
-                        <div class="w-16 h-16 rounded-full bg-orange-600 text-white flex items-center justify-center text-2xl font-bold mx-auto shadow-lg shadow-orange-500/20">
+                        <div class="w-16 h-16 rounded-full bg-slate-600 text-white flex items-center justify-center text-2xl font-bold mx-auto shadow-lg shadow-slate-500/20">
                             1
                         </div>
                         <h3 class="text-xl font-bold text-zinc-900 dark:text-white">{{ __('welcome.step1_title') }}</h3>
@@ -279,7 +279,7 @@
 
                     <!-- Step 2 -->
                     <div class="text-center space-y-4">
-                        <div class="w-16 h-16 rounded-full bg-orange-600 text-white flex items-center justify-center text-2xl font-bold mx-auto shadow-lg shadow-orange-500/20">
+                        <div class="w-16 h-16 rounded-full bg-slate-600 text-white flex items-center justify-center text-2xl font-bold mx-auto shadow-lg shadow-slate-500/20">
                             2
                         </div>
                         <h3 class="text-xl font-bold text-zinc-900 dark:text-white">{{ __('welcome.step2_title') }}</h3>
@@ -290,7 +290,7 @@
 
                     <!-- Step 3 -->
                     <div class="text-center space-y-4">
-                        <div class="w-16 h-16 rounded-full bg-orange-600 text-white flex items-center justify-center text-2xl font-bold mx-auto shadow-lg shadow-orange-500/20">
+                        <div class="w-16 h-16 rounded-full bg-slate-600 text-white flex items-center justify-center text-2xl font-bold mx-auto shadow-lg shadow-slate-500/20">
                             3
                         </div>
                         <h3 class="text-xl font-bold text-zinc-900 dark:text-white">{{ __('welcome.step3_title') }}</h3>
@@ -308,7 +308,7 @@
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     <!-- Image/Visual -->
                     <div class="order-2 lg:order-1">
-                        <div class="bg-gradient-to-tr from-orange-600 to-amber-500 p-8 rounded-3xl shadow-xl flex items-center justify-center">
+                        <div class="bg-gradient-to-tr from-slate-600 to-slate-400 p-8 rounded-3xl shadow-xl flex items-center justify-center">
                             <div class="bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-2xl text-white text-center max-w-sm space-y-4">
                                 <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                                 <h4 class="text-lg font-bold">{{ __('welcome.security_mockup_title') }}</h4>
@@ -319,7 +319,7 @@
 
                     <!-- Text content -->
                     <div class="order-1 lg:order-2 space-y-6 text-center lg:text-left">
-                        <div class="inline-flex px-3 py-1 rounded-full text-xs font-semibold bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20">
+                        <div class="inline-flex px-3 py-1 rounded-full text-xs font-semibold bg-slate-500/10 text-slate-600 dark:text-slate-400 border border-slate-500/20">
                             {{ __('welcome.security_badge') }}
                         </div>
                         <h2 class="text-3xl font-extrabold text-zinc-900 dark:text-white sm:text-4xl">
@@ -331,15 +331,15 @@
                         
                         <ul class="space-y-4 text-sm text-zinc-600 dark:text-zinc-400 text-left">
                             <li class="flex items-start gap-3">
-                                <svg class="w-5 h-5 text-orange-600 dark:text-orange-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                <svg class="w-5 h-5 text-slate-600 dark:text-slate-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                                 <span><strong>{{ __('welcome.security_passkey_title') }}</strong> {{ __('welcome.security_passkey_desc') }}</span>
                             </li>
                             <li class="flex items-start gap-3">
-                                <svg class="w-5 h-5 text-orange-600 dark:text-orange-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                <svg class="w-5 h-5 text-slate-600 dark:text-slate-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                                 <span><strong>{{ __('welcome.security_2fa_title') }}</strong> {{ __('welcome.security_2fa_desc') }}</span>
                             </li>
                             <li class="flex items-start gap-3">
-                                <svg class="w-5 h-5 text-orange-600 dark:text-orange-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                <svg class="w-5 h-5 text-slate-600 dark:text-slate-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                                 <span><strong>{{ __('welcome.security_enc_title') }}</strong> {{ __('welcome.security_enc_desc') }}</span>
                             </li>
                         </ul>
@@ -349,21 +349,21 @@
         </section>
 
         <!-- CTA Bottom -->
-        <section class="py-20 bg-orange-600 text-white">
+        <section class="py-20 bg-slate-600 text-white">
             <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8">
                 <h2 class="text-3xl sm:text-4xl font-extrabold">
                     {{ __('welcome.cta_title') }}
                 </h2>
-                <p class="text-orange-100 max-w-2xl mx-auto text-lg leading-relaxed">
+                <p class="text-slate-100 max-w-2xl mx-auto text-lg leading-relaxed">
                     {{ __('welcome.cta_desc') }}
                 </p>
                 <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
                     @auth
-                        <a href="{{ route('dashboard') }}" class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-orange-600 bg-white hover:bg-orange-50 rounded-xl shadow-lg transition-all">
+                        <a href="{{ route('dashboard') }}" class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-slate-600 bg-white hover:bg-slate-50 rounded-xl shadow-lg transition-all">
                             {{ __('welcome.cta_go_dashboard') }}
                         </a>
                     @else
-                        <a href="{{ route('register') }}" class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-orange-600 bg-white hover:bg-orange-50 rounded-xl shadow-lg transition-all">
+                        <a href="{{ route('register') }}" class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-slate-600 bg-white hover:bg-slate-50 rounded-xl shadow-lg transition-all">
                             {{ __('welcome.cta_start_free') }}
                         </a>
                         <a href="{{ route('login') }}" class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-white border border-white hover:bg-white/10 rounded-xl transition-all">
@@ -378,7 +378,7 @@
         <footer class="py-12 bg-zinc-950 text-zinc-400 border-t border-zinc-900">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
                 <div class="flex items-center gap-3">
-                    <x-app-logo-icon class="size-6 text-orange-500" />
+                    <x-app-logo-icon class="size-6 text-slate-500" />
                     <span class="font-bold text-lg text-white tracking-tight">
                         {{ config('app.name', 'Activity Tracker') }}
                     </span>

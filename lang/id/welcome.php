@@ -5,7 +5,7 @@ return [
     'nav_security'          => 'Keamanan',
     'nav_register'          => 'Daftar',
     'hero_badge'            => 'Pelacakan Real-time Siap Digunakan',
-    'hero_title'            => 'Lacak Waktu Kerja <span class="text-orange-600 dark:text-orange-500">Lebih Cerdas</span>, Tingkatkan Hasil',
+    'hero_title'            => 'Lacak Waktu Kerja <span class="text-slate-600 dark:text-slate-500">Lebih Cerdas</span>, Tingkatkan Hasil',
     'hero_desc'             => 'Mulai melacak aktivitas Anda secara real-time, kelola berbagai proyek dengan mudah, serta dapatkan analisis produktivitas harian otomatis demi optimalisasi waktu Anda.',
     'hero_cta_dashboard'    => 'Masuk ke Dashboard',
     'hero_cta_start'        => 'Mulai Gratis Sekarang',
