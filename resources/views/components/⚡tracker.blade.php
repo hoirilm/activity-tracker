@@ -171,16 +171,18 @@ new class extends Component
 };
 ?>
 
-<div class="flex h-full w-full flex-col gap-6 p-4 text-neutral-900 dark:text-neutral-100 max-w-5xl mx-auto mt-4" x-data="{ scrolled: false }" @scroll.window="scrolled = (window.pageYOffset > 300)">
+<div class="flex h-full w-full flex-col gap-6 p-4 text-neutral-900 dark:text-neutral-100 max-w-5xl mx-auto mt-4" x-data="{ scrolled: false, mounted: false }" x-init="setTimeout(() => mounted = true, 50)" @scroll.window="scrolled = (window.pageYOffset > 300)">
     
     <!-- Header -->
-    <div class="border-b border-zinc-200 dark:border-zinc-800 pb-4">
+    <div class="border-b border-zinc-200 dark:border-zinc-800 pb-4 transition-all duration-700 ease-out"
+         :class="mounted ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'">
         <h2 class="text-xl font-semibold tracking-tight">Time Tracker</h2>
         <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">Track your day-to-day work, projects, and activities in real-time.</p>
     </div>
 
     <!-- Sticky form -->
-    <div class="sticky top-0 z-10 overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 p-5 shadow-xs mb-4"
+    <div class="sticky top-0 z-10 overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/80 dark:bg-zinc-900/80 backdrop-blur-md p-5 shadow-xs mb-4 transition-all duration-700 ease-out delay-100"
+         :class="mounted ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'"
          x-data="{}"
          @keydown.window.prevent.ctrl.slash="$refs.detailInput.focus()"
          @keydown.window.ctrl.enter="$wire.startActivity()">
@@ -203,7 +205,7 @@ new class extends Component
                         @endforeach
                     </flux:select>
                 </div>
-                <flux:button variant="primary" type="submit" size="sm" class="w-full md:w-auto cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white dark:bg-indigo-500 dark:hover:bg-indigo-600 border-none px-6">
+                <flux:button variant="primary" type="submit" size="sm" class="w-full md:w-auto cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white dark:bg-indigo-500 dark:hover:bg-indigo-600 border-none px-6 active:scale-95 transition-all duration-200">
                     Start
                 </flux:button>
             </div>
@@ -216,7 +218,9 @@ new class extends Component
 
     <!-- Running Activities -->
     @if($this->runningActivities->count() > 0)
-    <div class="space-y-3">
+    <div class="space-y-3 transition-all duration-700 ease-out delay-200"
+         :class="mounted ? 'translate-x-0 opacity-100' : '-translate-x-8 opacity-0'"
+         wire:transition.slide.up>
         <h2 class="text-sm font-semibold text-zinc-850 dark:text-zinc-150 mb-3 flex items-center gap-2">
             <span class="relative flex h-2.5 w-2.5">
               <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -226,7 +230,7 @@ new class extends Component
         </h2>
         <div class="grid gap-3">
             @foreach($this->runningActivities as $running)
-                <div wire:key="running-{{ $running->id }}" class="group relative overflow-hidden rounded-2xl border border-emerald-100 dark:border-emerald-900/30 bg-emerald-50/50 dark:bg-emerald-950/10 p-5 shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4" 
+                <div wire:key="running-{{ $running->id }}" class="group relative overflow-hidden rounded-2xl border border-emerald-100 dark:border-emerald-900/30 bg-emerald-50/50 dark:bg-emerald-950/10 p-5 shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:shadow-md hover:border-emerald-200 dark:hover:border-emerald-800/50 transition-all duration-300" 
                      x-data="{ elapsed: '00:00:00', start: new Date('{{ $running->start_time->toISOString() }}').getTime() }"
                      x-init="setInterval(() => { 
                           let diff = Math.floor((new Date().getTime() - start) / 1000);
@@ -245,9 +249,9 @@ new class extends Component
                             @endif
                         </div>
                     </div>
-                    <div class="flex items-center gap-5 w-full md:w-auto justify-between md:justify-end">
+                    <div class="flex items-center gap-5 w-full md:w-auto justify-between md:justify-end mt-3 md:mt-0">
                         <div class="font-mono text-2xl text-emerald-600 dark:text-emerald-455 font-bold tracking-tight" x-text="elapsed"></div>
-                        <flux:button variant="danger" wire:click="stopActivity({{ $running->id }})" size="sm" class="cursor-pointer" title="Stop Activity">Stop</flux:button>
+                        <flux:button variant="danger" wire:click="stopActivity({{ $running->id }})" size="sm" class="cursor-pointer active:scale-95 transition-all duration-200" title="Stop Activity">Stop</flux:button>
                     </div>
                 </div>
             @endforeach
@@ -256,7 +260,8 @@ new class extends Component
     @endif
 
     <!-- Activity Feed / History -->
-    <div class="flex flex-col gap-4 mt-2">
+    <div class="flex flex-col gap-4 mt-2 transition-all duration-700 ease-out delay-300"
+         :class="mounted ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'">
         <div class="flex flex-col xl:flex-row justify-between xl:items-center gap-4 mb-2">
             <h3 class="text-sm font-semibold text-zinc-850 dark:text-zinc-150 flex items-center gap-2">
                 <flux:icon name="clock" class="size-4.5 text-zinc-500" />
@@ -420,7 +425,7 @@ new class extends Component
                     </h4>
                     <div class="flex flex-col gap-3">
                         @foreach($dayActivities as $activity)
-                            <div wire:key="activity-{{ $activity->id }}" class="group relative overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 p-4 shadow-xs hover:shadow-sm hover:border-zinc-300 dark:hover:border-zinc-700 transition-all duration-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                            <div wire:key="activity-{{ $activity->id }}" class="group relative overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 p-4 shadow-xs hover:shadow-md hover:border-zinc-300 dark:hover:border-zinc-700 hover:-translate-y-0.5 transition-all duration-300 flex flex-col md:flex-row justify-between items-start md:items-center gap-4" wire:transition.slide.up>
                                 <div class="flex items-center gap-3 min-w-0 flex-1">
                                     <div class="size-9 rounded-lg bg-white dark:bg-zinc-950 border border-zinc-200/50 dark:border-zinc-800/40 flex items-center justify-center text-zinc-500 dark:text-zinc-400 shrink-0">
                                         <flux:icon name="folder" class="size-4.5" />
@@ -435,7 +440,7 @@ new class extends Component
                                         </div>
                                     </div>
                                 </div>
-                                <div class="flex items-center gap-3 shrink-0 w-full md:w-auto justify-between md:justify-end">
+                                <div class="flex items-center gap-3 shrink-0 w-full md:w-auto justify-between md:justify-end mt-3 md:mt-0">
                                     <!-- Time and Duration Info -->
                                     <div class="font-mono flex items-center gap-2">
                                         <span class="text-[10px] text-zinc-450 dark:text-zinc-500 font-semibold">{{ $activity->start_time->format('H:i') }} - {{ $activity->end_time->format('H:i') }}</span>

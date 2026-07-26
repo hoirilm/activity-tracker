@@ -41,9 +41,10 @@ new class extends Component
 };
 ?>
 
-<div class="flex h-full w-full flex-col gap-6 p-4 text-neutral-900 dark:text-neutral-100 max-w-5xl mx-auto mt-4">
+<div class="flex h-full w-full flex-col gap-6 p-4 text-neutral-900 dark:text-neutral-100 max-w-5xl mx-auto mt-4" x-data="{ mounted: false }" x-init="setTimeout(() => mounted = true, 50)">
     <!-- Header -->
-    <div class="border-b border-zinc-200 dark:border-zinc-800 pb-4">
+    <div class="border-b border-zinc-200 dark:border-zinc-800 pb-4 transition-all duration-700 ease-out"
+         :class="mounted ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'">
         <h2 class="text-xl font-semibold tracking-tight">System Broadcast</h2>
         <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">Send a global notification to all registered users in the workspace.</p>
     </div>
@@ -60,10 +61,11 @@ new class extends Component
     @endif
 
     <!-- Split Layout -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 transition-all duration-700 ease-out delay-100"
+         :class="mounted ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'">
         
         <!-- Left Side: Form (Spans 2 columns) -->
-        <div class="lg:col-span-2 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-50 dark:bg-zinc-900 p-6 shadow-xs">
+        <div class="lg:col-span-2 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-50 dark:bg-zinc-900 p-6 shadow-xs hover:shadow-md transition-shadow duration-300">
             <h3 class="text-sm font-semibold text-zinc-800 dark:text-zinc-200 mb-4 flex items-center gap-2">
                 <flux:icon name="pencil-square" class="size-4 text-zinc-500" />
                 <span>Compose Announcement</span>
@@ -91,7 +93,7 @@ new class extends Component
 
                 <!-- Action buttons -->
                 <div class="flex justify-end pt-2">
-                    <flux:button type="submit" variant="filled" class="bg-indigo-600 hover:bg-indigo-700 text-white dark:bg-indigo-500 dark:hover:bg-indigo-600 border-none cursor-pointer px-4 py-2 text-xs font-semibold rounded-lg shadow-sm transition-all duration-150 transform active:scale-[0.98]">
+                    <flux:button type="submit" variant="filled" class="bg-indigo-600 hover:bg-indigo-700 text-white dark:bg-indigo-500 dark:hover:bg-indigo-600 border-none cursor-pointer px-4 py-2 text-xs font-semibold rounded-lg shadow-sm transition-all duration-200 active:scale-95">
                         Send Broadcast 📢
                     </flux:button>
                 </div>
