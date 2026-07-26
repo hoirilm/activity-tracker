@@ -1,15 +1,5 @@
 # ============================================
-# Stage 1: Build Frontend Assets (Vite)
-# ============================================
-FROM node:20-alpine AS build-frontend
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN npm run build
-
-# ============================================
-# Stage 2: Install PHP Composer Dependencies
+# Stage 1: Install PHP Composer Dependencies
 # ============================================
 FROM composer:2 AS build-backend
 WORKDIR /app
@@ -18,6 +8,18 @@ RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist --ignor
 
 COPY . .
 RUN composer dump-autoload --optimize --no-dev
+
+# ============================================
+# Stage 2: Build Frontend Assets (Vite)
+# ============================================
+FROM node:20-alpine AS build-frontend
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+# Copy vendor from backend stage so Tailwind v4 can scan Flux components
+COPY --from=build-backend /app/vendor ./vendor
+RUN npm run build
 
 # ============================================
 # Stage 3: Production Runtime (PHP 8.3 + Nginx)
