@@ -4,6 +4,32 @@ Proyek ini menggunakan [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v3.0.0] - 2026-07-26 🚀
+
+Versi ini berfokus pada penyelesaian masalah infrastruktur saat *deployment* ke *production* (Railway & Neon PostgreSQL), perombakan total pada desain Halaman Depan dengan gaya *Graphite Monochrome*, serta penambahan puluhan animasi interaktif yang membuat aplikasi terasa lebih "hidup". 
+
+**Perbedaan Utama dari v2.0.0:** 
+Jika v2.0.0 sebelumnya berfokus pada penambahan fitur internal (Notifikasi, Manajemen Anggota, *Broadcast*, Passkey), maka v3.0.0 difokuskan sepenuhnya pada **Keandalan Infrastruktur (*Reliability*)** dan **Estetika Visual Premium (*Aesthetics*)** yang meningkatkan nilai jual aplikasi secara drastis di mata pengguna baru.
+
+### 🛠️ Infrastruktur & Keandalan (*Infrastructure & Reliability*)
+- **Perbaikan Koneksi Neon DB**: Mengaktifkan konfigurasi `PDO::ATTR_EMULATE_PREPARES` pada koneksi PostgreSQL untuk mencegah *error* hilangnya Endpoint ID saat menggunakan *connection pooler* di lingkungan produksi.
+- **Optimasi *Build* Docker & Nginx**: 
+  - Mengubah struktur tahapan `Dockerfile` agar aset *frontend* dibangun setelah instalasi dependensi Composer (Vendor), memastikan semua kelas UI dari *Livewire/Flux* dikompilasi dengan sempurna ke dalam CSS.
+  - Memperbarui `nginx.conf` dengan inklusi `mime.types`, menghilangkan potensi masalah *rendering file* statis (CSS/JS) di *browser*.
+- **Konfigurasi *Proxy* Global (`TrustProxies`)**: Memperbarui *middleware* aplikasi untuk secara otomatis mempercayai *Load Balancer* agar seluruh URL dan muatan *asset* dipaksa menggunakan skema HTTPS yang aman tanpa *error* `Mixed Content`.
+
+### 🎨 Desain Premium (*Aesthetics*)
+- **Tema *Graphite Monochrome* (Zinc)**: Mengganti seluruh aksen warna (yang sebelumnya Oranye) ke warna *Zinc-700* (untuk mode terang) dan *Zinc-400* (untuk mode gelap). Warna abu-abu yang pekat dan elegan ini menciptakan kesan *SaaS* eksklusif (*Apple-like*).
+- **Konsistensi Gaya Visual**: Menyelaraskan seluruh palet warna (teks, *badge*, tombol, hingga efek kursor/seleksi) di Halaman Depan agar sama persis dan menyatu dengan *Dashboard* aplikasi utama.
+
+### ✨ Interaktivitas & Animasi Mikro (*Micro-animations*)
+- **Transisi *Scroll Reveal* Pintar**: Teks dan elemen di halaman depan kini tidak kaku, melainkan akan meluncur naik secara perlahan (fade-in & slide-up) saat pengguna menggulir halaman.
+- **Dashboard Melayang (*Floating Animation*)**: Gambar *Mockup Dashboard* kini seolah "bernapas" dengan efek melayang berkesinambungan. Elemen di dalamnya juga dirancang interaktif (membesar saat disorot kursor).
+- **Autentikasi yang Halus**: Halaman *Login* dan *Register* kini tidak muncul mendadak, melainkan menyambut pengguna dengan animasi meluncur naik yang sangat elegan.
+- **Responsivitas Komponen Penuh**: Memberikan reaksi interaktif (skala membesar/menyusut) pada kartu fitur, lingkaran indikator langkah, serta semua tombol utama saat diarahkan atau ditekan.
+
+---
+
 ## [v2.0.0] - 2026-07-23 🚀
 
 Versi ini merupakan pembaruan mayor yang menghadirkan dukungan multibahasa (Internationalization), sistem notifikasi bergaya macOS, panel manajemen anggota (Member Management), pusat siaran pengumuman (Broadcast Manager), integrasi autentikasi Passkey (WebAuthn), serta penyempurnaan UX form dan optimasi basis data.
