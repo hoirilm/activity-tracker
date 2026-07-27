@@ -24,10 +24,18 @@ class CreateNewUser implements CreatesNewUsers
             'password' => $this->passwordRules(),
         ])->validate();
 
-        return User::create([
+        $user = User::create([
             'name' => $input['name'],
             'email' => $input['email'],
             'password' => $input['password'],
         ]);
+
+        $user->notifications()->create([
+            'title' => '👋 Selamat Datang, ' . $user->name . '!',
+            'body' => 'Selamat datang di aplikasi kami! Kami senang Anda bergabung.',
+            'type' => 'success',
+        ]);
+
+        return $user;
     }
 }

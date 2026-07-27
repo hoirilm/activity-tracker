@@ -43,3 +43,18 @@ Schedule::call(function () {
         @unlink($filePath);
     }
 })->dailyAt('23:59');
+
+Schedule::call(function () {
+    $users = User::all();
+    foreach ($users as $user) {
+        $user->notifications()->create([
+            'title' => '🌞 Semangat Pagi!',
+            'body' => 'Selamat bekerja dan jangan lupa berdoa sebelum memulai aktivitas hari ini.',
+            'type' => 'info',
+        ]);
+    }
+})->dailyAt('07:00');
+
+Schedule::call(function () {
+    \App\Models\Notification::where('created_at', '<', now()->subDays(3))->delete();
+})->daily();
