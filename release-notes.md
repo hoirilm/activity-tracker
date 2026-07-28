@@ -4,6 +4,17 @@ Proyek ini menggunakan [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v3.2.0] - 2026-07-28 🚀
+
+Versi ini berfokus pada integrasi autentikasi pihak ketiga, peningkatan fungsionalitas manajemen aktivitas, dan optimasi *background job* di lingkungan produksi.
+
+### ✨ Fitur Baru & Pembaruan Utama
+- **Google Sign-In / SSO**: Mengintegrasikan Laravel Socialite untuk memungkinkan pendaftaran (*Sign Up*) dan akses masuk (*Log In*) instan menggunakan Akun Google, lengkap dengan penyesuaian tombol autentikasi di halaman masuk dan daftar.
+- **Pengeditan Detail Aktivitas**: Melengkapi fitur riwayat aktivitas; pengguna kini dapat mengubah nama/detail aktivitas secara bersamaan dengan waktu mulai dan selesainya pada jendela "Edit Activity".
+- **Optimasi Produksi (Railway/Docker)**: Menambahkan konfigurasi *Worker* pada *Supervisord* (`schedule:work`) agar tugas-tugas terjadwal (*Cron Jobs*) Laravel dapat berjalan otomatis di lingkungan *containerized* (seperti Railway).
+
+---
+
 ## [v3.1.0] - 2026-07-26 🚀
 
 Versi ini menghadirkan fitur *Onboarding Tour* interaktif untuk memandu pengguna baru, serta standardisasi infrastruktur pengiriman email (*password reset*).
