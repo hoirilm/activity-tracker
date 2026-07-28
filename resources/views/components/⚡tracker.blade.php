@@ -21,6 +21,7 @@ new class extends Component
     public $importFile;
     public $startDate;
     public $endDate;
+    public $searchQuery = '';
     
     public $editingActivityId = null;
     public $editDetail;
@@ -55,6 +56,10 @@ new class extends Component
         
         if ($this->endDate) {
             $query->whereDate('start_time', '<=', $this->endDate);
+        }
+
+        if (!empty($this->searchQuery)) {
+            $query->where('detail', 'ilike', '%' . $this->searchQuery . '%');
         }
 
         return $query->orderBy('start_time', 'desc')
@@ -267,11 +272,19 @@ new class extends Component
     <div class="flex flex-col gap-4 mt-2 transition-all duration-700 ease-out delay-300"
          :class="mounted ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'">
         <div class="flex flex-col xl:flex-row justify-between xl:items-center gap-4 mb-2">
-            <h3 class="text-sm font-semibold text-zinc-850 dark:text-zinc-150 flex items-center gap-2">
+            <h3 class="text-sm font-semibold text-zinc-850 dark:text-zinc-150 flex items-center gap-2 shrink-0">
                 <flux:icon name="clock" class="size-4.5 text-zinc-500" />
                 <span>History</span>
             </h3>
-            <div class="flex flex-col md:flex-row gap-3 items-start md:items-center">
+            
+            <div class="flex flex-col md:flex-row gap-3 items-start md:items-center w-full xl:w-auto justify-end">
+                <!-- Search Input -->
+                <div class="w-full md:w-48 xl:w-40">
+                    <flux:input wire:model.live.debounce.300ms="searchQuery" placeholder="Search activities..." icon="magnifying-glass" size="sm" />
+                </div>
+                
+                <div class="h-6 w-px bg-zinc-200 dark:bg-zinc-800 hidden md:block"></div>
+
                 <!-- Date Range Filter Popover -->
                 <div x-data="{ open: false }" class="relative" @click.outside="open = false">
                     <!-- Trigger Button -->
@@ -404,7 +417,7 @@ new class extends Component
                     <label class="relative flex items-center cursor-pointer bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold py-1.5 px-3 rounded-lg transition-colors border border-transparent shadow-xs">
                         <input type="file" wire:model="importFile" x-on:change="fileName = $event.target.files[0] ? $event.target.files[0].name : ''" class="hidden" required>
                         <flux:icon name="paper-clip" class="size-3.5 mr-1.5" />
-                        <span x-text="fileName ? (fileName.length > 12 ? fileName.substring(0, 12) + '...' : fileName) : 'Select File'"></span>
+                        <span x-text="fileName ? (fileName.length > 12 ? fileName.substring(0, 12) + '...' : fileName) : 'Import'"></span>
                     </label>
                     <flux:button type="submit" variant="primary" size="sm" x-show="fileName" x-transition class="bg-indigo-600 hover:bg-indigo-700 text-white dark:bg-indigo-500 dark:hover:bg-indigo-600 border-none cursor-pointer">
                         Import
