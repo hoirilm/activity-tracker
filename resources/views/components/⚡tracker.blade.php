@@ -23,6 +23,7 @@ new class extends Component
     public $endDate;
     
     public $editingActivityId = null;
+    public $editDetail;
     public $editStartTime;
     public $editEndTime;
     public $showEditModal = false;
@@ -130,15 +131,17 @@ new class extends Component
         $activity = auth()->user()->activities()->find($id);
         if ($activity) {
             $this->editingActivityId = $activity->id;
+            $this->editDetail = $activity->detail;
             $this->editStartTime = $activity->start_time->format('Y-m-d\TH:i');
             $this->editEndTime = $activity->end_time ? $activity->end_time->format('Y-m-d\TH:i') : null;
             $this->showEditModal = true;
         }
     }
 
-    public function updateActivityTime()
+    public function updateActivity()
     {
         $this->validate([
+            'editDetail' => 'required|string',
             'editStartTime' => 'required|date',
             'editEndTime' => 'required|date|after_or_equal:editStartTime',
         ]);
@@ -146,6 +149,7 @@ new class extends Component
         $activity = auth()->user()->activities()->find($this->editingActivityId);
         if ($activity) {
             $activity->update([
+                'detail' => $this->editDetail,
                 'start_time' => Carbon::parse($this->editStartTime),
                 'end_time' => Carbon::parse($this->editEndTime),
             ]);
@@ -453,7 +457,7 @@ new class extends Component
                                         <flux:dropdown>
                                             <flux:button variant="ghost" size="xs" icon="ellipsis-vertical" square class="cursor-pointer" title="Actions" />
                                             <flux:menu class="min-w-[8rem]">
-                                                <flux:menu.item wire:click="editActivity({{ $activity->id }})" icon="pencil" class="cursor-pointer">Edit Time</flux:menu.item>
+                                                <flux:menu.item wire:click="editActivity({{ $activity->id }})" icon="pencil" class="cursor-pointer">Edit</flux:menu.item>
                                                 <flux:modal.trigger name="delete-activity-{{ $activity->id }}">
                                                     <flux:menu.item icon="trash" variant="danger" class="cursor-pointer">Delete</flux:menu.item>
                                                 </flux:modal.trigger>
@@ -532,9 +536,14 @@ new class extends Component
                  x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                  class="bg-zinc-50 dark:bg-neutral-900 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-800 w-full max-w-sm overflow-hidden text-left relative">
                 <div class="p-6">
-                    <h3 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-4">Edit Activity Time</h3>
+                    <h3 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-4">Edit Activity</h3>
                     
                     <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Activity Name</label>
+                            <input type="text" wire:model="editDetail" class="w-full rounded-lg border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm sm:text-sm py-2 px-3 transition-colors">
+                            @error('editDetail') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                        </div>
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Start Time</label>
                             <input type="datetime-local" wire:model="editStartTime" class="w-full rounded-lg border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm sm:text-sm cursor-pointer py-2 px-3 transition-colors">
@@ -550,7 +559,7 @@ new class extends Component
                 
                 <div class="bg-neutral-50 dark:bg-neutral-900/50 px-6 py-4 flex justify-end gap-3 border-t border-neutral-200 dark:border-neutral-800">
                     <flux:button variant="subtle" wire:click="cancelEdit">Cancel</flux:button>
-                    <flux:button variant="primary" wire:click="updateActivityTime">Save Changes</flux:button>
+                    <flux:button variant="primary" wire:click="updateActivity">Save Changes</flux:button>
                 </div>
             </div>
         </div>
