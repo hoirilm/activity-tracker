@@ -39,6 +39,12 @@ class GoogleController extends Controller
                     'password' => Hash::make(Str::random(24)),
                     'email_verified_at' => now(),
                 ]);
+
+                $user->notifications()->create([
+                    'title' => '👋 Selamat Datang, ' . $user->name . '!',
+                    'body' => 'Selamat datang di aplikasi kami! Kami senang Anda bergabung.',
+                    'type' => 'success',
+                ]);
             }
 
             Auth::login($user);
