@@ -16,33 +16,7 @@ use Illuminate\Support\Facades\Schedule;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ActivitiesExport;
 
-Schedule::call(function () {
-    $today = Carbon::today();
-    
-    // Get all users who have activities today
-    $users = User::whereHas('activities', function ($query) use ($today) {
-        $query->whereDate('start_time', $today);
-    })->get();
 
-    foreach ($users as $user) {
-        $fileName = 'backup_activity_' . \Illuminate\Support\Str::slug($user->name, '_') . '_' . $today->format('Ymd') . '.xlsx';
-        $filePath = storage_path('app/temp/' . $fileName);
-        
-        // Ensure directory exists
-        if (!file_exists(storage_path('app/temp'))) {
-            mkdir(storage_path('app/temp'), 0777, true);
-        }
-
-        // Generate Excel and store locally
-        Excel::store(new ActivitiesExport($today, $today, $user->id), 'temp/' . $fileName);
-
-        // Send Email
-        Mail::to($user->email)->send(new DailyActivityReport($user->name, $filePath));
-        
-        // Optional: Delete the file after sending if you don't want to keep it
-        @unlink($filePath);
-    }
-})->dailyAt('23:59');
 
 Schedule::call(function () {
     $users = User::all();
