@@ -22,12 +22,12 @@ class Activity extends Model
         ];
     }
 
-    public function project()
+    public function project(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Project::class);
     }
 
-    public function category()
+    public function category(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Category::class);
     }
@@ -38,7 +38,7 @@ class Activity extends Model
             return null;
         }
 
-        $diff = $this->end_time->diff($this->start_time);
+        $diff = \Carbon\Carbon::parse($this->end_time)->diff($this->start_time);
 
         return sprintf('%02d:%02d:%02d', ($diff->days * 24) + $diff->h, $diff->i, $diff->s);
     }

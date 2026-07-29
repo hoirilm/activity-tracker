@@ -19,6 +19,7 @@ class GoogleController extends Controller
     public function callback()
     {
         try {
+            /** @var \Laravel\Socialite\Two\User $googleUser */
             $googleUser = Socialite::driver('google')->user();
 
             $user = User::where('google_id', $googleUser->id)->orWhere('email', $googleUser->email)->first();
