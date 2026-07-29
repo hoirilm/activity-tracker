@@ -96,21 +96,44 @@ new class extends Component
             <form wire:submit="broadcast" class="space-y-4 relative z-10">
                 <!-- Notification Type Selection -->
                 <div>
-                    <flux:select wire:model.live="type" label="Notification Priority / Type" placeholder="Select type..." required>
-                        <flux:select.option value="info">Info</flux:select.option>
-                        <flux:select.option value="success">Success</flux:select.option>
-                        <flux:select.option value="warning">Warning</flux:select.option>
-                    </flux:select>
+                    <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5">Notification Priority / Type</label>
+                    <div class="relative w-full">
+                        <select wire:model.live="type" required
+                                class="w-full h-10 pl-9 pr-8 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 shadow-2xs transition-all appearance-none cursor-pointer">
+                            <option value="info">Info</option>
+                            <option value="success">Success</option>
+                            <option value="warning">Warning</option>
+                        </select>
+                        <flux:icon name="bell-alert" class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-purple-500 pointer-events-none" />
+                        <flux:icon name="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 size-3.5 text-zinc-400 pointer-events-none" />
+                    </div>
                 </div>
 
                 <!-- Title -->
                 <div>
-                    <flux:input wire:model.live="title" label="Broadcast Title" placeholder="e.g. System Maintenance / New Release" required />
+                    <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5">Broadcast Title</label>
+                    <div class="relative w-full">
+                        <input type="text" 
+                               wire:model.live="title" 
+                               placeholder="e.g. System Maintenance / New Release" 
+                               required 
+                               autocomplete="off"
+                               class="w-full h-10 pl-9 pr-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 shadow-2xs transition-all">
+                        <flux:icon name="chat-bubble-left-ellipsis" class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-purple-500 pointer-events-none" />
+                    </div>
                 </div>
 
                 <!-- Body Message -->
                 <div>
-                    <flux:textarea wire:model.live="body" label="Announcement Details" placeholder="Type your broadcast message content here..." rows="5" required />
+                    <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5">Announcement Details</label>
+                    <div class="relative w-full">
+                        <textarea wire:model.live="body" 
+                                  placeholder="Type your broadcast message content here..." 
+                                  rows="4" 
+                                  required
+                                  class="w-full p-3 pl-9 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 shadow-2xs transition-all leading-relaxed"></textarea>
+                        <flux:icon name="document-text" class="absolute left-3 top-3.5 size-4 text-purple-500 pointer-events-none" />
+                    </div>
                 </div>
 
                 <!-- Action buttons -->

@@ -172,12 +172,20 @@ new class extends Component
                 <div class="absolute -right-6 -bottom-6 size-20 bg-indigo-500/10 rounded-full blur-xl pointer-events-none"></div>
 
                 <form wire:submit.prevent="addProject" class="space-y-3 relative z-10">
-                    <flux:input wire:model="projectName" placeholder="Project Name" icon="briefcase" required size="sm" autocomplete="off" />
+                    <div class="relative w-full">
+                        <input type="text" wire:model="projectName" placeholder="Project Name" required autocomplete="off"
+                               class="w-full h-10 pl-9 pr-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 shadow-2xs transition-all">
+                        <flux:icon name="briefcase" class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-indigo-500 pointer-events-none" />
+                    </div>
                     <div class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
                         <div class="flex-1 w-full">
-                            <flux:input wire:model="projectClient" placeholder="Client Name (Optional)" icon="user" size="sm" autocomplete="off" />
+                            <div class="relative w-full">
+                                <input type="text" wire:model="projectClient" placeholder="Client Name (Optional)" autocomplete="off"
+                                       class="w-full h-10 pl-9 pr-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 shadow-2xs transition-all">
+                                <flux:icon name="user" class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-indigo-500 pointer-events-none" />
+                            </div>
                         </div>
-                        <button type="submit" class="w-full sm:w-auto cursor-pointer bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white font-semibold rounded-xl px-4 py-2 text-xs active:scale-95 transition-all shadow-md shadow-indigo-500/20 flex items-center justify-center gap-1.5 shrink-0 border-none">
+                        <button type="submit" class="w-full sm:w-auto cursor-pointer bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white font-semibold rounded-xl px-4 py-2.5 text-xs active:scale-95 transition-all shadow-md shadow-indigo-500/20 flex items-center justify-center gap-1.5 shrink-0 border-none">
                             <flux:icon name="plus" class="size-3.5" />
                             <span>Add Project</span>
                         </button>
@@ -198,8 +206,16 @@ new class extends Component
                     <div wire:key="project-{{ $project->id }}" class="p-3.5 hover:bg-indigo-500/5 dark:hover:bg-indigo-500/10 transition-colors group relative">
                         @if($this->editingProjectId === $project->id)
                             <form wire:submit.prevent="updateProject" class="space-y-2.5 p-1">
-                                <flux:input wire:model="editingProjectName" placeholder="Project Name" required size="sm" autocomplete="off" />
-                                <flux:input wire:model="editingProjectClient" placeholder="Client Name (Optional)" size="sm" autocomplete="off" />
+                                <div class="relative w-full">
+                                    <input type="text" wire:model="editingProjectName" placeholder="Project Name" required autocomplete="off"
+                                           class="w-full h-9 pl-8 pr-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500">
+                                    <flux:icon name="briefcase" class="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-indigo-500 pointer-events-none" />
+                                </div>
+                                <div class="relative w-full">
+                                    <input type="text" wire:model="editingProjectClient" placeholder="Client Name (Optional)" autocomplete="off"
+                                           class="w-full h-9 pl-8 pr-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500">
+                                    <flux:icon name="user" class="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-indigo-500 pointer-events-none" />
+                                </div>
                                 <div class="flex gap-2 justify-end mt-1">
                                     <flux:button variant="ghost" wire:click="cancelEditProject" size="xs">Cancel</flux:button>
                                     <flux:button type="submit" size="xs" class="bg-indigo-600 hover:bg-indigo-700 text-white border-none cursor-pointer px-3">Save</flux:button>
@@ -290,9 +306,13 @@ new class extends Component
 
                 <form wire:submit.prevent="addCategory" class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center relative z-10">
                     <div class="flex-1 w-full">
-                        <flux:input wire:model="categoryName" placeholder="Category Name" icon="tag" required size="sm" autocomplete="off" />
+                        <div class="relative w-full">
+                            <input type="text" wire:model="categoryName" placeholder="Category Name" required autocomplete="off"
+                                   class="w-full h-10 pl-9 pr-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 shadow-2xs transition-all">
+                            <flux:icon name="tag" class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-purple-500 pointer-events-none" />
+                        </div>
                     </div>
-                    <button type="submit" class="w-full sm:w-auto cursor-pointer bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-semibold rounded-xl px-4 py-2 text-xs active:scale-95 transition-all shadow-md shadow-purple-500/20 flex items-center justify-center gap-1.5 shrink-0 border-none">
+                    <button type="submit" class="w-full sm:w-auto cursor-pointer bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-semibold rounded-xl px-4 py-2.5 text-xs active:scale-95 transition-all shadow-md shadow-purple-500/20 flex items-center justify-center gap-1.5 shrink-0 border-none">
                         <flux:icon name="plus" class="size-3.5" />
                         <span>Add Category</span>
                     </button>
@@ -312,7 +332,11 @@ new class extends Component
                     <div wire:key="category-{{ $category->id }}" class="p-3.5 hover:bg-purple-500/5 dark:hover:bg-purple-500/10 transition-colors group relative">
                         @if($this->editingCategoryId === $category->id)
                             <form wire:submit.prevent="updateCategory" class="space-y-2.5 p-1">
-                                <flux:input wire:model="editingCategoryName" placeholder="Category Name" required size="sm" autocomplete="off" />
+                                <div class="relative w-full">
+                                    <input type="text" wire:model="editingCategoryName" placeholder="Category Name" required autocomplete="off"
+                                           class="w-full h-9 pl-8 pr-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-purple-500">
+                                    <flux:icon name="tag" class="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-purple-500 pointer-events-none" />
+                                </div>
                                 <div class="flex gap-2 justify-end mt-1">
                                     <flux:button variant="ghost" wire:click="cancelEditCategory" size="xs">Cancel</flux:button>
                                     <flux:button type="submit" size="xs" class="bg-purple-600 hover:bg-purple-700 text-white border-none cursor-pointer px-3">Save</flux:button>

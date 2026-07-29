@@ -392,8 +392,13 @@ new class extends Component
             
             <div class="flex flex-col md:flex-row items-stretch md:items-center gap-2.5 w-full md:w-auto">
                 <!-- Search Input -->
-                <div class="w-full md:w-56 shrink-0">
-                    <flux:input wire:model.live.debounce.300ms="searchQuery" placeholder="Search activities..." icon="magnifying-glass" size="sm" class="!rounded-xl" />
+                <div class="relative w-full md:w-60 shrink-0">
+                    <input type="text" 
+                           wire:model.live.debounce.300ms="searchQuery" 
+                           placeholder="Search activities..." 
+                           autocomplete="off"
+                           class="w-full h-9 pl-9 pr-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 shadow-2xs transition-all">
+                    <flux:icon name="magnifying-glass" class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-indigo-500 pointer-events-none" />
                 </div>
                 
                 <!-- Action Buttons / Filter Bar -->
@@ -481,7 +486,7 @@ new class extends Component
                     <!-- Export Modal & Button -->
                     <div x-data="{ showExportModal: false, exportStart: '', exportEnd: '' }" class="m-0 flex items-center shrink-0">
                         <button type="button" @click="showExportModal = true" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 transition-colors shadow-2xs cursor-pointer">
-                            <flux:icon name="arrow-down-tray" class="size-3.5 text-zinc-400 dark:text-zinc-500" />
+                            <flux:icon name="arrow-up-tray" class="size-3.5 text-zinc-400 dark:text-zinc-500" />
                             <span>Export</span>
                         </button>
                         
@@ -528,7 +533,7 @@ new class extends Component
                     <form wire:submit.prevent="import" class="flex gap-2 items-center m-0 shrink-0" x-data="{ fileName: '' }">
                         <label class="relative flex items-center cursor-pointer bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs font-medium py-1.5 px-3 rounded-xl transition-colors border border-zinc-200 dark:border-zinc-800 shadow-2xs">
                             <input type="file" wire:model="importFile" x-on:change="fileName = $event.target.files[0] ? $event.target.files[0].name : ''" class="hidden" required>
-                            <flux:icon name="arrow-up-tray" class="size-3.5 mr-1.5 text-zinc-400 dark:text-zinc-500" />
+                            <flux:icon name="arrow-down-tray" class="size-3.5 mr-1.5 text-zinc-400 dark:text-zinc-500" />
                             <span x-text="fileName ? (fileName.length > 12 ? fileName.substring(0, 12) + '...' : fileName) : 'Import'"></span>
                         </label>
                         <button type="submit" x-show="fileName" x-transition class="bg-indigo-600 hover:bg-indigo-700 text-white dark:bg-indigo-500 text-xs font-medium px-3 py-1.5 rounded-xl border-none cursor-pointer">

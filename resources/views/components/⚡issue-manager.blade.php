@@ -103,8 +103,13 @@ new class extends Component
             </div>
             
             <!-- Search bar -->
-            <div class="flex-1 md:w-64 md:flex-none">
-                <flux:input wire:model.live.debounce.300ms="search" placeholder="Search ticket, title, user..." icon="magnifying-glass" size="sm" autocomplete="off" />
+            <div class="relative flex-1 md:w-60 md:flex-none">
+                <input type="text" 
+                       wire:model.live.debounce.300ms="search" 
+                       placeholder="Search ticket, title, user..." 
+                       autocomplete="off"
+                       class="w-full h-9 pl-9 pr-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 shadow-2xs transition-all">
+                <flux:icon name="magnifying-glass" class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-indigo-500 pointer-events-none" />
             </div>
         </div>
     </div>
