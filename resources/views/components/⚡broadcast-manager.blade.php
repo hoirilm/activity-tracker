@@ -43,37 +43,32 @@ new class extends Component
 
 <div class="flex h-full w-full flex-col gap-6 p-3 sm:p-4 text-neutral-900 dark:text-neutral-100 max-w-6xl mx-auto mt-2 sm:mt-4 pb-16" x-data="{ mounted: false }" x-init="setTimeout(() => mounted = true, 50)">
     <!-- Header -->
-    <div class="border-b border-zinc-200/80 dark:border-zinc-800/80 pb-4 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all duration-700 ease-out"
+    <div class="border-b border-zinc-200/80 dark:border-zinc-800/80 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all duration-700 ease-out"
          :class="mounted ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'">
         <div>
             <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-2.5">
-                <div class="size-8.5 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-500 shrink-0">
-                    <flux:icon name="megaphone" class="size-4.5" />
+                <div class="size-8.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0">
+                    <flux:icon name="megaphone" class="size-4.5 text-zinc-700 dark:text-zinc-300" />
                 </div>
                 <span>System Broadcast Studio</span>
             </h2>
-            <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1">Send real-time global notifications and announcements to all registered team members.</p>
+            <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1">Send global notification broadcasts and system announcements to all team members.</p>
         </div>
-
-        <div class="flex items-center gap-2">
-            <span class="text-[11px] font-mono font-bold px-3 py-1 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 flex items-center gap-1.5">
-                <span class="relative flex h-2 w-2">
-                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
-                  <span class="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span>
-                </span>
-                <span>Broadcasting to {{ \App\Models\User::count() }} Active Users</span>
+        <div class="flex items-center gap-2 self-start sm:self-auto">
+            <span class="text-[11px] font-mono font-semibold px-3 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700/60">
+                Admin Panel Only
             </span>
         </div>
     </div>
 
-    <!-- Alert success -->
+    <!-- Alert Status -->
     @if($successMessage)
-        <div x-data="{ show: true }" x-show="show" class="p-3.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-2xl border border-emerald-500/20 text-xs font-semibold flex items-center justify-between shadow-xs">
+        <div x-data="{ show: true }" x-show="show" class="p-3.5 bg-zinc-100 dark:bg-zinc-800/80 text-zinc-800 dark:text-zinc-200 rounded-2xl border border-zinc-200 dark:border-zinc-700 text-xs font-semibold flex items-center justify-between shadow-xs">
             <div class="flex items-center gap-2">
                 <flux:icon name="check-circle" class="size-4.5 text-emerald-500" />
                 <span>{{ $successMessage }}</span>
             </div>
-            <button @click="show = false" class="text-zinc-400 hover:text-zinc-200 font-semibold text-xs cursor-pointer">Dismiss</button>
+            <button @click="show = false" class="text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 font-semibold text-xs cursor-pointer">Dismiss</button>
         </div>
     @endif
 
@@ -82,13 +77,11 @@ new class extends Component
          :class="mounted ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'">
         
         <!-- Left Side: Form (Spans 2 columns) -->
-        <div class="lg:col-span-2 border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl p-5 sm:p-6 shadow-xs relative overflow-hidden group hover:border-purple-500/40 transition-all">
-            <!-- Background Ambient Glow -->
-            <div class="absolute -right-10 -bottom-10 size-32 bg-purple-500/10 rounded-full blur-2xl pointer-events-none"></div>
+        <div class="lg:col-span-2 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl p-5 sm:p-6 shadow-xs relative overflow-hidden group hover:border-zinc-400 dark:hover:border-zinc-700 transition-all">
 
             <h3 class="text-sm font-bold text-zinc-900 dark:text-zinc-100 mb-4 flex items-center gap-2 relative z-10">
-                <div class="size-7 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0">
-                    <flux:icon name="pencil-square" class="size-4" />
+                <div class="size-7 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0">
+                    <flux:icon name="pencil-square" class="size-4 text-zinc-700 dark:text-zinc-300" />
                 </div>
                 <span>Compose Global Announcement</span>
             </h3>
@@ -99,12 +92,12 @@ new class extends Component
                     <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5">Notification Priority / Type</label>
                     <div class="relative w-full">
                         <select wire:model.live="type" required
-                                class="w-full h-10 pl-9 pr-8 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 shadow-2xs transition-all appearance-none cursor-pointer">
+                                class="w-full h-10 pl-9 pr-8 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-zinc-600 focus:ring-2 focus:ring-zinc-600/20 shadow-2xs transition-all appearance-none cursor-pointer">
                             <option value="info">Info</option>
                             <option value="success">Success</option>
                             <option value="warning">Warning</option>
                         </select>
-                        <flux:icon name="bell-alert" class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-purple-500 pointer-events-none" />
+                        <flux:icon name="bell-alert" class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-zinc-400 pointer-events-none" />
                         <flux:icon name="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 size-3.5 text-zinc-400 pointer-events-none" />
                     </div>
                 </div>
@@ -118,8 +111,8 @@ new class extends Component
                                placeholder="e.g. System Maintenance / New Release" 
                                required 
                                autocomplete="off"
-                               class="w-full h-10 pl-9 pr-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 shadow-2xs transition-all">
-                        <flux:icon name="chat-bubble-left-ellipsis" class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-purple-500 pointer-events-none" />
+                               class="w-full h-10 pl-9 pr-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-zinc-600 focus:ring-2 focus:ring-zinc-600/20 shadow-2xs transition-all">
+                        <flux:icon name="chat-bubble-left-ellipsis" class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-zinc-400 pointer-events-none" />
                     </div>
                 </div>
 
@@ -131,15 +124,15 @@ new class extends Component
                                   placeholder="Type your broadcast message content here..." 
                                   rows="4" 
                                   required
-                                  class="w-full p-3 pl-9 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 shadow-2xs transition-all leading-relaxed"></textarea>
-                        <flux:icon name="document-text" class="absolute left-3 top-3.5 size-4 text-purple-500 pointer-events-none" />
+                                  class="w-full p-3 pl-9 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-zinc-600 focus:ring-2 focus:ring-zinc-600/20 shadow-2xs transition-all leading-relaxed"></textarea>
+                        <flux:icon name="document-text" class="absolute left-3 top-3.5 size-4 text-zinc-400 pointer-events-none" />
                     </div>
                 </div>
 
                 <!-- Action buttons -->
                 <div class="flex justify-end pt-3 border-t border-zinc-200/50 dark:border-zinc-800/50">
-                    <button type="submit" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold text-xs px-6 py-2.5 rounded-xl active:scale-95 transition-all shadow-md shadow-purple-500/20 flex items-center gap-2 border-none cursor-pointer">
-                        <flux:icon name="megaphone" class="size-4" />
+                    <button type="submit" class="bg-violet-600 hover:bg-violet-500 text-white font-semibold text-xs px-6 py-2.5 rounded-xl border border-violet-500 active:scale-95 transition-all shadow-xs shadow-violet-500/25 flex items-center gap-2 cursor-pointer">
+                        <flux:icon name="megaphone" class="size-4 text-white" />
                         <span>Send Broadcast Now</span>
                     </button>
                 </div>
@@ -147,63 +140,55 @@ new class extends Component
         </div>
 
         <!-- Right Side: Live macOS Preview -->
-        <div class="space-y-4">
+        <div class="space-y-4 flex flex-col">
             <h3 class="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                <div class="size-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
-                    <flux:icon name="eye" class="size-4" />
+                <div class="size-7 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0">
+                    <flux:icon name="eye" class="size-4 text-zinc-700 dark:text-zinc-300" />
                 </div>
                 <span>Live Card Preview</span>
             </h3>
             
-            <div class="border border-dashed border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl p-5 bg-white/40 dark:bg-zinc-950/40 backdrop-blur-xl flex items-center justify-center min-h-[240px]">
+            <div class="border border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 sm:p-5 bg-zinc-50/50 dark:bg-zinc-950/60 backdrop-blur-xl flex-1 flex flex-col justify-between gap-4">
                 <!-- macOS Style Glass Banner Card -->
-                <div class="w-full max-w-[300px] bg-white/90 dark:bg-zinc-900/90 border border-zinc-200/80 dark:border-zinc-800/80 backdrop-blur-2xl rounded-2xl p-4.5 shadow-xl transition-all duration-300 transform hover:scale-[1.02] relative overflow-hidden">
+                <div class="w-full bg-white/90 dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 backdrop-blur-2xl rounded-2xl p-5 shadow-xl transition-all duration-300 relative overflow-hidden flex flex-col gap-3">
                     
-                    <!-- Glow based on priority -->
-                    @if($type === 'success')
-                        <div class="absolute -right-6 -bottom-6 size-20 bg-emerald-500/10 rounded-full blur-xl pointer-events-none"></div>
-                    @elseif($type === 'warning')
-                        <div class="absolute -right-6 -bottom-6 size-20 bg-amber-500/10 rounded-full blur-xl pointer-events-none"></div>
-                    @else
-                        <div class="absolute -right-6 -bottom-6 size-20 bg-indigo-500/10 rounded-full blur-xl pointer-events-none"></div>
-                    @endif
-
                     <!-- Header -->
-                    <div class="flex items-center justify-between text-[10px] text-zinc-400 dark:text-zinc-500 mb-2.5 relative z-10">
-                        <div class="flex items-center gap-1.5">
-                            <div class="size-4.5 rounded-md bg-indigo-600 flex items-center justify-center text-white font-bold text-[9px] shadow-xs">
+                    <div class="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 relative z-10">
+                        <div class="flex items-center gap-2">
+                            <div class="size-5 rounded-md bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 flex items-center justify-center font-bold text-[10px] shadow-xs">
                                 K
                             </div>
-                            <span class="font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider text-[8px]">Klakoan</span>
+                            <span class="font-bold text-zinc-700 dark:text-zinc-200 uppercase tracking-wider text-[9px]">Klakoan Tracker</span>
                             <span>&bull;</span>
-                            <span>now</span>
+                            <span class="text-[10px]">Just now</span>
                         </div>
                         
                         <!-- Indicator Type Badge -->
-                        <div class="text-[8px] font-mono font-bold uppercase tracking-wider">
+                        <div class="text-[9px] font-mono font-semibold uppercase tracking-wider">
                             @if($type === 'success')
-                                <span class="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20">success</span>
+                                <span class="bg-emerald-50 dark:bg-zinc-800 text-emerald-600 dark:text-emerald-400 px-2.5 py-0.5 rounded-md border border-emerald-200 dark:border-zinc-700/60">success</span>
                             @elseif($type === 'warning')
-                                <span class="bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/20">warning</span>
+                                <span class="bg-amber-50 dark:bg-zinc-800 text-amber-600 dark:text-amber-400 px-2.5 py-0.5 rounded-md border border-amber-200 dark:border-zinc-700/60">warning</span>
                             @else
-                                <span class="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-full border border-indigo-500/20">info</span>
+                                <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-2.5 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60">info</span>
                             @endif
                         </div>
                     </div>
 
                     <!-- Title -->
-                    <h4 class="text-xs font-bold text-zinc-900 dark:text-zinc-100 mb-1.5 leading-snug relative z-10">
-                        📢 {{ $title ?: 'Judul Pengumuman...' }}
+                    <h4 class="text-sm font-bold text-zinc-900 dark:text-zinc-100 leading-snug relative z-10 flex items-center gap-1.5">
+                        <span>📢</span>
+                        <span>{{ $title ?: 'Judul Pengumuman...' }}</span>
                     </h4>
                     
                     <!-- Message Body -->
-                    <p class="text-[11px] leading-relaxed text-zinc-500 dark:text-zinc-400 whitespace-pre-wrap break-words relative z-10 bg-zinc-50/50 dark:bg-zinc-950/30 p-2.5 rounded-xl border border-zinc-200/40 dark:border-zinc-800/40">{{ trim($body) ?: 'Isi pesan pengumuman lengkap yang akan disiarkan ke semua pengguna terdaftar...' }}</p>
+                    <p class="text-xs leading-relaxed text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap break-words relative z-10 bg-zinc-50 dark:bg-zinc-950/60 p-3.5 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 min-h-[90px]">{{ trim($body) ?: 'Isi pesan pengumuman lengkap yang akan disiarkan ke semua pengguna terdaftar...' }}</p>
                 </div>
+                
+                <p class="text-[10px] text-zinc-500 dark:text-zinc-500 text-center leading-relaxed">
+                    Preview di atas mensimulasikan tampilan notifikasi real-time yang akan diterima pengguna di laci notifikasi.
+                </p>
             </div>
-            
-            <p class="text-[10px] text-zinc-400 dark:text-zinc-500 text-center leading-relaxed">
-                Preview di atas mensimulasikan tampilan notifikasi real-time yang akan diterima pengguna di laci notifikasi.
-            </p>
         </div>
 
     </div>

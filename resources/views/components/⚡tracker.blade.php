@@ -216,12 +216,12 @@ new class extends Component
 <div class="flex h-full w-full flex-col gap-5 md:gap-6 p-3 sm:p-4 text-neutral-900 dark:text-neutral-100 max-w-6xl mx-auto mt-0 md:mt-4 pb-32 md:pb-8" x-data="{ scrolled: false, mounted: false }" x-init="setTimeout(() => mounted = true, 50)" @scroll.window="scrolled = (window.pageYOffset > 300)">
     
     <!-- Header -->
-    <div class="border-b border-zinc-200/80 dark:border-zinc-800/80 pb-4 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all duration-700 ease-out"
+    <div class="border-b border-zinc-200/80 dark:border-zinc-800/80 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all duration-700 ease-out"
          :class="mounted ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'">
         <div>
             <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-2.5">
-                <div class="size-8.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-500 shrink-0">
-                    <flux:icon name="clock" class="size-4.5" />
+                <div class="size-8.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0">
+                    <flux:icon name="clock" class="size-4.5 text-zinc-700 dark:text-zinc-300" />
                 </div>
                 <span>Time Tracker Studio</span>
             </h2>
@@ -229,8 +229,8 @@ new class extends Component
         </div>
 
         <div class="flex items-center gap-2">
-            <span class="text-[11px] font-mono font-bold px-3 py-1 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 flex items-center gap-1.5">
-                <flux:icon name="bolt" class="size-3 text-indigo-500" />
+            <span class="text-[11px] font-mono font-semibold px-3 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700/60 flex items-center gap-1.5">
+                <flux:icon name="bolt" class="size-3 text-zinc-500 dark:text-zinc-400" />
                 <span>Live Activity Tracker</span>
             </span>
         </div>
@@ -248,12 +248,12 @@ new class extends Component
             <div class="flex items-center gap-2">
                 <div class="relative flex-1">
                     <input type="text" wire:model="detail" x-ref="detailInputMobile" placeholder="What are you working on?" required autocomplete="off"
-                           class="w-full h-10 pl-9 pr-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 shadow-2xs transition-all">
-                    <flux:icon name="play-circle" class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-indigo-500" />
+                           class="w-full h-10 pl-9 pr-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-zinc-600 focus:ring-2 focus:ring-zinc-600/20 shadow-2xs transition-all">
+                    <flux:icon name="play-circle" class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-zinc-400" />
                 </div>
                 <button type="submit" 
-                        class="h-10 px-3.5 flex items-center justify-center gap-1.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold text-xs rounded-xl shadow-md shadow-indigo-500/25 active:scale-95 transition-all duration-150 shrink-0">
-                    <flux:icon name="play" class="size-3.5 fill-current" />
+                        class="h-10 px-4 flex items-center justify-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl border border-indigo-500/80 active:scale-95 transition-all shrink-0 shadow-xs shadow-indigo-500/20">
+                    <flux:icon name="play" class="size-3.5 text-white" />
                     <span>Start</span>
                 </button>
             </div>
@@ -289,8 +289,8 @@ new class extends Component
                         wire:click="$toggle('is_parallel')" 
                         class="h-7 px-2.5 rounded-lg border text-[11px] font-medium flex items-center gap-1 transition-all duration-200 shrink-0 cursor-pointer active:scale-95 shadow-2xs"
                         :class="$wire.is_parallel 
-                            ? 'bg-indigo-50 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 border-indigo-300 dark:border-indigo-800 font-semibold' 
-                            : 'bg-white dark:bg-zinc-950 text-zinc-500 dark:text-zinc-400 border-zinc-200/80 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900'">
+                            ? 'bg-indigo-600 text-white border-indigo-600 font-semibold shadow-xs shadow-indigo-500/20' 
+                            : 'bg-white dark:bg-zinc-950 text-zinc-600 dark:text-zinc-400 border-zinc-200/80 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900'">
                     <flux:icon name="arrows-right-left" class="size-3" />
                     <span>Parallel</span>
                 </button>
@@ -301,7 +301,11 @@ new class extends Component
         <form wire:submit.prevent="startActivity" class="hidden md:block space-y-4 max-w-5xl mx-auto">
             <div class="flex flex-row gap-3 items-center">
                 <div class="flex-1 w-full">
-                    <flux:input wire:model="detail" x-ref="detailInput" placeholder="What are you working on?" required icon="play-circle" size="sm" autocomplete="off" class="!bg-white dark:!bg-zinc-950 !rounded-xl" />
+                    <div class="relative w-full">
+                        <input type="text" wire:model="detail" x-ref="detailInput" placeholder="What are you working on?" required autocomplete="off"
+                               class="w-full h-10 pl-9 pr-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 shadow-2xs transition-all">
+                        <flux:icon name="play-circle" class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-zinc-400 pointer-events-none" />
+                    </div>
                 </div>
                 <div class="w-48">
                     <flux:select wire:model="project_id" placeholder="Project" required size="sm" class="!bg-white dark:!bg-zinc-950 !rounded-xl">
@@ -318,34 +322,36 @@ new class extends Component
                     </flux:select>
                 </div>
                 <div>
-                    <button type="submit" class="w-auto cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white dark:bg-indigo-500 dark:hover:bg-indigo-600 border-none px-6 py-2 rounded-xl font-medium text-sm active:scale-95 transition-all duration-200 shadow-md shadow-indigo-500/20 flex items-center justify-center gap-2">
-                        <flux:icon name="play" class="size-4" />
+                    <button type="submit" class="w-auto cursor-pointer bg-indigo-600 hover:bg-indigo-500 text-white font-semibold border border-indigo-500/80 px-6 py-2 rounded-xl text-sm active:scale-95 transition-all shadow-xs shadow-indigo-500/20 flex items-center justify-center gap-2">
+                        <flux:icon name="play" class="size-4 text-white" />
                         <span>Start</span>
                     </button>
                 </div>
             </div>
             <div class="flex items-center justify-between mt-1">
                 <flux:checkbox wire:model="is_parallel" label="Parallel (allow running with other tasks)" />
-                <span class="text-[10px] text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 rounded-lg">Shortcuts: <strong>Ctrl + /</strong> to focus, <strong>Ctrl + Enter</strong> to Start</span>
+                <span class="text-[10px] text-zinc-500 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 rounded-lg">Shortcuts: <strong>Ctrl + /</strong> to focus, <strong>Ctrl + Enter</strong> to Start</span>
             </div>
         </form>
     </div>
 
-    <!-- Running Activities -->
+    <!-- Running Activities (Initial Layout with Modern Live Timer Motion Cues) -->
     @if($this->runningActivities->count() > 0)
     <div class="space-y-3 transition-all duration-700 ease-out delay-200"
          :class="mounted ? 'translate-x-0 opacity-100' : '-translate-x-8 opacity-0'"
          wire:transition.slide.up>
-        <h2 class="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-2 font-mono">
             <span class="relative flex h-2.5 w-2.5">
               <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
             </span>
-            <span>Active Tracking</span>
+            <span>CURRENTLY ACTIVE TRACKING</span>
         </h2>
+
         <div class="grid gap-3">
             @foreach($this->runningActivities as $running)
-                <div wire:key="running-{{ $running->id }}" class="group relative overflow-hidden rounded-2xl border border-emerald-500/20 dark:border-emerald-500/30 bg-emerald-50/60 dark:bg-emerald-950/20 p-4 md:p-5 shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-4 transition-all duration-300" 
+                <div wire:key="running-{{ $running->id }}" 
+                     class="group relative overflow-hidden rounded-2xl border border-emerald-500/30 bg-emerald-500/5 dark:bg-emerald-950/20 backdrop-blur-xl p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 transition-all duration-300" 
                      x-data="{ elapsed: '00:00:00', start: new Date('{{ $running->start_time->toISOString() }}').getTime() }"
                      x-init="setInterval(() => { 
                           let diff = Math.floor((new Date().getTime() - start) / 1000);
@@ -354,27 +360,39 @@ new class extends Component
                           let s = (diff % 60).toString().padStart(2, '0');
                           elapsed = `${h}:${m}:${s}`;
                       }, 1000)">
+                    
                     <div class="min-w-0 flex-1">
-                        <div class="font-semibold text-base md:text-lg text-zinc-900 dark:text-zinc-100 truncate">{{ $running->detail }}</div>
-                        <div class="text-xs text-zinc-500 dark:text-zinc-400 mt-1 flex items-center gap-2">
-                            <span class="inline-flex items-center gap-1 font-medium text-zinc-700 dark:text-zinc-300">
+                        <div class="font-bold text-base sm:text-lg text-zinc-900 dark:text-zinc-100 truncate">{{ $running->detail }}</div>
+                        <div class="text-xs text-neutral-500 dark:text-neutral-400 mt-1 flex flex-wrap items-center gap-2">
+                            <span class="inline-flex items-center gap-1.5 font-medium text-neutral-700 dark:text-neutral-300">
                                 <flux:icon name="folder" class="size-3.5 text-emerald-500 shrink-0" />
-                                {{ $running->project->name }}
+                                <span>{{ $running->project->name }}</span>
                             </span>
                             <span>&bull;</span>
                             <span>{{ $running->category->name }}</span>
                             @if($running->is_parallel) 
-                                <span class="bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full font-bold ml-1">Parallel</span> 
+                                <span class="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-md font-mono font-bold ml-1 border border-indigo-500/20">Parallel</span> 
                             @endif
                         </div>
                     </div>
-                    <div class="flex items-center justify-between md:justify-end gap-4 w-full md:w-auto pt-2 md:pt-0 border-t border-emerald-200/50 dark:border-emerald-900/40 md:border-transparent">
-                        <div class="font-mono text-2xl md:text-3xl text-emerald-600 dark:text-emerald-400 font-extrabold tracking-wider" x-text="elapsed"></div>
-                        <button type="button" wire:click="stopActivity({{ $running->id }})" class="cursor-pointer active:scale-95 transition-all duration-200 px-5 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold text-xs md:text-sm shadow-md shadow-red-600/20 flex items-center gap-1.5">
+
+                    <!-- Live Stopwatch Readout with Spinning Gear & Stop Button -->
+                    <div class="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto">
+                        <div class="flex items-center gap-2">
+                            <flux:icon name="clock" class="size-4 text-emerald-500 animate-spin" style="animation-duration: 3s;" />
+                            <span class="font-mono text-2xl sm:text-3xl text-emerald-600 dark:text-emerald-400 font-extrabold tracking-wider" x-text="elapsed"></span>
+                        </div>
+                        <button type="button" 
+                                wire:click="stopActivity({{ $running->id }})" 
+                                class="bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs sm:text-sm px-4 py-2 rounded-xl border border-rose-500/80 shadow-xs shadow-rose-600/20 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0" 
+                                title="Stop Activity">
                             <flux:icon name="stop" class="size-4 fill-current" />
                             <span>Stop</span>
                         </button>
                     </div>
+
+                    <!-- Bottom Live Pulse Line -->
+                    <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-emerald-500/60 to-transparent animate-pulse"></div>
                 </div>
             @endforeach
         </div>
@@ -397,12 +415,12 @@ new class extends Component
                            wire:model.live.debounce.300ms="searchQuery" 
                            placeholder="Search activities..." 
                            autocomplete="off"
-                           class="w-full h-9 pl-9 pr-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 shadow-2xs transition-all">
-                    <flux:icon name="magnifying-glass" class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-indigo-500 pointer-events-none" />
+                           class="w-full h-9 pl-9 pr-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-zinc-600 focus:ring-2 focus:ring-zinc-600/20 shadow-2xs transition-all">
+                    <flux:icon name="magnifying-glass" class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-zinc-400 pointer-events-none" />
                 </div>
                 
                 <!-- Action Buttons / Filter Bar -->
-                <div class="flex items-center gap-2 max-md:w-full max-md:overflow-x-auto max-md:py-1 shrink-0 hide-scrollbar" style="scrollbar-width: none;">
+                <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap shrink-0">
                     <!-- Date Range Filter Popover -->
                     <div x-data="{ open: false }" class="relative shrink-0" @click.outside="open = false">
                         <button type="button" @click="open = !open" 
@@ -438,7 +456,7 @@ new class extends Component
                              x-transition:leave="transition ease-in duration-100"
                              x-transition:leave-start="transform opacity-100 scale-100"
                              x-transition:leave-end="transform opacity-0 scale-95"
-                             class="absolute right-0 mt-2 z-50 w-64 origin-top-right rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 shadow-xl"
+                             class="absolute left-0 sm:left-auto sm:right-0 mt-2 z-50 w-64 origin-top-left sm:origin-top-right rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 shadow-xl"
                              style="display: none;">
                              
                              <div class="space-y-4">
@@ -471,11 +489,11 @@ new class extends Component
                                      <div class="space-y-2">
                                          <div class="flex items-center gap-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200/50 dark:border-zinc-800 rounded-lg px-2 py-0.5">
                                              <span class="text-[9px] text-zinc-400 font-bold uppercase w-8 shrink-0">Start</span>
-                                             <input type="date" wire:model.live="startDate" onclick="this.showPicker()" class="text-xs border-none bg-transparent focus:ring-0 p-1 text-zinc-700 dark:text-zinc-300 w-full cursor-pointer" title="Start Date">
+                                             <input type="date" wire:model.live="startDate" onclick="if ('showPicker' in HTMLInputElement.prototype) { try { this.showPicker(); } catch(e) {} }" class="text-xs border-none bg-transparent focus:ring-0 p-1 text-zinc-700 dark:text-zinc-300 w-full cursor-pointer" title="Start Date">
                                          </div>
                                          <div class="flex items-center gap-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200/50 dark:border-zinc-800 rounded-lg px-2 py-0.5">
                                              <span class="text-[9px] text-zinc-400 font-bold uppercase w-8 shrink-0">End</span>
-                                             <input type="date" wire:model.live="endDate" onclick="this.showPicker()" class="text-xs border-none bg-transparent focus:ring-0 p-1 text-zinc-700 dark:text-zinc-300 w-full cursor-pointer" title="End Date">
+                                             <input type="date" wire:model.live="endDate" onclick="if ('showPicker' in HTMLInputElement.prototype) { try { this.showPicker(); } catch(e) {} }" class="text-xs border-none bg-transparent focus:ring-0 p-1 text-zinc-700 dark:text-zinc-300 w-full cursor-pointer" title="End Date">
                                          </div>
                                      </div>
                                  </div>
@@ -512,11 +530,11 @@ new class extends Component
                                     <div class="space-y-4">
                                         <div>
                                             <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Start Date</label>
-                                            <input type="date" x-model="exportStart" onclick="this.showPicker()" class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:ring-indigo-500 focus:border-indigo-500 shadow-xs text-xs cursor-pointer py-2 px-3 transition-colors">
+                                            <input type="date" x-model="exportStart" onclick="if ('showPicker' in HTMLInputElement.prototype) { try { this.showPicker(); } catch(e) {} }" class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:ring-indigo-500 focus:border-indigo-500 shadow-xs text-xs cursor-pointer py-2 px-3 transition-colors">
                                         </div>
                                         <div>
                                             <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">End Date</label>
-                                            <input type="date" x-model="exportEnd" onclick="this.showPicker()" class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:ring-indigo-500 focus:border-indigo-500 shadow-xs text-xs cursor-pointer py-2 px-3 transition-colors">
+                                            <input type="date" x-model="exportEnd" onclick="if ('showPicker' in HTMLInputElement.prototype) { try { this.showPicker(); } catch(e) {} }" class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:ring-indigo-500 focus:border-indigo-500 shadow-xs text-xs cursor-pointer py-2 px-3 transition-colors">
                                         </div>
                                     </div>
                                 </div>
@@ -566,17 +584,17 @@ new class extends Component
                     <!-- Day Header -->
                     <div class="px-4 py-3 bg-zinc-100/70 dark:bg-zinc-950/70 border-b border-zinc-200/60 dark:border-zinc-800/60 flex items-center justify-between">
                         <div class="flex items-center gap-2">
-                            <div class="size-6 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-500 shrink-0">
-                                <flux:icon name="calendar-days" class="size-3.5" />
+                            <div class="size-6 rounded-lg bg-zinc-200 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0">
+                                <flux:icon name="calendar-days" class="size-3.5 text-zinc-700 dark:text-zinc-300" />
                             </div>
                             <span class="text-xs font-bold text-zinc-800 dark:text-zinc-200 uppercase tracking-wider">
                                 {{ Carbon::parse($date)->isToday() ? 'Today' : (Carbon::parse($date)->isYesterday() ? 'Yesterday' : Carbon::parse($date)->format('l, j F Y')) }}
                             </span>
-                            <span class="text-[10px] font-mono text-zinc-400 dark:text-zinc-500 hidden sm:inline">({{ Carbon::parse($date)->format('M d, Y') }})</span>
+                            <span class="text-[10px] font-mono text-zinc-500 dark:text-zinc-500 hidden sm:inline">({{ Carbon::parse($date)->format('M d, Y') }})</span>
                         </div>
                         <!-- Daily Total Duration -->
-                        <div class="font-mono text-xs font-extrabold text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20 flex items-center gap-1.5 shadow-xs">
-                            <span class="text-[10px] text-zinc-400 font-medium uppercase tracking-wider">Total:</span>
+                        <div class="font-mono text-xs font-extrabold text-zinc-900 dark:text-zinc-100 bg-zinc-200 dark:bg-zinc-800 px-3 py-1 rounded-xl border border-zinc-300 dark:border-zinc-700/60 flex items-center gap-1.5 shadow-2xs">
+                            <span class="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider">Total:</span>
                             <span>{{ $dayFormatted }}</span>
                         </div>
                     </div>
@@ -584,32 +602,32 @@ new class extends Component
                     <!-- Day Activities List -->
                     <div class="divide-y divide-zinc-200/40 dark:divide-zinc-800/40">
                         @foreach($dayActivities as $activity)
-                            <div wire:key="activity-{{ $activity->id }}" class="group px-4 py-3.5 hover:bg-zinc-50/80 dark:hover:bg-zinc-800/50 transition-colors flex items-center justify-between gap-3 relative overflow-hidden">
+                            <div wire:key="activity-{{ $activity->id }}" class="group px-4 py-3.5 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors flex items-center justify-between gap-3 relative overflow-hidden">
                                 
                                 <!-- Left Hover Indicator Bar -->
-                                <div class="absolute left-0 top-0 bottom-0 w-1 bg-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                <div class="absolute left-0 top-0 bottom-0 w-1 bg-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
                                 <!-- Left: Icon & Meta -->
                                 <div class="flex items-center gap-3.5 min-w-0 flex-1 pl-1">
-                                    <div class="size-9 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-500 shrink-0 group-hover:scale-105 transition-transform">
-                                        <flux:icon name="folder" class="size-4.5" />
+                                    <div class="size-9 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0 group-hover:scale-105 transition-transform">
+                                        <flux:icon name="folder" class="size-4.5 text-zinc-700 dark:text-zinc-300" />
                                     </div>
                                     <div class="min-w-0 flex-1">
-                                        <div class="font-bold text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 truncate group-hover:text-indigo-400 transition-colors">
+                                        <div class="font-bold text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 truncate group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-colors">
                                             {{ $activity->detail }}
                                         </div>
                                         <div class="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 flex flex-wrap items-center gap-2">
-                                            <span class="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[10px] font-bold px-2 py-0.5 rounded-md border border-indigo-500/20">
+                                            <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[10px] font-medium px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60">
                                                 {{ $activity->project->name }}
                                             </span>
-                                            <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 text-[10px] font-semibold px-2 py-0.5 rounded-md border border-zinc-200/50 dark:border-zinc-700/50">
+                                            <span class="bg-zinc-100/80 dark:bg-zinc-800/60 text-zinc-600 dark:text-zinc-400 text-[10px] font-medium px-2 py-0.5 rounded-md border border-zinc-200/80 dark:border-zinc-800">
                                                 {{ $activity->category->name }}
                                             </span>
-                                            <span class="font-mono text-[10px] text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-950 px-2 py-0.5 rounded-md border border-zinc-200/40 dark:border-zinc-800/40">
+                                            <span class="font-mono text-[10px] text-zinc-600 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-950 px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-800">
                                                 {{ $activity->start_time->format('H:i') }} &ndash; {{ $activity->end_time->format('H:i') }}
                                             </span>
                                             @if($activity->is_parallel) 
-                                                <span class="bg-purple-500/10 text-purple-600 dark:text-purple-400 text-[9px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border border-purple-500/20">Parallel</span>
+                                                <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[9px] font-mono font-medium uppercase tracking-wider px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60">Parallel</span>
                                             @endif
                                         </div>
                                     </div>
@@ -617,7 +635,7 @@ new class extends Component
 
                                 <!-- Right: Duration & Dropdown -->
                                 <div class="flex items-center gap-3 shrink-0">
-                                    <span class="font-mono text-xs sm:text-sm font-extrabold text-indigo-600 dark:text-indigo-400 tracking-tight">{{ $activity->duration }}</span>
+                                    <span class="font-mono text-xs sm:text-sm font-extrabold text-zinc-900 dark:text-zinc-100 tracking-tight">{{ $activity->duration }}</span>
                                     <flux:dropdown>
                                         <flux:button variant="ghost" size="xs" icon="ellipsis-vertical" square class="cursor-pointer size-8 text-zinc-400 hover:text-zinc-200 rounded-xl hover:bg-zinc-800/50" title="Actions" />
                                         <flux:menu class="min-w-[8rem]">
@@ -630,7 +648,7 @@ new class extends Component
                                 </div>
                             </div>
 
-                            <flux:modal name="delete-activity-{{ $activity->id }}" class="min-w-[22rem] backdrop:backdrop-blur-sm z-[200]">
+                            <flux:modal name="delete-activity-{{ $activity->id }}" class="w-[calc(100vw-2rem)] max-w-md backdrop:backdrop-blur-md z-[200]">
                                 <div class="space-y-6">
                                     <div>
                                         <flux:heading size="lg">Delete Activity?</flux:heading>
@@ -669,8 +687,8 @@ new class extends Component
         </div>
     </div>
 
-    <!-- Back to top button -->
-    <div class="fixed bottom-6 left-1/2 -translate-x-1/2 md:left-auto md:-translate-x-0 md:right-10 pointer-events-none z-50 md:bottom-10"
+    <!-- Back to top button (Centered & Higher above Tracker bar) -->
+    <div class="fixed bottom-32 sm:bottom-36 left-1/2 -translate-x-1/2 pointer-events-none z-50"
          x-cloak
          x-show="scrolled" 
          x-transition:enter="transition ease-out duration-300"

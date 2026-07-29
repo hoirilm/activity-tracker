@@ -265,8 +265,8 @@ new class extends Component
     <div class="border-b border-zinc-200/80 dark:border-zinc-800/80 pb-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
             <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-2.5">
-                <div class="size-8.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-500 shrink-0">
-                    <flux:icon name="chart-bar" class="size-4.5" />
+                <div class="size-8.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0">
+                    <flux:icon name="chart-bar" class="size-4.5 text-zinc-700 dark:text-zinc-300" />
                 </div>
                 <span>Dashboard Overview</span>
             </h2>
@@ -274,8 +274,8 @@ new class extends Component
         </div>
 
         <div class="flex items-center gap-2">
-            <span class="text-[11px] font-mono font-bold px-3 py-1 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 flex items-center gap-1.5">
-                <flux:icon name="sparkles" class="size-3 text-indigo-500" />
+            <span class="text-[11px] font-mono font-semibold px-3 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700/60 flex items-center gap-1.5">
+                <flux:icon name="sparkles" class="size-3 text-zinc-500 dark:text-zinc-400" />
                 <span>Live Analytics</span>
             </span>
         </div>
@@ -284,22 +284,20 @@ new class extends Component
     <!-- Summary Cards (3 Sejajar Grid) -->
     <div class="grid grid-cols-3 gap-2.5 sm:gap-5">
         <!-- Card 1: Today's Total -->
-        <div class="relative overflow-hidden bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl p-3.5 sm:p-5 shadow-xs flex flex-col justify-between group hover:border-indigo-500/50 transition-all duration-300">
-            <!-- Background Glow -->
-            <div class="absolute -right-6 -bottom-6 size-24 bg-indigo-500/10 rounded-full blur-xl pointer-events-none group-hover:bg-indigo-500/20 transition-all"></div>
-            
+        <div class="relative overflow-hidden bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-3.5 sm:p-5 shadow-xs flex flex-col justify-between group hover:border-zinc-400 dark:hover:border-zinc-700 transition-all duration-300">
+            <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-300/60 dark:via-zinc-600/40 to-transparent"></div>
             <div class="flex items-center justify-between mb-2 sm:mb-3">
-                <div class="size-8 sm:size-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-500 shrink-0 group-hover:scale-105 transition-transform">
-                    <flux:icon name="clock" class="size-4 sm:size-5" />
+                <div class="size-8 sm:size-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0 group-hover:scale-105 transition-transform">
+                    <flux:icon name="clock" class="size-4 sm:size-5 text-zinc-700 dark:text-zinc-300" />
                 </div>
-                <span class="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[8px] sm:text-[10px] font-mono font-bold px-1.5 sm:px-2 py-0.5 rounded-full border border-indigo-500/20">
+                <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-[8px] sm:text-[10px] font-mono font-medium px-1.5 sm:px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60">
                     Today
                 </span>
             </div>
 
             <div>
-                <div class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 truncate">Today's Total</div>
-                <div class="text-xl sm:text-3xl font-mono font-extrabold tracking-tight text-indigo-600 dark:text-indigo-400 mt-0.5 sm:mt-1 truncate">{{ $this->todayDuration }}</div>
+                <div class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 truncate">Today's Total</div>
+                <div class="text-xl sm:text-3xl font-mono font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100 mt-0.5 sm:mt-1 truncate">{{ $this->todayDuration }}</div>
                 <p class="text-[10px] sm:text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 hidden sm:block truncate">
                     Logged today
                 </p>
@@ -307,21 +305,19 @@ new class extends Component
         </div>
         
         <!-- Card 2: This Week -->
-        <div class="relative overflow-hidden bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl p-3.5 sm:p-5 shadow-xs flex flex-col justify-between group hover:border-purple-500/50 transition-all duration-300">
-            <!-- Background Glow -->
-            <div class="absolute -right-6 -bottom-6 size-24 bg-purple-500/10 rounded-full blur-xl pointer-events-none group-hover:bg-purple-500/20 transition-all"></div>
-
+        <div class="relative overflow-hidden bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-3.5 sm:p-5 shadow-xs flex flex-col justify-between group hover:border-zinc-400 dark:hover:border-zinc-700 transition-all duration-300">
+            <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-300/60 dark:via-zinc-600/40 to-transparent"></div>
             <div class="flex items-center justify-between mb-2 sm:mb-3">
-                <div class="size-8 sm:size-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-500 shrink-0 group-hover:scale-105 transition-transform">
-                    <flux:icon name="calendar-days" class="size-4 sm:size-5" />
+                <div class="size-8 sm:size-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0 group-hover:scale-105 transition-transform">
+                    <flux:icon name="calendar-days" class="size-4 sm:size-5 text-zinc-700 dark:text-zinc-300" />
                 </div>
-                <span class="bg-purple-500/10 text-purple-600 dark:text-purple-400 text-[8px] sm:text-[10px] font-mono font-bold px-1.5 sm:px-2 py-0.5 rounded-full border border-purple-500/20">
+                <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-[8px] sm:text-[10px] font-mono font-medium px-1.5 sm:px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60">
                     Week
                 </span>
             </div>
 
             <div>
-                <div class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 truncate">This Week</div>
+                <div class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 truncate">This Week</div>
                 <div class="text-xl sm:text-3xl font-mono font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100 mt-0.5 sm:mt-1 truncate">{{ $this->weekDuration }}</div>
                 <p class="text-[10px] sm:text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 hidden sm:block truncate">
                     Cumulative week
@@ -330,21 +326,19 @@ new class extends Component
         </div>
 
         <!-- Card 3: Active Projects -->
-        <div class="relative overflow-hidden bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl p-3.5 sm:p-5 shadow-xs flex flex-col justify-between group hover:border-emerald-500/50 transition-all duration-300">
-            <!-- Background Glow -->
-            <div class="absolute -right-6 -bottom-6 size-24 bg-emerald-500/10 rounded-full blur-xl pointer-events-none group-hover:bg-emerald-500/20 transition-all"></div>
-
+        <div class="relative overflow-hidden bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-3.5 sm:p-5 shadow-xs flex flex-col justify-between group hover:border-zinc-400 dark:hover:border-zinc-700 transition-all duration-300">
+            <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-300/60 dark:via-zinc-600/40 to-transparent"></div>
             <div class="flex items-center justify-between mb-2 sm:mb-3">
-                <div class="size-8 sm:size-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 shrink-0 group-hover:scale-105 transition-transform">
-                    <flux:icon name="briefcase" class="size-4 sm:size-5" />
+                <div class="size-8 sm:size-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0 group-hover:scale-105 transition-transform">
+                    <flux:icon name="briefcase" class="size-4 sm:size-5 text-zinc-700 dark:text-zinc-300" />
                 </div>
-                <span class="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[8px] sm:text-[10px] font-mono font-bold px-1.5 sm:px-2 py-0.5 rounded-full border border-emerald-500/20">
+                <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-[8px] sm:text-[10px] font-mono font-medium px-1.5 sm:px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60">
                     Active
                 </span>
             </div>
 
             <div>
-                <div class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 truncate">Projects</div>
+                <div class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 truncate">Projects</div>
                 <div class="text-xl sm:text-3xl font-mono font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100 mt-0.5 sm:mt-1 truncate">{{ $this->activeProjectsCount }}</div>
                 <p class="text-[10px] sm:text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 hidden sm:block truncate">
                     Logged projects
@@ -353,19 +347,21 @@ new class extends Component
         </div>
     </div>
 
-    <!-- Currently Working On -->
+    <!-- Currently Active Tracking (Initial Layout with Modern Live Timer Motion Cues) -->
     @if($this->runningActivities->count() > 0)
     <div class="mt-1">
-        <h2 class="text-xs font-bold uppercase tracking-wider text-emerald-500 mb-3 flex items-center gap-2">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-3 flex items-center gap-2 font-mono">
             <span class="relative flex h-2.5 w-2.5">
               <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
             </span>
-            <span>Currently Active Tracking</span>
+            <span>CURRENTLY ACTIVE TRACKING</span>
         </h2>
+
         <div class="grid gap-3">
             @foreach($this->runningActivities as $running)
-                <div wire:key="running-{{ $running->id }}" class="group relative overflow-hidden rounded-2xl border border-emerald-500/30 bg-emerald-500/5 dark:bg-emerald-950/20 backdrop-blur-xl p-4 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3" 
+                <div wire:key="running-{{ $running->id }}" 
+                     class="group relative overflow-hidden rounded-2xl border border-emerald-500/30 bg-emerald-500/5 dark:bg-emerald-950/20 backdrop-blur-xl p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 transition-all duration-300" 
                      x-data="{ elapsed: '00:00:00', start: new Date('{{ $running->start_time->toISOString() }}').getTime() }"
                      x-init="setInterval(() => { 
                           let diff = Math.floor((new Date().getTime() - start) / 1000);
@@ -374,20 +370,39 @@ new class extends Component
                           let s = (diff % 60).toString().padStart(2, '0');
                           elapsed = `${h}:${m}:${s}`;
                       }, 1000)">
-                    <div>
-                        <div class="font-semibold text-base text-zinc-900 dark:text-zinc-100">{{ $running->detail }}</div>
-                        <div class="text-xs text-neutral-500 dark:text-neutral-400 mt-1 flex items-center gap-1.5">
-                            <flux:icon name="folder" class="size-3.5 shrink-0 text-emerald-500" />
-                            <span><span class="font-semibold text-neutral-800 dark:text-neutral-200">{{ $running->project->name }}</span> &bull; {{ $running->category->name }}</span>
+                    
+                    <div class="min-w-0 flex-1">
+                        <div class="font-bold text-base sm:text-lg text-zinc-900 dark:text-zinc-100 truncate">{{ $running->detail }}</div>
+                        <div class="text-xs text-neutral-500 dark:text-neutral-400 mt-1 flex flex-wrap items-center gap-2">
+                            <span class="inline-flex items-center gap-1.5 font-medium text-neutral-700 dark:text-neutral-300">
+                                <flux:icon name="folder" class="size-3.5 text-emerald-500 shrink-0" />
+                                <span>{{ $running->project->name }}</span>
+                            </span>
+                            <span>&bull;</span>
+                            <span>{{ $running->category->name }}</span>
                             @if($running->is_parallel) 
-                                <span class="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full font-bold ml-2 border border-indigo-500/20">Parallel</span> 
+                                <span class="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-md font-mono font-bold ml-1 border border-indigo-500/20">Parallel</span> 
                             @endif
                         </div>
                     </div>
-                    <div class="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
-                        <div class="font-mono text-2xl text-emerald-600 dark:text-emerald-400 font-bold tracking-wider" x-text="elapsed"></div>
-                        <flux:button variant="danger" wire:click="stopActivity({{ $running->id }})" size="sm" class="cursor-pointer font-medium active:scale-95 transition-transform" title="Stop Activity">Stop</flux:button>
+
+                    <!-- Live Stopwatch Readout with Spinning Gear & Stop Button -->
+                    <div class="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto">
+                        <div class="flex items-center gap-2">
+                            <flux:icon name="clock" class="size-4 text-emerald-500 animate-spin" style="animation-duration: 3s;" />
+                            <span class="font-mono text-2xl sm:text-3xl text-emerald-600 dark:text-emerald-400 font-extrabold tracking-wider" x-text="elapsed"></span>
+                        </div>
+                        <button type="button" 
+                                wire:click="stopActivity({{ $running->id }})" 
+                                class="bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs sm:text-sm px-4 py-2 rounded-xl border border-rose-500/80 shadow-xs shadow-rose-600/20 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0" 
+                                title="Stop Activity">
+                            <flux:icon name="stop" class="size-4 fill-current" />
+                            <span>Stop</span>
+                        </button>
                     </div>
+
+                    <!-- Bottom Live Pulse Line -->
+                    <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-emerald-500/60 to-transparent animate-pulse"></div>
                 </div>
             @endforeach
         </div>
@@ -398,7 +413,7 @@ new class extends Component
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         <!-- Activity Chart -->
-        <div wire:ignore class="lg:col-span-2 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl p-5 shadow-xs relative overflow-hidden flex flex-col justify-between"
+        <div wire:ignore class="lg:col-span-2 bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-5 shadow-xs relative overflow-hidden flex flex-col justify-between group hover:border-zinc-400 dark:hover:border-zinc-700 transition-all duration-300"
              x-data="{
                  period: 'weekly',
                  isDark: document.documentElement.classList.contains('dark'),
@@ -415,11 +430,11 @@ new class extends Component
                      
                      const gradient = ctx.createLinearGradient(0, 0, 0, canvas.parentElement.offsetHeight || 300);
                      if (this.isDark) {
-                         gradient.addColorStop(0, 'rgba(99, 102, 241, 0.35)');
-                         gradient.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
+                         gradient.addColorStop(0, 'rgba(96, 165, 250, 0.25)');
+                         gradient.addColorStop(1, 'rgba(96, 165, 250, 0.0)');
                      } else {
-                         gradient.addColorStop(0, 'rgba(99, 102, 241, 0.18)');
-                         gradient.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
+                         gradient.addColorStop(0, 'rgba(59, 130, 246, 0.15)');
+                         gradient.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
                      }
 
                      const gridColor = this.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)';
@@ -432,17 +447,17 @@ new class extends Component
                              datasets: [{
                                  label: 'Hours Worked',
                                  data: data,
-                                 borderColor: '#6366f1',
+                                 borderColor: this.isDark ? '#60a5fa' : '#3b82f6',
                                  backgroundColor: gradient,
                                  borderWidth: 2.5,
                                  fill: true,
                                  tension: 0.4,
                                  pointBackgroundColor: this.isDark ? '#18181b' : '#ffffff',
-                                 pointBorderColor: '#6366f1',
+                                 pointBorderColor: this.isDark ? '#60a5fa' : '#3b82f6',
                                  pointBorderWidth: 2,
                                  pointRadius: 0,
                                  pointHoverRadius: 5,
-                                 pointHoverBackgroundColor: '#6366f1',
+                                 pointHoverBackgroundColor: this.isDark ? '#60a5fa' : '#3b82f6',
                                  pointHoverBorderColor: '#ffffff',
                                  pointHoverBorderWidth: 2,
                                  pointHitRadius: 10,
@@ -495,21 +510,24 @@ new class extends Component
              }"
               x-init="initChart(@js($this->chartStats['labels']), @js($this->chartStats['data']))"
               x-on:chart-updated.window="initChart($event.detail.stats.labels, $event.detail.stats.data)">
-            <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-4">
+            <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-300/60 dark:via-zinc-600/40 to-transparent"></div>
+            <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-4 relative z-10">
                 <h3 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                    <flux:icon name="chart-bar" class="size-4.5 text-indigo-500" />
+                    <div class="size-7 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0">
+                        <flux:icon name="chart-bar" class="size-4 text-zinc-700 dark:text-zinc-300" />
+                    </div>
                     <span>Activity Overview (Hours)</span>
                 </h3>
                 
-                <div class="flex bg-zinc-100 dark:bg-zinc-800/80 rounded-xl p-1 self-start sm:self-auto shrink-0 border border-zinc-200/50 dark:border-zinc-700/50">
+                <div class="flex bg-zinc-100 dark:bg-zinc-800/80 rounded-xl p-1 self-start sm:self-auto shrink-0 border border-zinc-200/80 dark:border-zinc-700/60">
                     <button type="button" @click="period = 'weekly'; $wire.set('chartPeriod', 'weekly')" 
-                            class="text-[10px] px-3 py-1.5 rounded-lg font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer"
-                            :class="period === 'weekly' ? 'bg-indigo-600 text-white shadow-xs' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200'">
+                            class="text-[10px] px-3 py-1.5 rounded-lg font-semibold uppercase tracking-wider transition-all duration-200 cursor-pointer"
+                            :class="period === 'weekly' ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-xs border border-zinc-200 dark:border-zinc-600' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'">
                         Weekly
                     </button>
                     <button type="button" @click="period = 'monthly'; $wire.set('chartPeriod', 'monthly')" 
-                            class="text-[10px] px-3 py-1.5 rounded-lg font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer"
-                            :class="period === 'monthly' ? 'bg-indigo-600 text-white shadow-xs' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200'">
+                            class="text-[10px] px-3 py-1.5 rounded-lg font-semibold uppercase tracking-wider transition-all duration-200 cursor-pointer"
+                            :class="period === 'monthly' ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-xs border border-zinc-200 dark:border-zinc-600' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'">
                         Monthly
                     </button>
                 </div>
@@ -522,51 +540,65 @@ new class extends Component
         </div>
 
         <!-- Project Allocation Breakdown -->
-        <div class="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl p-5 shadow-xs flex flex-col justify-between">
+        <div class="bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-5 shadow-xs flex flex-col justify-between relative overflow-hidden group hover:border-zinc-400 dark:hover:border-zinc-700 transition-all duration-300">
+            <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-300/60 dark:via-zinc-600/40 to-transparent"></div>
             <div>
-                <div class="flex items-center justify-between mb-4 shrink-0">
+                <div class="flex items-center justify-between mb-4 shrink-0 relative z-10">
                     <h3 class="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                        <flux:icon name="chart-pie" class="size-4.5 text-indigo-500" />
+                        <div class="size-7 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0">
+                            <flux:icon name="chart-pie" class="size-4 text-zinc-700 dark:text-zinc-300" />
+                        </div>
                         <span>Time Allocation</span>
                     </h3>
-                    <span class="text-[10px] font-mono font-bold text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-md">Weekly</span>
+                    <span class="text-[10px] font-mono font-medium text-zinc-600 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60">Weekly</span>
                 </div>
                 
                 @if($this->projectStats->count() > 0)
-                    <div class="space-y-4 max-h-[220px] overflow-y-auto pr-1.5 custom-scrollbar">
+                    <div class="space-y-4 max-h-[220px] overflow-y-auto pr-1.5 custom-scrollbar relative z-10">
                         @php
-                            $colors = ['indigo', 'purple', 'emerald', 'amber', 'sky'];
+                            $palette = [
+                                ['bar' => 'bg-indigo-500', 'text' => 'text-indigo-600 dark:text-indigo-400', 'border' => 'border-indigo-500/30'],
+                                ['bar' => 'bg-purple-500', 'text' => 'text-purple-600 dark:text-purple-400', 'border' => 'border-purple-500/30'],
+                                ['bar' => 'bg-emerald-500', 'text' => 'text-emerald-600 dark:text-emerald-400', 'border' => 'border-emerald-500/30'],
+                                ['bar' => 'bg-amber-500', 'text' => 'text-amber-600 dark:text-amber-400', 'border' => 'border-amber-500/30'],
+                                ['bar' => 'bg-sky-500', 'text' => 'text-sky-600 dark:text-sky-400', 'border' => 'border-sky-500/30'],
+                                ['bar' => 'bg-rose-500', 'text' => 'text-rose-600 dark:text-rose-400', 'border' => 'border-rose-500/30'],
+                            ];
                         @endphp
                         @foreach($this->projectStats as $index => $stat)
                             @php
-                                $color = $colors[$index % count($colors)];
+                                $theme = $palette[$index % count($palette)];
                             @endphp
                             <div x-data="{ open: false }" class="space-y-2">
                                 <button type="button" @click="open = !open" class="w-full text-left focus:outline-none group cursor-pointer block">
                                     <div class="flex items-center justify-between text-xs mb-1.5">
-                                        <div class="flex items-center gap-1.5 font-semibold text-zinc-800 dark:text-zinc-200 group-hover:text-indigo-400 transition-colors">
+                                        <div class="flex items-center gap-1.5 font-semibold text-zinc-800 dark:text-zinc-200 group-hover:text-zinc-900 dark:group-hover:text-zinc-100 transition-colors">
                                             <flux:icon name="chevron-right" class="size-3.5 text-zinc-400 transition-transform duration-200" ::class="open && 'rotate-90'" />
+                                            <span class="size-2 rounded-full {{ $theme['bar'] }} shrink-0"></span>
                                             <span>{{ $stat['name'] }}</span>
                                         </div>
-                                        <span class="text-zinc-500 dark:text-zinc-400 font-mono text-[11px] group-hover:text-zinc-300 transition-colors">{{ $stat['duration'] }} <span class="font-bold text-indigo-400">({{ $stat['percentage'] }}%)</span></span>
+                                        <span class="text-zinc-500 dark:text-zinc-400 font-mono text-[11px] group-hover:text-zinc-800 dark:group-hover:text-zinc-300 transition-colors">{{ $stat['duration'] }} <span class="font-bold {{ $theme['text'] }}">({{ $stat['percentage'] }}%)</span></span>
                                     </div>
-                                    <div class="w-full bg-zinc-100 dark:bg-zinc-800/80 rounded-full h-2 overflow-hidden p-0.5 border border-zinc-200/50 dark:border-zinc-700/50">
-                                        <div class="bg-gradient-to-r from-indigo-500 to-purple-500 h-1.5 rounded-full transition-all duration-500" style="width: {{ $stat['percentage'] }}%"></div>
+                                    <div class="w-full bg-zinc-100 dark:bg-zinc-800 rounded-full h-2 overflow-hidden p-0.5 border border-zinc-200/50 dark:border-zinc-700/50">
+                                        <div class="{{ $theme['bar'] }} h-1.5 rounded-full transition-all duration-500 shadow-2xs" style="width: {{ $stat['percentage'] }}%"></div>
                                     </div>
                                 </button>
 
                                 <div x-show="open" 
                                      x-collapse
-                                     class="pl-4 pr-1 space-y-2 border-l-2 border-indigo-500/20 ml-2 mt-2" 
+                                     class="pl-4 pr-1 space-y-2 border-l-2 border-emerald-500/30 ml-2 mt-2" 
                                      style="display: none;">
                                      @foreach($stat['categories'] as $cat)
                                          <div class="space-y-1">
                                              <div class="flex justify-between text-[10px]">
-                                                 <span class="text-zinc-600 dark:text-zinc-400 font-medium">{{ $cat['name'] }}</span>
-                                                 <span class="text-zinc-500 dark:text-zinc-400 font-mono">{{ $cat['duration'] }} ({{ $cat['percentage'] }}%)</span>
+                                                 <span class="text-zinc-500 dark:text-zinc-400 font-medium flex items-center gap-1">
+                                                     <span class="size-1.5 rounded-full bg-emerald-500 inline-block"></span>
+                                                     <span>{{ $cat['name'] }}</span>
+                                                 </span>
+                                                 <span class="text-zinc-500 dark:text-zinc-400 font-mono">{{ $cat['duration'] }} <span class="font-semibold text-emerald-600 dark:text-emerald-400">({{ $cat['percentage'] }}%)</span></span>
                                              </div>
-                                             <div class="w-full bg-zinc-100 dark:bg-zinc-800/80 rounded-full h-1 overflow-hidden">
-                                                 <div class="bg-emerald-400 h-1 rounded-full" style="width: {{ $cat['percentage'] }}%"></div>
+                                             <div class="w-full bg-zinc-100 dark:bg-zinc-800 rounded-full h-1 overflow-hidden">
+                                                 <div class="bg-emerald-500/80 h-1 rounded-full" style="width: {{ $cat['percentage'] }}%"></div>
                                              </div>
                                          </div>
                                      @endforeach
@@ -575,8 +607,8 @@ new class extends Component
                         @endforeach
                     </div>
                 @else
-                    <div class="flex-1 flex flex-col items-center justify-center text-center text-neutral-500 dark:text-neutral-400 space-y-2.5 py-8 border border-dashed border-zinc-200/80 dark:border-zinc-800/80 rounded-xl bg-zinc-50/50 dark:bg-zinc-950/30">
-                        <div class="size-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-500">
+                    <div class="flex-1 flex flex-col items-center justify-center text-center text-neutral-500 dark:text-neutral-400 space-y-2.5 py-8 border border-dashed border-zinc-200/80 dark:border-zinc-800 rounded-xl bg-zinc-50/50 dark:bg-zinc-950/30 relative z-10">
+                        <div class="size-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-500 dark:text-zinc-400">
                             <flux:icon name="chart-pie" class="size-5" />
                         </div>
                         <p class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">No Time Allocated Yet</p>
@@ -586,9 +618,9 @@ new class extends Component
             </div>
 
             <!-- Footer micro-hint -->
-            <div class="mt-4 pt-3 border-t border-zinc-200/50 dark:border-zinc-800/50 text-[10px] text-zinc-400 dark:text-zinc-500 flex items-center justify-between">
+            <div class="mt-4 pt-3 border-t border-zinc-200/50 dark:border-zinc-800/50 text-[10px] text-zinc-500 dark:text-zinc-400 flex items-center justify-between relative z-10">
                 <span>Updated in real-time</span>
-                <span class="font-bold text-indigo-500">{{ $this->projectStats->count() }} Projects</span>
+                <span class="font-semibold text-zinc-700 dark:text-zinc-300">{{ $this->projectStats->count() }} Projects</span>
             </div>
         </div>
     </div>
@@ -597,38 +629,41 @@ new class extends Component
     <div class="flex flex-col gap-3 mt-2">
         <div class="flex items-center justify-between">
             <h3 class="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                <flux:icon name="clock" class="size-4.5 text-indigo-500" />
+                <div class="size-7 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0">
+                    <flux:icon name="clock" class="size-4 text-zinc-700 dark:text-zinc-300" />
+                </div>
                 <span>Recent History Log</span>
             </h3>
-            <flux:button variant="subtle" size="xs" href="{{ route('tracker') }}" wire:navigate class="cursor-pointer font-semibold text-indigo-500 hover:text-indigo-400 active:scale-95 transition-transform">
+            <flux:button variant="subtle" size="xs" href="{{ route('tracker') }}" wire:navigate class="cursor-pointer font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 active:scale-95 transition-transform">
                 View All Tracker &rarr;
             </flux:button>
         </div>
         
-        <div class="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl overflow-hidden shadow-xs divide-y divide-zinc-200/50 dark:divide-zinc-800/50">
+        <div class="bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-xs divide-y divide-zinc-200/50 dark:divide-zinc-800/50 relative group hover:border-zinc-400 dark:hover:border-zinc-700 transition-all duration-300">
+            <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-300/60 dark:via-zinc-600/40 to-transparent"></div>
             @forelse($this->recentActivities as $activity)
-                <div class="px-4 py-3.5 hover:bg-indigo-500/5 dark:hover:bg-indigo-500/10 transition-colors flex items-center justify-between gap-3 group relative">
+                <div class="px-4 py-3.5 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors flex items-center justify-between gap-3 group/row relative z-10">
                     <!-- Left active hover indicator line -->
-                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-zinc-400 opacity-0 group-hover/row:opacity-100 transition-opacity"></div>
                     
                     <div class="flex items-center gap-3.5 min-w-0">
-                        <div class="size-9 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-500 shrink-0 group-hover:scale-105 transition-transform">
-                            <flux:icon name="folder" class="size-4" />
+                        <div class="size-9 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0 group-hover/row:scale-105 transition-transform">
+                            <flux:icon name="folder" class="size-4 text-zinc-700 dark:text-zinc-300" />
                         </div>
                         <div class="min-w-0">
-                            <div class="font-bold text-sm text-zinc-900 dark:text-zinc-100 truncate group-hover:text-indigo-400 transition-colors">{{ $activity->detail }}</div>
+                            <div class="font-bold text-sm text-zinc-900 dark:text-zinc-100 truncate group-hover/row:text-zinc-700 dark:group-hover/row:text-zinc-300 transition-colors">{{ $activity->detail }}</div>
                             <div class="text-[11px] truncate flex items-center gap-1.5 mt-1">
-                                <span class="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[10px] font-bold px-2 py-0.5 rounded-md border border-indigo-500/20">
+                                <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[10px] font-medium px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60">
                                     {{ $activity->project->name }}
                                 </span>
-                                <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-[10px] font-medium px-2 py-0.5 rounded-md border border-zinc-200/50 dark:border-zinc-700/50">
+                                <span class="bg-zinc-100/80 dark:bg-zinc-800/60 text-zinc-600 dark:text-zinc-400 text-[10px] font-medium px-2 py-0.5 rounded-md border border-zinc-200/80 dark:border-zinc-800">
                                     {{ $activity->category->name }}
                                 </span>
                             </div>
                         </div>
                     </div>
                     <div class="shrink-0 text-right">
-                        <div class="font-mono text-sm font-extrabold text-indigo-600 dark:text-indigo-400 tracking-tight">{{ $activity->duration }}</div>
+                        <div class="font-mono text-sm font-extrabold text-zinc-900 dark:text-zinc-100 tracking-tight">{{ $activity->duration }}</div>
                         <div class="text-[10px] font-medium text-zinc-400 dark:text-zinc-500 mt-0.5">
                             {{ Carbon::parse($activity->start_time)->isToday() ? 'Today' : Carbon::parse($activity->start_time)->format('M d') }}, {{ $activity->start_time->format('H:i') }}
                         </div>

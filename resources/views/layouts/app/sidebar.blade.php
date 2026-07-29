@@ -79,9 +79,9 @@
         </flux:sidebar>
 
         <!-- Mobile Top Bar (Clean & Compact) -->
-        <header class="lg:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-3 bg-zinc-900/90 backdrop-blur-xl border-b border-zinc-800">
+        <header class="lg:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-3 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border-b border-zinc-200/80 dark:border-zinc-800">
             <div class="flex items-center gap-3">
-                <button @click="mobileNavOpen = true" type="button" class="p-2 rounded-xl text-zinc-300 hover:text-white hover:bg-zinc-800 active:scale-95 transition-all cursor-pointer">
+                <button @click="mobileNavOpen = true" type="button" class="p-2 rounded-xl text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 active:scale-95 transition-all cursor-pointer">
                     <flux:icon name="bars-2" class="size-6" />
                 </button>
                 <x-app-logo href="{{ route('dashboard') }}" wire:navigate />
@@ -108,53 +108,53 @@
              x-transition:leave="transition ease-in duration-200 transform"
              x-transition:leave-start="translate-x-0"
              x-transition:leave-end="-translate-x-full"
-             class="fixed inset-y-0 left-0 w-72 bg-zinc-900/95 dark:bg-zinc-950/95 backdrop-blur-2xl border-r border-zinc-800/80 shadow-2xl z-[999] lg:hidden flex flex-col justify-between p-4 overflow-y-auto"
+             class="fixed inset-y-0 left-0 w-72 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-2xl border-r border-zinc-200/80 dark:border-zinc-800/80 shadow-2xl z-[999] lg:hidden flex flex-col justify-between p-4 overflow-y-auto"
              style="display: none;">
 
             <div class="space-y-6">
                 <!-- Drawer Header -->
-                <div class="flex items-center justify-between pb-3 border-b border-zinc-800/80">
+                <div class="flex items-center justify-between pb-3 border-b border-zinc-200/80 dark:border-zinc-800/80">
                     <x-app-logo href="{{ route('dashboard') }}" wire:navigate />
-                    <button @click="mobileNavOpen = false" type="button" class="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer">
+                    <button @click="mobileNavOpen = false" type="button" class="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer">
                         <flux:icon name="x-mark" class="size-5" />
                     </button>
                 </div>
 
                 <!-- Navigation Links -->
                 <nav class="space-y-1">
-                    <a href="{{ route('dashboard') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('dashboard') ? 'bg-indigo-600/90 text-white font-semibold shadow-sm' : 'text-zinc-300 hover:bg-zinc-800/70 hover:text-white' }}">
+                    <a href="{{ route('dashboard') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('dashboard') ? 'bg-indigo-600 text-white font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/70 hover:text-zinc-900 dark:hover:text-white' }}">
                         <flux:icon name="home" class="size-5" />
                         <span>{{ __('Dashboard') }}</span>
                     </a>
 
-                    <a href="{{ route('tracker') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('tracker') ? 'bg-indigo-600/90 text-white font-semibold shadow-sm' : 'text-zinc-300 hover:bg-zinc-800/70 hover:text-white' }}">
+                    <a href="{{ route('tracker') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('tracker') ? 'bg-indigo-600 text-white font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/70 hover:text-zinc-900 dark:hover:text-white' }}">
                         <flux:icon name="clock" class="size-5" />
                         <span>{{ __('Tracker') }}</span>
                     </a>
 
-                    <a href="{{ route('manage') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('manage') ? 'bg-indigo-600/90 text-white font-semibold shadow-sm' : 'text-zinc-300 hover:bg-zinc-800/70 hover:text-white' }}">
+                    <a href="{{ route('manage') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('manage') ? 'bg-indigo-600 text-white font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/70 hover:text-zinc-900 dark:hover:text-white' }}">
                         <flux:icon name="cog-8-tooth" class="size-5" />
                         <span>{{ __('Manage') }}</span>
                     </a>
 
                     @if(auth()->check() && auth()->user()->is_admin)
                         @php $openAdminIssues = App\Models\Issue::where('status', 'open')->count(); @endphp
-                        <a href="{{ route('issues') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('issues') ? 'bg-indigo-600/90 text-white font-semibold shadow-sm' : 'text-zinc-300 hover:bg-zinc-800/70 hover:text-white' }}">
+                        <a href="{{ route('issues') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('issues') ? 'bg-indigo-600 text-white font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/70 hover:text-zinc-900 dark:hover:text-white' }}">
                             <div class="flex items-center gap-3">
                                 <flux:icon name="flag" class="size-5" />
                                 <span>{{ __('Issues') }}</span>
                             </div>
                             @if($openAdminIssues)
-                                <span class="px-2 py-0.5 text-xs font-bold bg-red-500/20 text-red-400 rounded-full border border-red-500/30">{{ $openAdminIssues }}</span>
+                                <span class="px-2 py-0.5 text-xs font-bold bg-red-500/20 text-red-600 dark:text-red-400 rounded-full border border-red-500/30">{{ $openAdminIssues }}</span>
                             @endif
                         </a>
 
-                        <a href="{{ route('members') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('members') ? 'bg-indigo-600/90 text-white font-semibold shadow-sm' : 'text-zinc-300 hover:bg-zinc-800/70 hover:text-white' }}">
+                        <a href="{{ route('members') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('members') ? 'bg-indigo-600 text-white font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/70 hover:text-zinc-900 dark:hover:text-white' }}">
                             <flux:icon name="users" class="size-5" />
                             <span>{{ __('Members') }}</span>
                         </a>
 
-                        <a href="{{ route('broadcast') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('broadcast') ? 'bg-indigo-600/90 text-white font-semibold shadow-sm' : 'text-zinc-300 hover:bg-zinc-800/70 hover:text-white' }}">
+                        <a href="{{ route('broadcast') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('broadcast') ? 'bg-indigo-600 text-white font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/70 hover:text-zinc-900 dark:hover:text-white' }}">
                             <flux:icon name="megaphone" class="size-5" />
                             <span>{{ __('Broadcast') }}</span>
                         </a>
@@ -162,17 +162,17 @@
 
                     <div class="pt-4 pb-1 text-[10px] font-semibold text-zinc-500 uppercase tracking-wider px-3.5">Links & Docs</div>
 
-                    <a href="https://github.com/hoirilm/activity-tracker" target="_blank" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-sm font-medium text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200 transition-colors">
+                    <a href="https://github.com/hoirilm/activity-tracker" target="_blank" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
                         <flux:icon name="folder-git-2" class="size-5" />
                         <span>{{ __('Repository') }}</span>
                     </a>
 
-                    <a href="https://laravel.com/docs/starter-kits#livewire" target="_blank" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-sm font-medium text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200 transition-colors">
+                    <a href="https://laravel.com/docs/starter-kits#livewire" target="_blank" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
                         <flux:icon name="book-open-text" class="size-5" />
                         <span>{{ __('Documentation') }}</span>
                     </a>
 
-                    <a href="https://openproject.pactindo.com/weeklog/" target="_blank" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-sm font-medium text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200 transition-colors">
+                    <a href="https://openproject.pactindo.com/weeklog/" target="_blank" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
                         <flux:icon name="calendar-days" class="size-5" />
                         <span>{{ __('Weeklog Primavisi') }}</span>
                     </a>
@@ -195,7 +195,7 @@
         
         <!-- Floating Action Menu Top Right (Help, FAQ & Bug Report) -->
         @if(auth()->check())
-        <div x-data="{ open: false }" @click.outside="open = false" class="fixed top-3.5 right-16 sm:top-4 sm:right-[4.25rem] z-40">
+        <div x-data="{ open: false }" @click.outside="open = false" class="fixed top-3.5 right-[3.4rem] sm:top-4 sm:right-[3.65rem] z-40">
             <!-- Menu Options (Floats below the button) -->
             <div x-show="open" 
                  x-transition:enter="transition ease-out duration-150"
@@ -204,32 +204,32 @@
                  x-transition:leave="transition ease-in duration-100"
                  x-transition:leave-start="opacity-100 translate-y-0 scale-100"
                  x-transition:leave-end="opacity-0 -translate-y-2 scale-95"
-                 class="absolute top-12 right-0 mt-2 w-56 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-lg py-1.5 z-50 origin-top-right"
+                 class="absolute top-12 right-0 mt-2 w-52 rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl shadow-lg py-1.5 z-50 origin-top-right overflow-hidden"
                  style="display: none;">
                 
                 <div class="px-3 py-1.5 text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Help & Support</div>
                 
                 <!-- Help -->
                 <flux:modal.trigger name="help-modal">
-                    <button @click="open = false" class="w-full flex items-center gap-2 px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors duration-150 text-left cursor-pointer">
-                        <flux:icon name="question-mark-circle" class="size-4 text-zinc-400 dark:text-zinc-500" />
+                    <button @click="open = false" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 transition-colors duration-150 text-left cursor-pointer">
+                        <flux:icon name="question-mark-circle" class="size-4 text-zinc-400 dark:text-zinc-400 shrink-0" />
                         <span>Help Center</span>
                     </button>
                 </flux:modal.trigger>
                 
                 <!-- FAQ -->
                 <flux:modal.trigger name="faq-modal">
-                    <button @click="open = false" class="w-full flex items-center gap-2 px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors duration-150 text-left cursor-pointer">
-                        <flux:icon name="information-circle" class="size-4 text-zinc-400 dark:text-zinc-500" />
+                    <button @click="open = false" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 transition-colors duration-150 text-left cursor-pointer">
+                        <flux:icon name="information-circle" class="size-4 text-zinc-400 dark:text-zinc-400 shrink-0" />
                         <span>FAQ</span>
                     </button>
                 </flux:modal.trigger>
 
-                <hr class="my-1 border-zinc-100 dark:border-zinc-800" />
+                <div class="my-1 border-t border-zinc-100 dark:border-zinc-800/80"></div>
 
                 <flux:modal.trigger name="report-issue-modal">
-                    <button @click="open = false" class="flex w-full items-center gap-2 px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors duration-150 text-left cursor-pointer">
-                        <flux:icon name="bug-ant" class="size-4 text-zinc-400 dark:text-zinc-500" />
+                    <button @click="open = false" class="flex w-full items-center gap-2.5 px-3 py-2 text-xs font-medium text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 transition-colors duration-150 text-left cursor-pointer">
+                        <flux:icon name="bug-ant" class="size-4 text-zinc-400 dark:text-zinc-400 shrink-0" />
                         <span>Report Bug</span>
                     </button>
                 </flux:modal.trigger>
