@@ -9,6 +9,7 @@ use Livewire\WithFileUploads;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ActivitiesExport;
 use App\Imports\ActivitiesImport;
+use Illuminate\Support\Facades\DB;
 
 new class extends Component
 {
@@ -22,6 +23,7 @@ new class extends Component
     public $startDate;
     public $endDate;
     public $searchQuery = '';
+    public $daysLimit = 7;
     
     public $editingActivityId = null;
     public $editDetail;
@@ -45,9 +47,14 @@ new class extends Component
         return Category::where('user_id', auth()->id())->get();
     }
 
-    public function getActivitiesProperty()
+    public function loadMore()
     {
-        $query = auth()->user()->activities()->with(['project', 'category'])
+        $this->daysLimit += 7;
+    }
+
+    public function getActivitiesDataProperty()
+    {
+        $query = auth()->user()->activities()
             ->whereNotNull('end_time');
 
         if ($this->startDate) {
@@ -62,11 +69,37 @@ new class extends Component
             $query->where('detail', 'ilike', '%' . $this->searchQuery . '%');
         }
 
-        return $query->orderBy('start_time', 'desc')
+        $dateQuery = clone $query;
+        $dates = $dateQuery->selectRaw('DATE(start_time) as date')
+            ->groupBy('date')
+            ->orderBy('date', 'desc')
+            ->limit($this->daysLimit + 1)
+            ->pluck('date');
+
+        $hasMore = $dates->count() > $this->daysLimit;
+        
+        $datesToFetch = $dates->take($this->daysLimit);
+
+        if ($datesToFetch->isEmpty()) {
+            return [
+                'activities' => collect(),
+                'hasMore' => false
+            ];
+        }
+
+        $activitiesQuery = clone $query;
+        $activities = $activitiesQuery->with(['project', 'category'])
+            ->whereIn(DB::raw('DATE(start_time)'), $datesToFetch)
+            ->orderBy('start_time', 'desc')
             ->get()
             ->groupBy(function($activity) {
                 return $activity->start_time->format('Y-m-d');
             });
+
+        return [
+            'activities' => $activities,
+            'hasMore' => $hasMore
+        ];
     }
 
     public function getRunningActivitiesProperty()
@@ -434,7 +467,7 @@ new class extends Component
         @endif
         
         <div class="space-y-6">
-            @forelse($this->activities as $date => $dayActivities)
+            @forelse($this->activitiesData['activities'] as $date => $dayActivities)
                 <div wire:key="day-{{ $date }}">
                     <h4 class="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-3 flex items-center gap-3">
                         <span>{{ Carbon::parse($date)->format('l, j F Y') }}</span>
@@ -508,6 +541,14 @@ new class extends Component
                     <span>No activity history found. Start tracking your tasks above!</span>
                 </div>
             @endforelse
+
+            @if($this->activitiesData['hasMore'])
+                <div class="flex justify-center mt-6 mb-2">
+                    <flux:button wire:click="loadMore" variant="subtle" size="sm" class="cursor-pointer">
+                        View More
+                    </flux:button>
+                </div>
+            @endif
         </div>
     </div>
 
