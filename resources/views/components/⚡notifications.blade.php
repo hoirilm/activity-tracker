@@ -41,13 +41,13 @@ new class extends Component
 <div x-data="{ show: false }">
     <!-- Floating Bell Icon Trigger Button -->
     @if(auth()->check())
-    <div class="fixed top-4 right-4 z-40 hidden lg:block">
+    <div class="fixed top-3.5 right-3.5 sm:top-4 sm:right-4 z-40">
         <button @click="show = !show" 
                 type="button" 
-                class="shadow-md flex items-center justify-center size-10 rounded-full bg-zinc-800 hover:bg-zinc-700 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-900 transition-all duration-300 transform active:scale-95 cursor-pointer relative">
-            <flux:icon name="bell" class="size-5" />
+                class="flex items-center justify-center size-9 rounded-xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 text-zinc-700 dark:text-zinc-300 hover:text-indigo-500 dark:hover:text-indigo-400 shadow-xs transition-all duration-300 active:scale-95 cursor-pointer relative">
+            <flux:icon name="bell" class="size-4.5" />
             @if($this->unreadCount > 0)
-                <span class="absolute -top-1 -right-1 flex items-center justify-center size-5 bg-red-500 text-white text-[10px] font-bold rounded-full border-2 border-white dark:border-zinc-800">
+                <span class="absolute -top-1 -right-1 flex items-center justify-center size-4 bg-red-500 text-white text-[9px] font-mono font-bold rounded-full border border-white dark:border-zinc-900">
                     {{ $this->unreadCount }}
                 </span>
             @endif

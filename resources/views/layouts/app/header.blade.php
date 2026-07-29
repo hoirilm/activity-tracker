@@ -2,14 +2,20 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         @include('partials.head')
+        <style>
+            /* Fix mobile sidebar overlay z-index over fixed bottom action bars */
+            ui-sidebar, [data-flux-sidebar-backdrop] {
+                z-index: 60 !important;
+            }
+        </style>
     </head>
     <body class="min-h-screen bg-white dark:bg-zinc-800">
-        <flux:header container class="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
+        <flux:header container class="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 sticky top-0 z-40">
             <flux:sidebar.toggle class="lg:hidden mr-2" icon="bars-2" inset="left" />
 
             <x-app-logo href="{{ route('dashboard') }}" wire:navigate />
 
-            <flux:navbar class="-mb-px max-lg:hidden">
+            <flux:navbar class="-mb-px max-lg:hidden ml-4">
                 <flux:navbar.item icon="layout-grid" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
                     {{ __('Dashboard') }}
                 </flux:navbar.item>
@@ -21,7 +27,8 @@
                 </flux:navbar.item>
                 
                 @if(auth()->check() && auth()->user()->is_admin)
-                <flux:navbar.item icon="bug-ant" :href="route('issues')" :current="request()->routeIs('issues')" wire:navigate>
+                @php $openAdminIssues = App\Models\Issue::where('status', 'open')->count(); @endphp
+                <flux:navbar.item icon="flag" :href="route('issues')" :current="request()->routeIs('issues')" :badge="$openAdminIssues ?: null" wire:navigate>
                     {{ __('Issues') }}
                 </flux:navbar.item>
                 <flux:navbar.item icon="users" :href="route('members')" :current="request()->routeIs('members')" wire:navigate>
@@ -35,20 +42,12 @@
 
             <flux:spacer />
 
-            <flux:navbar class="me-1.5 space-x-0.5 rtl:space-x-reverse py-0!">
-                @if(auth()->check())
-                <flux:modal.trigger name="report-issue-modal">
-                    <flux:navbar.item class="!h-10 [&>div>svg]:size-5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20" icon="bug-ant" href="#" :label="__('Report Issue')" />
-                </flux:modal.trigger>
-                @endif
-                <flux:tooltip :content="__('Search')" position="bottom">
-                    <flux:navbar.item class="!h-10 [&>div>svg]:size-5" icon="magnifying-glass" href="#" :label="__('Search')" />
-                </flux:tooltip>
+            <flux:navbar class="me-1.5 space-x-1 rtl:space-x-reverse py-0!">
                 <flux:tooltip :content="__('Repository')" position="bottom">
                     <flux:navbar.item
                         class="h-10 max-lg:hidden [&>div>svg]:size-5"
                         icon="folder-git-2"
-                        href="https://github.com/laravel/livewire-starter-kit"
+                        href="https://github.com/hoirilm/activity-tracker"
                         target="_blank"
                         :label="__('Repository')"
                     />
@@ -60,6 +59,15 @@
                         href="https://laravel.com/docs/starter-kits#livewire"
                         target="_blank"
                         :label="__('Documentation')"
+                    />
+                </flux:tooltip>
+                <flux:tooltip :content="__('Weeklog Primavisi')" position="bottom">
+                    <flux:navbar.item
+                        class="h-10 max-lg:hidden [&>div>svg]:size-5"
+                        icon="calendar-days"
+                        href="https://openproject.pactindo.com/weeklog/"
+                        target="_blank"
+                        :label="__('Weeklog Primavisi')"
                     />
                 </flux:tooltip>
             </flux:navbar>
@@ -86,16 +94,8 @@
                         {{ __('Manage') }}
                     </flux:sidebar.item>
                     
-                    @if(auth()->check())
-                        <flux:modal.trigger name="report-issue-modal">
-                            <flux:sidebar.item icon="bug-ant" class="text-red-500 hover:text-red-600">
-                                {{ __('Report Issue') }}
-                            </flux:sidebar.item>
-                        </flux:modal.trigger>
-                    @endif
-                    
                     @if(auth()->check() && auth()->user()->is_admin)
-                    <flux:sidebar.item icon="bug-ant" :href="route('issues')" :current="request()->routeIs('issues')" wire:navigate>
+                    <flux:sidebar.item icon="flag" :href="route('issues')" :current="request()->routeIs('issues')" wire:navigate>
                         {{ __('Issues') }}
                     </flux:sidebar.item>
                     <flux:sidebar.item icon="users" :href="route('members')" :current="request()->routeIs('members')" wire:navigate>
@@ -111,13 +111,18 @@
             <flux:spacer />
 
             <flux:sidebar.nav>
-                <flux:sidebar.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit" target="_blank">
+                <flux:sidebar.item icon="folder-git-2" href="https://github.com/hoirilm/activity-tracker" target="_blank">
                     {{ __('Repository') }}
                 </flux:sidebar.item>
                 <flux:sidebar.item icon="book-open-text" href="https://laravel.com/docs/starter-kits#livewire" target="_blank">
                     {{ __('Documentation') }}
                 </flux:sidebar.item>
+                <flux:sidebar.item icon="calendar-days" href="https://openproject.pactindo.com/weeklog/" target="_blank">
+                    {{ __('Weeklog Primavisi') }}
+                </flux:sidebar.item>
             </flux:sidebar.nav>
+
+            <x-desktop-user-menu :name="auth()->user()->name" />
         </flux:sidebar>
 
         {{ $slot }}

@@ -82,109 +82,129 @@ new class extends Component
 };
 ?>
 
-<div class="flex h-full w-full flex-col gap-6 p-4 text-neutral-900 dark:text-neutral-100 max-w-5xl mx-auto mt-4" x-data="{ mounted: false }" x-init="setTimeout(() => mounted = true, 50)">
+<div class="flex h-full w-full flex-col gap-6 p-3 sm:p-4 text-neutral-900 dark:text-neutral-100 max-w-6xl mx-auto mt-2 sm:mt-4 pb-16" x-data="{ mounted: false }" x-init="setTimeout(() => mounted = true, 50)">
     <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-4 transition-all duration-700 ease-out"
+    <div class="border-b border-zinc-200/80 dark:border-zinc-800/80 pb-4 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all duration-700 ease-out"
          :class="mounted ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'">
         <div>
-            <h2 class="text-xl font-semibold tracking-tight">Member Management</h2>
-            <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">Manage user access roles and admin statuses in this workspace.</p>
+            <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-2.5">
+                <div class="size-8.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-500 shrink-0">
+                    <flux:icon name="users" class="size-4.5" />
+                </div>
+                <span>Team &amp; Member Management</span>
+            </h2>
+            <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1">Manage workspace member access, administrator roles, and permissions.</p>
         </div>
         
         <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
             <!-- Role Filter Segmented Control -->
-            <div class="flex bg-zinc-100 dark:bg-zinc-800/80 rounded-lg p-0.5 shrink-0">
+            <div class="flex bg-zinc-100 dark:bg-zinc-800/80 rounded-xl p-1 shrink-0 border border-zinc-200/50 dark:border-zinc-700/50">
                 <button type="button" wire:click="$set('roleFilter', 'all')" 
-                        class="text-[10px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider transition-colors cursor-pointer {{ $roleFilter === 'all' ? 'bg-zinc-50 dark:bg-zinc-900 shadow-xs text-zinc-900 dark:text-zinc-100' : 'text-zinc-450 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200' }}">
+                        class="text-[10px] px-3 py-1.5 rounded-lg font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer {{ $roleFilter === 'all' ? 'bg-indigo-600 text-white shadow-xs' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200' }}">
                     All
                 </button>
                 <button type="button" wire:click="$set('roleFilter', 'admin')" 
-                        class="text-[10px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider transition-colors cursor-pointer {{ $roleFilter === 'admin' ? 'bg-zinc-50 dark:bg-zinc-900 shadow-xs text-zinc-900 dark:text-zinc-100' : 'text-zinc-450 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200' }}">
-                    Admin
+                        class="text-[10px] px-3 py-1.5 rounded-lg font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer {{ $roleFilter === 'admin' ? 'bg-indigo-600 text-white shadow-xs' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200' }}">
+                    Admin ({{ \App\Models\User::where('is_admin', true)->count() }})
                 </button>
                 <button type="button" wire:click="$set('roleFilter', 'member')" 
-                        class="text-[10px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider transition-colors cursor-pointer {{ $roleFilter === 'member' ? 'bg-zinc-50 dark:bg-zinc-900 shadow-xs text-zinc-900 dark:text-zinc-100' : 'text-zinc-450 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200' }}">
-                    Member
+                        class="text-[10px] px-3 py-1.5 rounded-lg font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer {{ $roleFilter === 'member' ? 'bg-purple-600 text-white shadow-xs' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200' }}">
+                    Member ({{ \App\Models\User::where('is_admin', false)->count() }})
                 </button>
             </div>
             
             <!-- Search bar -->
             <div class="flex-1 md:w-64 md:flex-none">
-                <flux:input wire:model.live.debounce.300ms="search" placeholder="Search members..." icon="magnifying-glass" size="sm" autocomplete="off" />
+                <flux:input wire:model.live.debounce.300ms="search" placeholder="Search member by name or email..." icon="magnifying-glass" size="sm" autocomplete="off" />
             </div>
         </div>
     </div>
 
     <!-- Alert status -->
     @if(session()->has('status_updated'))
-        <div x-data="{ show: true }" x-show="show" class="p-4 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400 rounded-xl border border-emerald-100 dark:border-emerald-900/30 text-sm font-medium flex items-center justify-between shadow-xs">
+        <div x-data="{ show: true }" x-show="show" class="p-3.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-2xl border border-emerald-500/20 text-xs font-semibold flex items-center justify-between shadow-xs">
             <div class="flex items-center gap-2">
-                <flux:icon name="check-circle" class="size-5 text-emerald-500" />
+                <flux:icon name="check-circle" class="size-4.5 text-emerald-500" />
                 <span>{{ session('status_updated') }}</span>
             </div>
-            <button @click="show = false" class="text-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-300 font-semibold text-xs cursor-pointer">Dismiss</button>
+            <button @click="show = false" class="text-zinc-400 hover:text-zinc-200 font-semibold text-xs cursor-pointer">Dismiss</button>
         </div>
     @endif
     @if(session()->has('error'))
-        <div x-data="{ show: true }" x-show="show" class="p-4 bg-red-50 text-red-800 dark:bg-red-950/30 dark:text-red-400 rounded-xl border border-red-100 dark:border-red-900/30 text-sm font-medium flex items-center justify-between shadow-xs">
+        <div x-data="{ show: true }" x-show="show" class="p-3.5 bg-red-500/10 text-red-600 dark:text-red-400 rounded-2xl border border-red-500/20 text-xs font-semibold flex items-center justify-between shadow-xs">
             <div class="flex items-center gap-2">
-                <flux:icon name="exclamation-circle" class="size-5 text-red-500" />
+                <flux:icon name="exclamation-circle" class="size-4.5 text-red-500" />
                 <span>{{ session('error') }}</span>
             </div>
-            <button @click="show = false" class="text-red-500 hover:text-red-700 dark:hover:text-red-300 font-semibold text-xs cursor-pointer">Dismiss</button>
+            <button @click="show = false" class="text-zinc-400 hover:text-zinc-200 font-semibold text-xs cursor-pointer">Dismiss</button>
         </div>
     @endif
 
-    <!-- Member Cards List -->
-    <div class="grid gap-4 transition-all duration-700 ease-out delay-100"
+    <!-- Member Cards Container -->
+    <div class="space-y-3.5 transition-all duration-700 ease-out delay-100"
          :class="mounted ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'">
         @forelse($this->members as $member)
-            <div wire:key="member-{{ $member->id }}" class="group relative overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 p-4 shadow-xs hover:shadow-md hover:border-zinc-300 dark:hover:border-zinc-700 hover:-translate-y-0.5 transition-all duration-300 flex flex-col md:flex-row justify-between items-start md:items-center gap-4" wire:transition.slide.up>
+            <div wire:key="member-{{ $member->id }}" 
+                 class="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl p-4 sm:p-5 shadow-xs hover:border-indigo-500/40 transition-all group flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 
-                <!-- Account / User Column -->
                 <div class="flex items-center gap-3.5 flex-1 min-w-0">
-                    <flux:avatar initials="{{ $member->initials() }}" class="size-10 bg-zinc-100/60 dark:bg-zinc-800/40 text-zinc-550 dark:text-zinc-400 border border-zinc-200/30 dark:border-zinc-800/30 shrink-0" />
-                    <div class="truncate">
-                        <div class="font-medium text-sm text-zinc-850 dark:text-zinc-150 truncate flex items-center gap-2 flex-wrap">
-                            <span>{{ $member->name }}</span>
+                    <!-- Glowing Avatar Initials Box -->
+                    <div class="size-11 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 text-indigo-400 font-extrabold text-sm flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-xs">
+                        {{ $member->initials() }}
+                    </div>
+
+                    <div class="min-w-0">
+                        <div class="font-bold text-sm text-zinc-900 dark:text-zinc-100 truncate flex items-center gap-2 flex-wrap">
+                            <span class="group-hover:text-indigo-400 transition-colors">{{ $member->name }}</span>
                             @if($member->is_admin)
-                                <span class="bg-indigo-100/80 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-400 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded">
-                                    Administrator
+                                <span class="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[9px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border border-indigo-500/20 flex items-center gap-1">
+                                    <flux:icon name="shield-check" class="size-3 shrink-0" />
+                                    <span>Administrator</span>
                                 </span>
                             @else
-                                <span class="bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-450 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded">
+                                <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-[9px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border border-zinc-200/50 dark:border-zinc-700/50">
                                     Member
                                 </span>
                             @endif
                             @if(auth()->id() === $member->id)
-                                <span class="bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-455 text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">It's You</span>
+                                <span class="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[9px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border border-emerald-500/20">You</span>
                             @endif
                         </div>
-                        <div class="text-[11px] text-zinc-450 dark:text-zinc-500 mt-1 truncate">{{ $member->email }}</div>
+                        <div class="text-xs font-mono text-zinc-500 dark:text-zinc-400 mt-1 truncate">{{ $member->email }}</div>
                     </div>
                 </div>
 
-                <!-- Action Button Column -->
-                <div class="w-full md:w-auto flex justify-end shrink-0 mt-3 md:mt-0">
+                <div class="w-full md:w-auto flex justify-end shrink-0 pt-1 md:pt-0">
                     @if(auth()->id() === $member->id)
-                        <flux:button variant="subtle" size="sm" disabled class="cursor-not-allowed">Self-editing restricted</flux:button>
+                        <span class="text-[11px] font-mono text-zinc-500 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800/50 border border-zinc-200/50 dark:border-zinc-700/50 px-3 py-1.5 rounded-xl cursor-not-allowed">
+                            Self-editing restricted
+                        </span>
                     @else
                         @if($member->is_admin)
-                            <flux:button wire:click="toggleAdmin({{ $member->id }})" variant="danger" size="sm" class="cursor-pointer active:scale-95 transition-all duration-200">
-                                Revoke Admin
-                            </flux:button>
+                            <button type="button" wire:click="toggleAdmin({{ $member->id }})" 
+                                    class="bg-red-500/10 hover:bg-red-500/20 text-red-500 dark:text-red-400 border border-red-500/30 font-semibold text-xs px-3.5 py-1.5 rounded-xl active:scale-95 transition-all cursor-pointer flex items-center gap-1.5">
+                                <flux:icon name="shield-exclamation" class="size-3.5" />
+                                <span>Revoke Admin</span>
+                            </button>
                         @else
-                            <flux:button wire:click="toggleAdmin({{ $member->id }})" variant="filled" size="sm" class="cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white dark:bg-indigo-500 dark:hover:bg-indigo-600 border-none active:scale-95 transition-all duration-200">
-                                Make Admin
-                            </flux:button>
+                            <button type="button" wire:click="toggleAdmin({{ $member->id }})" 
+                                    class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs px-3.5 py-1.5 rounded-xl active:scale-95 transition-all shadow-md shadow-indigo-500/20 cursor-pointer flex items-center gap-1.5 border-none">
+                                <flux:icon name="shield-check" class="size-3.5" />
+                                <span>Make Admin</span>
+                            </button>
                         @endif
                     @endif
                 </div>
             </div>
         @empty
-            <div class="text-xs text-neutral-400 text-center py-16 border border-dashed border-neutral-200 dark:border-neutral-800 rounded-xl flex flex-col items-center gap-2 bg-zinc-50 dark:bg-zinc-900/50">
-                <flux:icon name="users" class="size-8 text-neutral-300 dark:text-neutral-750" />
-                <span>No members found matching your search or filters.</span>
+            <div class="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl p-12 text-center flex flex-col items-center justify-center gap-3">
+                <div class="size-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-500">
+                    <flux:icon name="users" class="size-6" />
+                </div>
+                <div>
+                    <h3 class="font-bold text-sm text-zinc-800 dark:text-zinc-200">No Members Found</h3>
+                    <p class="text-xs text-zinc-400 mt-1">No team members matching your search criteria.</p>
+                </div>
             </div>
         @endforelse
     </div>

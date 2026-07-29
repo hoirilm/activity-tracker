@@ -71,97 +71,131 @@ new class extends Component
 };
 ?>
 
-<div class="flex h-full w-full flex-col gap-6 p-4 text-neutral-900 dark:text-neutral-100 max-w-5xl mx-auto mt-4" x-data="{ mounted: false }" x-init="setTimeout(() => mounted = true, 50)">
+<div class="flex h-full w-full flex-col gap-6 p-3 sm:p-4 text-neutral-900 dark:text-neutral-100 max-w-6xl mx-auto mt-2 sm:mt-4 pb-16" x-data="{ mounted: false }" x-init="setTimeout(() => mounted = true, 50)">
     <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-4 transition-all duration-700 ease-out"
+    <div class="border-b border-zinc-200/80 dark:border-zinc-800/80 pb-4 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all duration-700 ease-out"
          :class="mounted ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'">
         <div>
-            <h2 class="text-xl font-semibold tracking-tight">Issue Management</h2>
-            <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">Track, review, and manage bugs and feedback submitted by users.</p>
+            <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-2.5">
+                <div class="size-8.5 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500 shrink-0">
+                    <flux:icon name="flag" class="size-4.5" />
+                </div>
+                <span>Issue &amp; Feedback Tracking</span>
+            </h2>
+            <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1">Review, manage, and resolve bugs and feature feedback submitted by team members.</p>
         </div>
-        
+
         <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
             <!-- Status Filter Segmented Control -->
-            <div class="flex bg-zinc-100 dark:bg-zinc-800/80 rounded-lg p-0.5 shrink-0">
+            <div class="flex bg-zinc-100 dark:bg-zinc-800/80 rounded-xl p-1 shrink-0 border border-zinc-200/50 dark:border-zinc-700/50">
                 <button type="button" wire:click="$set('statusFilter', 'all')" 
-                        class="text-[10px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider transition-colors cursor-pointer {{ $statusFilter === 'all' ? 'bg-zinc-50 dark:bg-zinc-900 shadow-xs text-zinc-900 dark:text-zinc-100' : 'text-zinc-450 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200' }}">
+                        class="text-[10px] px-3 py-1.5 rounded-lg font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer {{ $statusFilter === 'all' ? 'bg-indigo-600 text-white shadow-xs' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200' }}">
                     All
                 </button>
                 <button type="button" wire:click="$set('statusFilter', 'open')" 
-                        class="text-[10px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider transition-colors cursor-pointer {{ $statusFilter === 'open' ? 'bg-zinc-50 dark:bg-zinc-900 shadow-xs text-zinc-900 dark:text-zinc-100' : 'text-zinc-450 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200' }}">
-                    Open
+                        class="text-[10px] px-3 py-1.5 rounded-lg font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer {{ $statusFilter === 'open' ? 'bg-red-600 text-white shadow-xs' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200' }}">
+                    Open ({{ \App\Models\Issue::where('status', 'open')->count() }})
                 </button>
                 <button type="button" wire:click="$set('statusFilter', 'closed')" 
-                        class="text-[10px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider transition-colors cursor-pointer {{ $statusFilter === 'closed' ? 'bg-zinc-50 dark:bg-zinc-900 shadow-xs text-zinc-900 dark:text-zinc-100' : 'text-zinc-450 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200' }}">
-                    Solved
+                        class="text-[10px] px-3 py-1.5 rounded-lg font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer {{ $statusFilter === 'closed' ? 'bg-emerald-600 text-white shadow-xs' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200' }}">
+                    Solved ({{ \App\Models\Issue::where('status', 'closed')->count() }})
                 </button>
             </div>
             
             <!-- Search bar -->
             <div class="flex-1 md:w-64 md:flex-none">
-                <flux:input wire:model.live.debounce.300ms="search" placeholder="Search issues..." icon="magnifying-glass" size="sm" autocomplete="off" />
+                <flux:input wire:model.live.debounce.300ms="search" placeholder="Search ticket, title, user..." icon="magnifying-glass" size="sm" autocomplete="off" />
             </div>
         </div>
     </div>
 
+    <!-- Alert Status -->
     @if(session()->has('status_updated'))
-        <div x-data="{ show: true }" x-show="show" class="p-4 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400 rounded-xl border border-emerald-100 dark:border-emerald-900/30 text-sm font-medium flex items-center justify-between shadow-xs">
+        <div x-data="{ show: true }" x-show="show" class="p-3.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-2xl border border-emerald-500/20 text-xs font-semibold flex items-center justify-between shadow-xs">
             <div class="flex items-center gap-2">
-                <flux:icon name="check-circle" class="size-5 text-emerald-500" />
+                <flux:icon name="check-circle" class="size-4.5 text-emerald-500" />
                 <span>{{ session('status_updated') }}</span>
             </div>
-            <button @click="show = false" class="text-red-500 hover:text-red-700 dark:hover:text-red-300 font-semibold text-xs cursor-pointer">Dismiss</button>
+            <button @click="show = false" class="text-zinc-400 hover:text-zinc-200 font-semibold text-xs cursor-pointer">Dismiss</button>
         </div>
     @endif
 
-    <div class="grid gap-4 transition-all duration-700 ease-out delay-100"
+    <!-- Issue Cards Container -->
+    <div class="space-y-4 transition-all duration-700 ease-out delay-100"
          :class="mounted ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'">
         @forelse($this->issues as $issue)
             <div wire:key="issue-{{ $issue->id }}" 
-                 class="group relative overflow-hidden rounded-2xl border p-5 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col md:flex-row justify-between items-start md:items-center gap-4
-                 {{ $issue->status === 'closed' ? 'border-zinc-200/60 bg-zinc-50/50 dark:border-zinc-800/40 dark:bg-zinc-950/10 opacity-75 hover:opacity-100' : 'border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-700' }}
-                 " wire:transition.slide.up>
+                 class="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl p-4 sm:p-5 shadow-xs hover:border-indigo-500/40 transition-all group relative overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                
                 <div class="flex items-start gap-4 flex-1 min-w-0">
-                    <!-- Icon container -->
+                    <!-- Icon badge -->
                     @if($issue->status === 'open')
-                        <div class="size-10 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-100/50 dark:border-red-900/20 flex items-center justify-center text-red-500 shrink-0">
+                        <div class="size-10 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500 shrink-0 group-hover:scale-105 transition-transform">
                             <flux:icon name="bug-ant" class="size-5" />
                         </div>
                     @else
-                        <div class="size-10 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200/50 dark:border-zinc-800/40 flex items-center justify-center text-zinc-400 dark:text-zinc-500 shrink-0">
+                        <div class="size-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0 group-hover:scale-105 transition-transform">
                             <flux:icon name="check-circle" class="size-5" />
                         </div>
                     @endif
 
                     <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-2.5 mb-1.5 flex-wrap">
-                            <div class="font-medium text-base text-zinc-850 dark:text-zinc-150 {{ $issue->status === 'closed' ? 'line-through text-zinc-450 dark:text-zinc-500' : '' }}">{{ $issue->formatted_title }}</div>
+                        <div class="flex items-center gap-2 mb-1 flex-wrap">
+                            <span class="font-mono text-xs font-bold text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-md border border-zinc-200/50 dark:border-zinc-700/50">
+                                TKT-{{ str_pad($issue->id, 4, '0', STR_PAD_LEFT) }}
+                            </span>
+                            <h3 class="font-bold text-sm text-zinc-900 dark:text-zinc-100 group-hover:text-indigo-400 transition-colors {{ $issue->status === 'closed' ? 'line-through opacity-60' : '' }}">
+                                {{ $issue->title }}
+                            </h3>
                             @if($issue->status === 'open')
-                                <span class="bg-red-100 text-red-700 dark:bg-red-950/30 dark:text-red-400 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded">Open</span>
+                                <span class="bg-red-500/10 text-red-600 dark:text-red-400 text-[9px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border border-red-500/20">Open</span>
                             @else
-                                <span class="bg-emerald-100 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded">Closed</span>
+                                <span class="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[9px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border border-emerald-500/20">Solved</span>
                             @endif
                         </div>
-                        <div class="text-xs text-zinc-500 dark:text-zinc-400 whitespace-pre-wrap leading-relaxed">{{ $issue->description }}</div>
-                        <div class="text-[10px] text-zinc-400 dark:text-zinc-550 mt-3.5 flex items-center gap-1.5">
-                            <flux:icon name="user" class="size-3.5" />
-                            <span>Reporter: <strong class="text-zinc-500 dark:text-zinc-400">{{ $issue->user->name }}</strong> &bull; {{ $issue->created_at->diffForHumans() }}</span>
+                        
+                        <div class="text-xs text-zinc-600 dark:text-zinc-300 leading-relaxed bg-zinc-50/50 dark:bg-zinc-950/40 p-3 rounded-xl border border-zinc-200/40 dark:border-zinc-800/40 mt-2 whitespace-pre-wrap">
+                            {{ $issue->description }}
+                        </div>
+
+                        <div class="text-[10px] text-zinc-400 dark:text-zinc-500 mt-2.5 flex items-center gap-2 flex-wrap">
+                            <span class="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-medium px-2 py-0.5 rounded-md border border-indigo-500/20 flex items-center gap-1">
+                                <flux:icon name="user" class="size-3 shrink-0" />
+                                <span>Reporter: <strong>{{ $issue->user->name }}</strong></span>
+                            </span>
+                            <span>&bull;</span>
+                            <span>Submitted {{ $issue->created_at->diffForHumans() }}</span>
                         </div>
                     </div>
                 </div>
                 
-                <div class="w-full md:w-auto flex justify-end shrink-0 mt-3 md:mt-0">
-                    @if($issue->status === 'open')
-                        <flux:button variant="danger" wire:click="toggleStatus({{ $issue->id }})" size="sm" class="cursor-pointer active:scale-95 transition-all duration-200">Mark as Closed</flux:button>
-                    @else
-                        <flux:button variant="subtle" wire:click="toggleStatus({{ $issue->id }})" size="sm" class="cursor-pointer active:scale-95 transition-all duration-200">Re-open</flux:button>
+                <div class="w-full md:w-auto flex justify-end shrink-0 pt-2 md:pt-0">
+                    @if(auth()->user()->is_admin)
+                        @if($issue->status === 'open')
+                            <button type="button" wire:click="toggleStatus({{ $issue->id }})" 
+                                    class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl px-4 py-2 text-xs active:scale-95 transition-all shadow-md shadow-emerald-500/20 flex items-center gap-1.5 border-none cursor-pointer">
+                                <flux:icon name="check" class="size-3.5" />
+                                <span>Mark Solved</span>
+                            </button>
+                        @else
+                            <button type="button" wire:click="toggleStatus({{ $issue->id }})" 
+                                    class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-semibold rounded-xl px-4 py-2 text-xs active:scale-95 transition-all border border-zinc-700/50 flex items-center gap-1.5 cursor-pointer">
+                                <flux:icon name="arrow-path" class="size-3.5" />
+                                <span>Re-open Issue</span>
+                            </button>
+                        @endif
                     @endif
                 </div>
             </div>
         @empty
-            <div class="text-xs text-neutral-400 text-center py-16 border border-dashed border-neutral-200 dark:border-neutral-800 rounded-xl flex flex-col items-center gap-2 bg-zinc-50 dark:bg-zinc-900/50">
-                <flux:icon name="bug-ant" class="size-8 text-neutral-300 dark:text-neutral-750" />
-                <span>No issues found matching your search.</span>
+            <div class="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl p-12 text-center flex flex-col items-center justify-center gap-3">
+                <div class="size-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-500">
+                    <flux:icon name="bug-ant" class="size-6" />
+                </div>
+                <div>
+                    <h3 class="font-bold text-sm text-zinc-800 dark:text-zinc-200">No Issues Found</h3>
+                    <p class="text-xs text-zinc-400 mt-1">No bug reports or feature requests matching your search filter criteria.</p>
+                </div>
             </div>
         @endforelse
     </div>

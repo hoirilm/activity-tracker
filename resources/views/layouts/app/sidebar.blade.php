@@ -8,17 +8,27 @@
                 transition: width 400ms cubic-bezier(0.2, 0, 0, 1), 
                             padding 400ms cubic-bezier(0.2, 0, 0, 1) !important;
                 will-change: width;
-                overflow-x: hidden !important; /* Prevent text wrapping glitches */
+                overflow-x: hidden !important;
             }
-            
-            /* Smooth layout shift for main content area */
             body {
                 transition: grid-template-columns 400ms cubic-bezier(0.2, 0, 0, 1) !important;
             }
+
+            /* Prevent layout offset on mobile screens for custom Alpine drawer */
+            @media (max-width: 1023px) {
+                body {
+                    display: block !important;
+                    grid-template-columns: 1fr !important;
+                }
+                ui-sidebar {
+                    display: none !important;
+                }
+            }
         </style>
     </head>
-    <body class="min-h-screen bg-white dark:bg-zinc-800">
-        <flux:sidebar sticky collapsible class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
+    <body class="min-h-screen bg-white dark:bg-zinc-800" x-data="{ mobileNavOpen: false }">
+        <!-- Desktop Sidebar (Hidden on mobile) -->
+        <flux:sidebar sticky collapsible class="hidden lg:flex border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
             <flux:sidebar.header>
                 <x-app-logo :sidebar="true" href="{{ route('dashboard') }}" wire:navigate />
                 <flux:sidebar.collapse />
@@ -47,8 +57,6 @@
                     {{ __('Broadcast') }}
                 </flux:sidebar.item>
                 @endif
-                
-
             </flux:sidebar.nav>
 
             <flux:spacer />
@@ -67,63 +75,115 @@
                 </flux:sidebar.item>
             </flux:sidebar.nav>
 
-            <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
+            <x-desktop-user-menu :name="auth()->user()->name" />
         </flux:sidebar>
 
-        <!-- Mobile User Menu -->
-        <flux:header class="lg:hidden">
-            <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
+        <!-- Mobile Top Bar (Clean & Compact) -->
+        <header class="lg:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-3 bg-zinc-900/90 backdrop-blur-xl border-b border-zinc-800">
+            <div class="flex items-center gap-3">
+                <button @click="mobileNavOpen = true" type="button" class="p-2 rounded-xl text-zinc-300 hover:text-white hover:bg-zinc-800 active:scale-95 transition-all cursor-pointer">
+                    <flux:icon name="bars-2" class="size-6" />
+                </button>
+                <x-app-logo href="{{ route('dashboard') }}" wire:navigate />
+            </div>
+        </header>
 
-            <flux:spacer />
+        <!-- Glassmorphism Mobile Drawer Backdrop (z-998) -->
+        <div x-show="mobileNavOpen" 
+             @click="mobileNavOpen = false"
+             x-transition:enter="transition-opacity ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition-opacity ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 bg-black/60 backdrop-blur-md z-[998] lg:hidden"
+             style="display: none;"></div>
 
-            <flux:dropdown position="top" align="end">
-                <flux:profile
-                    :initials="auth()->user()->initials()"
-                    icon-trailing="chevron-down"
-                />
+        <!-- Glassmorphism Mobile Sidebar Drawer Panel (z-999) -->
+        <div x-show="mobileNavOpen"
+             x-transition:enter="transition ease-out duration-300 transform"
+             x-transition:enter-start="-translate-x-full"
+             x-transition:enter-end="translate-x-0"
+             x-transition:leave="transition ease-in duration-200 transform"
+             x-transition:leave-start="translate-x-0"
+             x-transition:leave-end="-translate-x-full"
+             class="fixed inset-y-0 left-0 w-72 bg-zinc-900/95 dark:bg-zinc-950/95 backdrop-blur-2xl border-r border-zinc-800/80 shadow-2xl z-[999] lg:hidden flex flex-col justify-between p-4 overflow-y-auto"
+             style="display: none;">
 
-                <flux:menu>
-                    <flux:menu.radio.group>
-                        <div class="p-0 text-sm font-normal">
-                            <div class="flex items-center gap-2 px-1 py-1.5 text-start text-sm">
-                                <flux:avatar
-                                    :name="auth()->user()->name"
-                                    :initials="auth()->user()->initials()"
-                                />
+            <div class="space-y-6">
+                <!-- Drawer Header -->
+                <div class="flex items-center justify-between pb-3 border-b border-zinc-800/80">
+                    <x-app-logo href="{{ route('dashboard') }}" wire:navigate />
+                    <button @click="mobileNavOpen = false" type="button" class="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer">
+                        <flux:icon name="x-mark" class="size-5" />
+                    </button>
+                </div>
 
-                                <div class="grid flex-1 text-start text-sm leading-tight">
-                                    <flux:heading class="truncate">{{ auth()->user()->name }}</flux:heading>
-                                    <flux:text class="truncate">{{ auth()->user()->email }}</flux:text>
-                                </div>
+                <!-- Navigation Links -->
+                <nav class="space-y-1">
+                    <a href="{{ route('dashboard') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('dashboard') ? 'bg-indigo-600/90 text-white font-semibold shadow-sm' : 'text-zinc-300 hover:bg-zinc-800/70 hover:text-white' }}">
+                        <flux:icon name="home" class="size-5" />
+                        <span>{{ __('Dashboard') }}</span>
+                    </a>
+
+                    <a href="{{ route('tracker') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('tracker') ? 'bg-indigo-600/90 text-white font-semibold shadow-sm' : 'text-zinc-300 hover:bg-zinc-800/70 hover:text-white' }}">
+                        <flux:icon name="clock" class="size-5" />
+                        <span>{{ __('Tracker') }}</span>
+                    </a>
+
+                    <a href="{{ route('manage') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('manage') ? 'bg-indigo-600/90 text-white font-semibold shadow-sm' : 'text-zinc-300 hover:bg-zinc-800/70 hover:text-white' }}">
+                        <flux:icon name="cog-8-tooth" class="size-5" />
+                        <span>{{ __('Manage') }}</span>
+                    </a>
+
+                    @if(auth()->check() && auth()->user()->is_admin)
+                        @php $openAdminIssues = App\Models\Issue::where('status', 'open')->count(); @endphp
+                        <a href="{{ route('issues') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('issues') ? 'bg-indigo-600/90 text-white font-semibold shadow-sm' : 'text-zinc-300 hover:bg-zinc-800/70 hover:text-white' }}">
+                            <div class="flex items-center gap-3">
+                                <flux:icon name="flag" class="size-5" />
+                                <span>{{ __('Issues') }}</span>
                             </div>
-                        </div>
-                    </flux:menu.radio.group>
+                            @if($openAdminIssues)
+                                <span class="px-2 py-0.5 text-xs font-bold bg-red-500/20 text-red-400 rounded-full border border-red-500/30">{{ $openAdminIssues }}</span>
+                            @endif
+                        </a>
 
-                    <flux:menu.separator />
+                        <a href="{{ route('members') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('members') ? 'bg-indigo-600/90 text-white font-semibold shadow-sm' : 'text-zinc-300 hover:bg-zinc-800/70 hover:text-white' }}">
+                            <flux:icon name="users" class="size-5" />
+                            <span>{{ __('Members') }}</span>
+                        </a>
 
-                    <flux:menu.radio.group>
-                        <flux:menu.item :href="route('profile.edit')" icon="cog" wire:navigate>
-                            {{ __('Settings') }}
-                        </flux:menu.item>
-                    </flux:menu.radio.group>
+                        <a href="{{ route('broadcast') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('broadcast') ? 'bg-indigo-600/90 text-white font-semibold shadow-sm' : 'text-zinc-300 hover:bg-zinc-800/70 hover:text-white' }}">
+                            <flux:icon name="megaphone" class="size-5" />
+                            <span>{{ __('Broadcast') }}</span>
+                        </a>
+                    @endif
 
-                    <flux:menu.separator />
+                    <div class="pt-4 pb-1 text-[10px] font-semibold text-zinc-500 uppercase tracking-wider px-3.5">Links & Docs</div>
 
-                    <form method="POST" action="{{ route('logout') }}" class="w-full">
-                        @csrf
-                        <flux:menu.item
-                            as="button"
-                            type="submit"
-                            icon="arrow-right-start-on-rectangle"
-                            class="w-full cursor-pointer"
-                            data-test="logout-button"
-                        >
-                            {{ __('Log out') }}
-                        </flux:menu.item>
-                    </form>
-                </flux:menu>
-            </flux:dropdown>
-        </flux:header>
+                    <a href="https://github.com/hoirilm/activity-tracker" target="_blank" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-sm font-medium text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200 transition-colors">
+                        <flux:icon name="folder-git-2" class="size-5" />
+                        <span>{{ __('Repository') }}</span>
+                    </a>
+
+                    <a href="https://laravel.com/docs/starter-kits#livewire" target="_blank" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-sm font-medium text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200 transition-colors">
+                        <flux:icon name="book-open-text" class="size-5" />
+                        <span>{{ __('Documentation') }}</span>
+                    </a>
+
+                    <a href="https://openproject.pactindo.com/weeklog/" target="_blank" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-sm font-medium text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200 transition-colors">
+                        <flux:icon name="calendar-days" class="size-5" />
+                        <span>{{ __('Weeklog Primavisi') }}</span>
+                    </a>
+                </nav>
+            </div>
+
+            <!-- User Profile Footer -->
+            <div class="pt-4 border-t border-zinc-800/80">
+                <x-desktop-user-menu :name="auth()->user()->name" />
+            </div>
+        </div>
 
         {{ $slot }}
 
@@ -133,9 +193,9 @@
             </flux:toast.group>
         @endpersist
         
-        <!-- Floating Action Menu Top Right for Desktop -->
+        <!-- Floating Action Menu Top Right (Help, FAQ & Bug Report) -->
         @if(auth()->check())
-        <div x-data="{ open: false }" @click.outside="open = false" class="fixed top-4 right-[4.25rem] z-40 hidden lg:block">
+        <div x-data="{ open: false }" @click.outside="open = false" class="fixed top-3.5 right-16 sm:top-4 sm:right-[4.25rem] z-40">
             <!-- Menu Options (Floats below the button) -->
             <div x-show="open" 
                  x-transition:enter="transition ease-out duration-150"
@@ -175,18 +235,18 @@
                 </flux:modal.trigger>
             </div>
 
-            <!-- Trigger Button (Question Mark Icon) -->
+            <!-- Trigger Button (Sleek Glassmorphic Help Icon) -->
             <button @click="open = !open" 
                     type="button"
                     id="tour-help-button"
-                    class="shadow-lg flex items-center justify-center size-10 rounded-full bg-zinc-800 hover:bg-zinc-700 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-900 transition-all duration-300 transform active:scale-95 cursor-pointer"
-                    :class="open ? 'rotate-180 bg-zinc-650 dark:bg-zinc-350!' : ''">
+                    class="flex items-center justify-center size-9 rounded-xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 text-zinc-700 dark:text-zinc-300 hover:text-indigo-500 dark:hover:text-indigo-400 shadow-xs transition-all duration-300 active:scale-95 cursor-pointer"
+                    :class="open ? 'rotate-180 text-indigo-500 dark:text-indigo-400 border-indigo-500/30' : ''">
                 <!-- Question mark icon -->
-                <svg x-show="!open" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="size-5">
+                <svg x-show="!open" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-4.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
                 </svg>
                 <!-- Close (X) icon when open -->
-                <svg x-show="open" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="size-5" style="display: none;">
+                <svg x-show="open" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-4.5" style="display: none;">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
                 </svg>
             </button>
