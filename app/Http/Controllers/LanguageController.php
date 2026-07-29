@@ -10,7 +10,7 @@ class LanguageController extends Controller
     {
         $supported = ['id', 'en'];
 
-        if (!in_array($locale, $supported)) {
+        if (! in_array($locale, $supported)) {
             abort(400);
         }
 

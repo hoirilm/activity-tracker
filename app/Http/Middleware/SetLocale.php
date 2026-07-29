@@ -12,7 +12,7 @@ class SetLocale
     {
         $locale = session('locale', 'id');
 
-        if (!in_array($locale, ['id', 'en'])) {
+        if (! in_array($locale, ['id', 'en'])) {
             $locale = 'id';
         }
 

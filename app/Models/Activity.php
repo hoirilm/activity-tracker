@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use Database\Factories\ActivityFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Activity extends Model
 {
-    /** @use HasFactory<\Database\Factories\ActivityFactory> */
+    /** @use HasFactory<ActivityFactory> */
     use HasFactory;
 
     protected $guarded = [];
@@ -30,15 +31,15 @@ class Activity extends Model
     {
         return $this->belongsTo(Category::class);
     }
-    
+
     public function getDurationAttribute()
     {
-        if (!$this->end_time) {
+        if (! $this->end_time) {
             return null;
         }
-        
+
         $diff = $this->end_time->diff($this->start_time);
-        
+
         return sprintf('%02d:%02d:%02d', ($diff->days * 24) + $diff->h, $diff->i, $diff->s);
     }
 

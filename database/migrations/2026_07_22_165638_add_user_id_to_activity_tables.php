@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -16,7 +16,7 @@ return new class extends Migration
         DB::table('activities')->truncate();
         DB::table('projects')->delete(); // delete instead of truncate for SQLite foreign key constraint friendliness if needed, though Laravel handles it.
         DB::table('categories')->delete();
-        
+
         Schema::table('projects', function (Blueprint $table) {
             $table->foreignId('user_id')->after('id')->constrained()->cascadeOnDelete();
         });

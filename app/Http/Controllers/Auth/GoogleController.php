@@ -20,11 +20,11 @@ class GoogleController extends Controller
     {
         try {
             $googleUser = Socialite::driver('google')->user();
-            
+
             $user = User::where('google_id', $googleUser->id)->orWhere('email', $googleUser->email)->first();
 
             if ($user) {
-                if (!$user->google_id) {
+                if (! $user->google_id) {
                     $user->update([
                         'google_id' => $googleUser->id,
                         'avatar' => $googleUser->avatar,
@@ -41,7 +41,7 @@ class GoogleController extends Controller
                 ]);
 
                 $user->notifications()->create([
-                    'title' => '👋 Selamat Datang, ' . $user->name . '!',
+                    'title' => '👋 Selamat Datang, '.$user->name.'!',
                     'body' => 'Selamat datang di aplikasi kami! Kami senang Anda bergabung.',
                     'type' => 'success',
                 ]);

@@ -10,7 +10,9 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 class ActivitiesExport implements FromCollection, WithHeadings, WithMapping
 {
     protected $startDate;
+
     protected $endDate;
+
     protected $userId;
 
     public function __construct($startDate = null, $endDate = null, $userId = null)
@@ -45,7 +47,7 @@ class ActivitiesExport implements FromCollection, WithHeadings, WithMapping
             'Start Time',
             'End Time',
             'Duration',
-            'Is Parallel'
+            'Is Parallel',
         ];
     }
 
@@ -59,7 +61,7 @@ class ActivitiesExport implements FromCollection, WithHeadings, WithMapping
             $activity->start_time,
             $activity->end_time,
             $activity->duration,
-            $activity->is_parallel ? 'Yes' : 'No'
+            $activity->is_parallel ? 'Yes' : 'No',
         ];
     }
 }

@@ -3,7 +3,6 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
@@ -15,6 +14,7 @@ class DailyActivityReport extends Mailable
     use Queueable, SerializesModels;
 
     public $userName;
+
     public $filePath;
 
     /**
@@ -55,7 +55,7 @@ class DailyActivityReport extends Mailable
     {
         return [
             Attachment::fromPath($this->filePath)
-                ->as('daily_activity_report_' . date('Y-m-d') . '.xlsx')
+                ->as('daily_activity_report_'.date('Y-m-d').'.xlsx')
                 ->withMime('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'),
         ];
     }

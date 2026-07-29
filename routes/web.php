@@ -17,23 +17,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('manage', 'manage')->name('manage');
 
     Route::get('issues', function () {
-        if (!auth()->user()->is_admin) {
+        if (! auth()->user()->is_admin) {
             abort(403);
         }
+
         return view('issues');
     })->name('issues');
 
     Route::get('members', function () {
-        if (!auth()->user()->is_admin) {
+        if (! auth()->user()->is_admin) {
             abort(403);
         }
+
         return view('members');
     })->name('members');
 
     Route::get('broadcast', function () {
-        if (!auth()->user()->is_admin) {
+        if (! auth()->user()->is_admin) {
             abort(403);
         }
+
         return view('broadcast');
     })->name('broadcast');
 });
