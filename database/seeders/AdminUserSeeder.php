@@ -19,6 +19,27 @@ class AdminUserSeeder extends Seeder
                 'name' => 'Admin System',
                 'password' => Hash::make('password'),
                 'is_admin' => true,
+                'email_verified_at' => now(),
+            ]
+        );
+
+        User::updateOrCreate(
+            ['email' => 'user@klakoan.com'],
+            [
+                'name' => 'Developer Demo',
+                'password' => Hash::make('password'),
+                'is_admin' => false,
+                'email_verified_at' => now(),
+            ]
+        );
+
+        User::updateOrCreate(
+            ['email' => 'designer@klakoan.com'],
+            [
+                'name' => 'UI/UX Designer',
+                'password' => Hash::make('password'),
+                'is_admin' => false,
+                'email_verified_at' => now(),
             ]
         );
     }

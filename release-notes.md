@@ -4,6 +4,34 @@ Proyek ini menggunakan [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v4.0.0] - 2026-07-30 🚀
+
+Versi **v4.0.0** merupakan pembaruan mayor yang memperkenalkan penamaan ulang resmi aplikasi menjadi **Klakoan**, pusat manajemen **Backup & Restore Data** tingkat lanjut di menu Settings, refactoring profesional basis kode (PHPStan Level 7), penyempurnaan UI/UX responsive, serta penyeragaman visual widget analitik.
+
+### 🏷️ Rebranding Aplikasi
+- **Identitas Baru "Klakoan"**: Memperbarui nama aplikasi secara global dari "Klakoan Activity Tracker" / "Activity Tracker" menjadi **Klakoan** pada konfigurasi sistem (`APP_NAME`), brand header, logo sidebar, footer, dan dokumen pendukung.
+
+### 📦 Pusat Cadangan & Pemulihan Data (Backup & Restore Manager)
+- **Menu Pengaturan Khusus (`/settings/backup`)**: Menambahkan tab **Backup & Restore** pada navigasi Settings.
+- **Ekspor Cadangan Restore-Friendly**: Fitur ekspor seluruh riwayat aktivitas pengguna hingga aktivitas paling baru ke dalam format JSON berstruktur bersih yang tidak bergantung pada ID mentah database.
+- **Validasi Keamanan Email**: Deteksi otomatis kecocokan email akun pengguna pada berkas backup. Memulihkan berkas dari akun lain mewajibkan konfirmasi eksplisit pengguna untuk keamanan data.
+- **Dua Metode Pemulihan Data**:
+  - **Gabungkan (Merge - Recommended)**: Mengimpor aktivitas baru tanpa menghapus data yang sudah ada (pencegahan otomatis aktivitas duplikat).
+  - **Timpa (Replace)**: Reset riwayat lama dan menggantikannya dengan data dari berkas backup.
+- **Pratinjau Berkas & Respon 0ms**: Kartu pratinjau statistik (total proyek, kategori, aktivitas) dengan perpindahan mode Alpine yang sangat cepat dan bebas lag jaringan.
+
+### 🛠️ Refactoring & Keandalan Kode (*Code Quality & Testing*)
+- **Peningkatan PHPStan ke Level 7**: Membersihkan seluruh tipe data dan docblock, memastikan 0 error pada PHPStan Level 7.
+- **Cakupan Pengujian Pest (100% Passing)**: Seluruh 38 pengujian unit dan fitur lulus dengan total 89 *assertions*.
+- **Pembaruan Data Dummy Seeder**: Seeder basis data baru yang menghasilkan 45 riwayat aktivitas realistis per pengguna, tugas berjalan (*running activities*), notifikasi, dan akun demo (`admin@klakoan.com`, `user@klakoan.com`, `designer@klakoan.com`).
+
+### 🎨 Penyempurnaan UI/UX & Analitik Visual
+- **Modal Ekspor Layar Penuh (`<flux:modal>`)**: Mengubah modal ekspor aktivitas menjadi teleported modal layar penuh dengan latar belakang *backdrop-blur* dan tema Zinc yang menyatu.
+- **Tombol Back to Top Responsif**: Penataan tombol kembali ke atas yang presisi (di kanan layar pada PC dan melayang di atas bar tracker pada mode mobile).
+- **Penyelarasan Warna Widget Time Allocation**: Menyeragamkan warna indikator proyek utama menggunakan 1 warna biru (*blue*) dan sub-proyek/kategori menggunakan warna hijau kalem (*emerald/green*).
+
+---
+
 ## [v3.2.0] - 2026-07-28 🚀
 
 Versi ini berfokus pada integrasi autentikasi pihak ketiga, peningkatan fungsionalitas manajemen aktivitas, dan optimasi *background job* di lingkungan produksi.

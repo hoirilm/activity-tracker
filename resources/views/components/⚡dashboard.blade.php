@@ -259,7 +259,7 @@ new class extends Component
 .custom-scrollbar::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 9999px; }
 </style>
 
-<div class="flex h-full w-full flex-col gap-6 p-3 sm:p-4 text-neutral-900 dark:text-neutral-100 max-w-6xl mx-auto mt-2 sm:mt-4 pb-12">
+<div class="flex h-full w-full flex-col gap-6 p-3 sm:p-4 text-neutral-900 dark:text-neutral-100 max-w-6xl mx-auto mt-2 sm:mt-4 pb-12" x-data="{ scrolled: false }" @scroll.window="scrolled = (window.pageYOffset > 300)">
 
     <!-- Header -->
     <div class="border-b border-zinc-200/80 dark:border-zinc-800/80 pb-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -555,50 +555,37 @@ new class extends Component
                 
                 @if($this->projectStats->count() > 0)
                     <div class="space-y-4 max-h-[220px] overflow-y-auto pr-1.5 custom-scrollbar relative z-10">
-                        @php
-                            $palette = [
-                                ['bar' => 'bg-indigo-500', 'text' => 'text-indigo-600 dark:text-indigo-400', 'border' => 'border-indigo-500/30'],
-                                ['bar' => 'bg-purple-500', 'text' => 'text-purple-600 dark:text-purple-400', 'border' => 'border-purple-500/30'],
-                                ['bar' => 'bg-emerald-500', 'text' => 'text-emerald-600 dark:text-emerald-400', 'border' => 'border-emerald-500/30'],
-                                ['bar' => 'bg-amber-500', 'text' => 'text-amber-600 dark:text-amber-400', 'border' => 'border-amber-500/30'],
-                                ['bar' => 'bg-sky-500', 'text' => 'text-sky-600 dark:text-sky-400', 'border' => 'border-sky-500/30'],
-                                ['bar' => 'bg-rose-500', 'text' => 'text-rose-600 dark:text-rose-400', 'border' => 'border-rose-500/30'],
-                            ];
-                        @endphp
                         @foreach($this->projectStats as $index => $stat)
-                            @php
-                                $theme = $palette[$index % count($palette)];
-                            @endphp
                             <div x-data="{ open: false }" class="space-y-2">
                                 <button type="button" @click="open = !open" class="w-full text-left focus:outline-none group cursor-pointer block">
                                     <div class="flex items-center justify-between text-xs mb-1.5">
                                         <div class="flex items-center gap-1.5 font-semibold text-zinc-800 dark:text-zinc-200 group-hover:text-zinc-900 dark:group-hover:text-zinc-100 transition-colors">
                                             <flux:icon name="chevron-right" class="size-3.5 text-zinc-400 transition-transform duration-200" ::class="open && 'rotate-90'" />
-                                            <span class="size-2 rounded-full {{ $theme['bar'] }} shrink-0"></span>
+                                            <span class="size-2 rounded-full bg-blue-600 dark:bg-blue-500 shrink-0"></span>
                                             <span>{{ $stat['name'] }}</span>
                                         </div>
-                                        <span class="text-zinc-500 dark:text-zinc-400 font-mono text-[11px] group-hover:text-zinc-800 dark:group-hover:text-zinc-300 transition-colors">{{ $stat['duration'] }} <span class="font-bold {{ $theme['text'] }}">({{ $stat['percentage'] }}%)</span></span>
+                                        <span class="text-zinc-500 dark:text-zinc-400 font-mono text-[11px] group-hover:text-zinc-800 dark:group-hover:text-zinc-300 transition-colors">{{ $stat['duration'] }} <span class="font-bold text-blue-600 dark:text-blue-400">({{ $stat['percentage'] }}%)</span></span>
                                     </div>
                                     <div class="w-full bg-zinc-100 dark:bg-zinc-800 rounded-full h-2 overflow-hidden p-0.5 border border-zinc-200/50 dark:border-zinc-700/50">
-                                        <div class="{{ $theme['bar'] }} h-1.5 rounded-full transition-all duration-500 shadow-2xs" style="width: {{ $stat['percentage'] }}%"></div>
+                                        <div class="bg-blue-600 dark:bg-blue-500 h-1.5 rounded-full transition-all duration-500 shadow-2xs" style="width: {{ $stat['percentage'] }}%"></div>
                                     </div>
                                 </button>
 
                                 <div x-show="open" 
                                      x-collapse
-                                     class="pl-4 pr-1 space-y-2 border-l-2 border-emerald-500/30 ml-2 mt-2" 
+                                     class="pl-4 pr-1 space-y-2 border-l-2 border-emerald-500/30 dark:border-emerald-500/20 ml-2 mt-2" 
                                      style="display: none;">
                                      @foreach($stat['categories'] as $cat)
                                          <div class="space-y-1">
                                              <div class="flex justify-between text-[10px]">
                                                  <span class="text-zinc-500 dark:text-zinc-400 font-medium flex items-center gap-1">
-                                                     <span class="size-1.5 rounded-full bg-emerald-500 inline-block"></span>
+                                                     <span class="size-1.5 rounded-full bg-emerald-500/80 inline-block"></span>
                                                      <span>{{ $cat['name'] }}</span>
                                                  </span>
                                                  <span class="text-zinc-500 dark:text-zinc-400 font-mono">{{ $cat['duration'] }} <span class="font-semibold text-emerald-600 dark:text-emerald-400">({{ $cat['percentage'] }}%)</span></span>
                                              </div>
                                              <div class="w-full bg-zinc-100 dark:bg-zinc-800 rounded-full h-1 overflow-hidden">
-                                                 <div class="bg-emerald-500/80 h-1 rounded-full" style="width: {{ $cat['percentage'] }}%"></div>
+                                                 <div class="bg-emerald-500/70 dark:bg-emerald-500/60 h-1 rounded-full" style="width: {{ $cat['percentage'] }}%"></div>
                                              </div>
                                          </div>
                                      @endforeach
@@ -677,6 +664,27 @@ new class extends Component
                 </div>
             @endforelse
         </div>
+    </div>
+
+    <!-- Back to top button (Centered on mobile, Right-aligned on PC) -->
+    <div class="fixed bottom-8 left-1/2 -translate-x-1/2 md:left-auto md:right-6 lg:right-8 md:translate-x-0 pointer-events-none z-50"
+         x-cloak
+         x-show="scrolled" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 translate-y-8"
+         x-transition:enter-end="opacity-100 translate-y-0"
+         x-transition:leave="transition ease-in duration-300"
+         x-transition:leave-start="opacity-100 translate-y-0"
+         x-transition:leave-end="opacity-0 translate-y-8">
+        
+        <button 
+            @click="window.scrollTo({top: 0, behavior: 'smooth'})"
+            class="pointer-events-auto bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 px-5 py-2.5 rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zinc-900 dark:focus:ring-white flex items-center gap-2 font-semibold text-xs border border-zinc-700/20 dark:border-zinc-200/20"
+            title="Back to top"
+        >
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
+            Back to top
+        </button>
     </div>
 
 </div>

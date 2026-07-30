@@ -155,13 +155,52 @@ new class extends Component
 
     public function import()
     {
-        $this->validate([
-            'importFile' => 'required|mimes:xlsx,csv',
-        ]);
+        try {
+            $this->validate([
+                'importFile' => 'required|file|mimes:xlsx,csv,xls|max:10240',
+            ], [
+                'importFile.required' => 'Silakan pilih berkas Excel (.xlsx atau .csv) terlebih dahulu.',
+                'importFile.mimes' => 'Format berkas tidak didukung. Harap unggah berkas bertipe .xlsx atau .csv.',
+                'importFile.max' => 'Ukuran berkas terlalu besar. Maksimal 10 MB.',
+            ]);
 
-        Excel::import(new ActivitiesImport, $this->importFile);
-        $this->importFile = null;
-        session()->flash('message', 'Activities imported successfully.');
+            $fileName = $this->importFile ? $this->importFile->getClientOriginalName() : 'Excel';
+
+            Excel::import(new ActivitiesImport, $this->importFile);
+            $this->importFile = null;
+
+            session()->flash('import_status', [
+                'type' => 'success',
+                'title' => 'Import Berhasil! 🎉',
+                'message' => "Berkas '{$fileName}' telah berhasil diimpor dan ditambahkan ke dalam riwayat aktivitas Anda.",
+            ]);
+
+            auth()->user()->notifications()->create([
+                'title' => '📥 Impor Aktivitas Berhasil',
+                'body' => "Berkas aktivitas '{$fileName}' telah berhasil diimpor.",
+                'type' => 'success',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $errorMsg = $e->validator->errors()->first('importFile');
+            session()->flash('import_status', [
+                'type' => 'error',
+                'title' => 'Format Berkas Tidak Valid ⚠️',
+                'message' => $errorMsg ?: 'Harap periksa kembali berkas yang Anda unggah.',
+            ]);
+        } catch (\Throwable $e) {
+            $this->importFile = null;
+            session()->flash('import_status', [
+                'type' => 'error',
+                'title' => 'Import Gagal ❌',
+                'message' => 'Terjadi kesalahan saat memproses berkas Excel. Pastikan struktur kolom sesuai (project, category, detail, start_time, end_time).',
+            ]);
+
+            auth()->user()->notifications()->create([
+                'title' => '⚠️ Impor Aktivitas Gagal',
+                'body' => 'Proses impor berkas Excel gagal. Pastikan format kolom sesuai dengan ketentuan.',
+                'type' => 'danger',
+            ]);
+        }
     }
 
     public function editActivity($id)
@@ -501,71 +540,48 @@ new class extends Component
                         </div>
                     </div>
 
-                    <!-- Export Modal & Button -->
-                    <div x-data="{ showExportModal: false, exportStart: '', exportEnd: '' }" class="m-0 flex items-center shrink-0">
-                        <button type="button" @click="showExportModal = true" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 transition-colors shadow-2xs cursor-pointer">
+                    <!-- Export Trigger Button -->
+                    <flux:modal.trigger name="export-modal">
+                        <button type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 transition-colors shadow-2xs cursor-pointer">
                             <flux:icon name="arrow-up-tray" class="size-3.5 text-zinc-400 dark:text-zinc-500" />
                             <span>Export</span>
                         </button>
-                        
-                        <!-- Modal Backdrop -->
-                        <div x-show="showExportModal" class="fixed inset-0 z-[100] bg-neutral-900/50 backdrop-blur-sm transition-opacity" x-transition.opacity style="display: none;"></div>
-                        
-                        <!-- Modal Content -->
-                        <div x-show="showExportModal" 
-                             class="fixed inset-0 z-[101] flex items-center justify-center p-4 sm:p-6" 
-                             x-transition:enter="ease-out duration-300" 
-                             x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
-                             x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
-                             x-transition:leave="ease-in duration-200" 
-                             x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" 
-                             x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                             style="display: none;">
-                             
-                            <div @click.outside="showExportModal = false" class="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800 w-full max-w-sm overflow-hidden text-left">
-                                <div class="p-6">
-                                    <h3 class="text-base font-semibold text-zinc-900 dark:text-zinc-100 mb-1">Export Activities</h3>
-                                    <p class="text-xs text-zinc-500 dark:text-zinc-400 mb-6">Select a date range to export your activities. Leave blank to export all history.</p>
-                                    
-                                    <div class="space-y-4">
-                                        <div>
-                                            <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Start Date</label>
-                                            <input type="date" x-model="exportStart" onclick="if ('showPicker' in HTMLInputElement.prototype) { try { this.showPicker(); } catch(e) {} }" class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:ring-indigo-500 focus:border-indigo-500 shadow-xs text-xs cursor-pointer py-2 px-3 transition-colors">
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">End Date</label>
-                                            <input type="date" x-model="exportEnd" onclick="if ('showPicker' in HTMLInputElement.prototype) { try { this.showPicker(); } catch(e) {} }" class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:ring-indigo-500 focus:border-indigo-500 shadow-xs text-xs cursor-pointer py-2 px-3 transition-colors">
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="bg-zinc-50 dark:bg-zinc-950 px-6 py-4 flex justify-end gap-3 border-t border-zinc-200 dark:border-zinc-800">
-                                    <flux:button variant="subtle" size="sm" @click="showExportModal = false">Cancel</flux:button>
-                                    <flux:button variant="primary" size="sm" class="bg-indigo-600 hover:bg-indigo-700 text-white dark:bg-indigo-500 dark:hover:bg-indigo-600 border-none cursor-pointer" @click="$wire.export(exportStart, exportEnd); showExportModal = false">Download Excel</flux:button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Import Button -->
-                    <form wire:submit.prevent="import" class="flex gap-2 items-center m-0 shrink-0" x-data="{ fileName: '' }">
-                        <label class="relative flex items-center cursor-pointer bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs font-medium py-1.5 px-3 rounded-xl transition-colors border border-zinc-200 dark:border-zinc-800 shadow-2xs">
-                            <input type="file" wire:model="importFile" x-on:change="fileName = $event.target.files[0] ? $event.target.files[0].name : ''" class="hidden" required>
-                            <flux:icon name="arrow-down-tray" class="size-3.5 mr-1.5 text-zinc-400 dark:text-zinc-500" />
-                            <span x-text="fileName ? (fileName.length > 12 ? fileName.substring(0, 12) + '...' : fileName) : 'Import'"></span>
-                        </label>
-                        <button type="submit" x-show="fileName" x-transition class="bg-indigo-600 hover:bg-indigo-700 text-white dark:bg-indigo-500 text-xs font-medium px-3 py-1.5 rounded-xl border-none cursor-pointer">
-                            Upload
-                        </button>
-                    </form>
+                    </flux:modal.trigger>
                 </div>
             </div>
         </div>
         
-        @if(session()->has('message'))
-            <div class="text-xs font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-950/30 p-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800/40">
-                <flux:icon name="check-circle" class="size-4" />
-                <span>{{ session('message') }}</span>
+        @if(session()->has('import_status'))
+            @php $status = session('import_status'); @endphp
+            <div x-data="{ show: true }" x-show="show" x-transition.out.duration.500ms class="rounded-2xl p-4 border shadow-2xs transition-all duration-300 {{ $status['type'] === 'success' ? 'bg-emerald-50/90 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/60 text-emerald-900 dark:text-emerald-100' : 'bg-rose-50/90 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800/60 text-rose-900 dark:text-rose-100' }}">
+                <div class="flex items-start justify-between gap-3">
+                    <div class="flex items-start gap-3 min-w-0">
+                        <div class="size-8 rounded-xl flex items-center justify-center shrink-0 border {{ $status['type'] === 'success' ? 'bg-emerald-100 dark:bg-emerald-900/60 border-emerald-300 dark:border-emerald-700/60 text-emerald-600 dark:text-emerald-400' : 'bg-rose-100 dark:bg-rose-900/60 border-rose-300 dark:border-rose-700/60 text-rose-600 dark:text-rose-400' }}">
+                            @if($status['type'] === 'success')
+                                <flux:icon name="check-circle" class="size-4.5" />
+                            @else
+                                <flux:icon name="exclamation-triangle" class="size-4.5" />
+                            @endif
+                        </div>
+                        <div class="min-w-0">
+                            <h4 class="text-xs font-bold">{{ $status['title'] }}</h4>
+                            <p class="text-xs mt-0.5 opacity-90 leading-relaxed">{{ $status['message'] }}</p>
+                        </div>
+                    </div>
+                    <button type="button" @click="show = false" class="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 p-1 rounded-lg transition-colors cursor-pointer shrink-0">
+                        <flux:icon name="x-mark" class="size-4" />
+                    </button>
+                </div>
+            </div>
+        @elseif(session()->has('message'))
+            <div x-data="{ show: true }" x-show="show" x-transition class="text-xs font-medium text-emerald-600 dark:text-emerald-400 flex items-center justify-between gap-2 bg-emerald-50 dark:bg-emerald-950/30 p-3 rounded-xl border border-emerald-200 dark:border-emerald-800/40">
+                <div class="flex items-center gap-2">
+                    <flux:icon name="check-circle" class="size-4 shrink-0" />
+                    <span>{{ session('message') }}</span>
+                </div>
+                <button type="button" @click="show = false" class="text-emerald-500 hover:text-emerald-700 p-0.5 cursor-pointer">
+                    <flux:icon name="x-mark" class="size-3.5" />
+                </button>
             </div>
         @endif
         
@@ -687,8 +703,8 @@ new class extends Component
         </div>
     </div>
 
-    <!-- Back to top button (Centered & Higher above Tracker bar) -->
-    <div class="fixed bottom-32 sm:bottom-36 left-1/2 -translate-x-1/2 pointer-events-none z-50"
+    <!-- Back to top button (Centered on mobile, Right-aligned on PC) -->
+    <div class="fixed bottom-36 sm:bottom-40 md:bottom-8 left-1/2 -translate-x-1/2 md:left-auto md:right-6 lg:right-8 md:translate-x-0 pointer-events-none z-50"
          x-cloak
          x-show="scrolled" 
          x-transition:enter="transition ease-out duration-300"
@@ -700,7 +716,7 @@ new class extends Component
         
         <button 
             @click="window.scrollTo({top: 0, behavior: 'smooth'})"
-            class="pointer-events-auto bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 px-5 py-2 rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zinc-900 dark:focus:ring-white flex items-center gap-2 font-semibold text-xs"
+            class="pointer-events-auto bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 px-5 py-2.5 rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zinc-900 dark:focus:ring-white flex items-center gap-2 font-semibold text-xs border border-zinc-700/20 dark:border-zinc-200/20"
             title="Back to top"
         >
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
@@ -753,4 +769,49 @@ new class extends Component
             </div>
         </div>
     </div>
+
+    <!-- Export Activities Modal (Full Screen Teleported via Flux) -->
+    <flux:modal name="export-modal" class="w-[calc(100vw-2rem)] max-w-md backdrop:backdrop-blur-md z-[200]">
+        <div x-data="{ exportStart: '', exportEnd: '' }" class="space-y-5">
+            <div class="flex items-start gap-3.5">
+                <div class="size-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0">
+                    <flux:icon name="arrow-down-tray" class="size-5 text-zinc-700 dark:text-zinc-300" />
+                </div>
+                <div class="flex-1 min-w-0">
+                    <flux:heading size="lg" class="font-bold tracking-tight">Export Activities</flux:heading>
+                    <flux:text class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Select a date range to export your activities to Excel (.xlsx). Leave blank to export all history.</flux:text>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5 flex items-center gap-1">
+                        <flux:icon name="calendar" class="size-3.5 text-zinc-400" />
+                        <span>Start Date</span>
+                    </label>
+                    <input type="date" x-model="exportStart" onclick="if ('showPicker' in HTMLInputElement.prototype) { try { this.showPicker(); } catch(e) {} }" class="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white focus:border-transparent shadow-2xs text-xs cursor-pointer py-2.5 px-3 transition-all">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5 flex items-center gap-1">
+                        <flux:icon name="calendar" class="size-3.5 text-zinc-400" />
+                        <span>End Date</span>
+                    </label>
+                    <input type="date" x-model="exportEnd" onclick="if ('showPicker' in HTMLInputElement.prototype) { try { this.showPicker(); } catch(e) {} }" class="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white focus:border-transparent shadow-2xs text-xs cursor-pointer py-2.5 px-3 transition-all">
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-3 border-t border-zinc-200/80 dark:border-zinc-800">
+                <flux:modal.close>
+                    <flux:button variant="ghost" size="sm" class="cursor-pointer">Cancel</flux:button>
+                </flux:modal.close>
+                
+                <flux:modal.close>
+                    <flux:button variant="primary" size="sm" class="cursor-pointer font-semibold" @click="$wire.export(exportStart, exportEnd)">
+                        <flux:icon name="arrow-down-tray" class="size-3.5 mr-1.5" />
+                        <span>Download Excel</span>
+                    </flux:button>
+                </flux:modal.close>
+            </div>
+        </div>
+    </flux:modal>
 </div>
