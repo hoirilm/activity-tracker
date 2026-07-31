@@ -41,8 +41,10 @@ new class extends Component
 };
 ?>
 
-<div class="flex h-full w-full flex-col gap-6 p-3 sm:p-4 text-neutral-900 dark:text-neutral-100 max-w-6xl mx-auto mt-2 sm:mt-4 pb-16 animate-page-entrance">
-    <!-- Header -->
+<div class="flex h-full w-full flex-col gap-6 p-3 sm:p-4 text-neutral-900 dark:text-neutral-100 max-w-6xl mx-auto mt-2 sm:mt-4 pb-16">
+    <!-- Main Animated Content -->
+    <div class="flex flex-col gap-6 animate-page-entrance">
+        <!-- Header -->
     <div class="border-b border-zinc-200/80 dark:border-zinc-800/80 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
             <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-2.5">
@@ -184,5 +186,6 @@ new class extends Component
             </div>
         </div>
 
+    </div>
     </div>
 </div>

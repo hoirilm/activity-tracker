@@ -402,10 +402,12 @@ new class extends Component
 };
 ?>
 
-<div class="flex h-full w-full flex-col gap-6 p-3 sm:p-4 text-neutral-900 dark:text-neutral-100 max-w-7xl mx-auto mt-2 sm:mt-4 pb-20 animate-page-entrance"
+<div class="flex h-full w-full flex-col gap-6 p-3 sm:p-4 text-neutral-900 dark:text-neutral-100 max-w-7xl mx-auto mt-2 sm:mt-4 pb-20"
      x-data="{ activeTab: @entangle('activeTab') }">
     
-    <!-- Top Header Studio Banner -->
+    <!-- Main Animated Content -->
+    <div class="flex flex-col gap-6 animate-page-entrance">
+        <!-- Top Header Studio Banner -->
     <div class="border-b border-zinc-200/80 dark:border-zinc-800/80 pb-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
             <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-2.5">
@@ -1456,5 +1458,6 @@ new class extends Component
             </div>
         </div>
 
+    </div>
     </div>
 </div>

@@ -309,9 +309,11 @@ new class extends Component
 };
 ?>
 
-<div class="flex h-full w-full flex-col gap-5 md:gap-6 p-3 sm:p-4 text-neutral-900 dark:text-neutral-100 max-w-6xl mx-auto mt-0 md:mt-4 pb-32 md:pb-8 animate-page-entrance" x-data="{ scrolled: false }" @scroll.window="scrolled = (window.pageYOffset > 300)">
+<div class="flex h-full w-full flex-col gap-5 md:gap-6 p-3 sm:p-4 text-neutral-900 dark:text-neutral-100 max-w-6xl mx-auto mt-0 md:mt-4 pb-32 md:pb-8" x-data="{ scrolled: false }" @scroll.window="scrolled = (window.pageYOffset > 300)">
     
-    <!-- Header -->
+    <!-- Main Animated Content -->
+    <div class="flex flex-col gap-5 md:gap-6 animate-page-entrance">
+        <!-- Header -->
     <div class="border-b border-zinc-200/80 dark:border-zinc-800/80 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
             <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-2.5">
@@ -818,27 +820,7 @@ new class extends Component
             @endif
         </div>
     </div>
-
-    <!-- Back to top button (Centered on mobile, Right-aligned on PC) -->
-    <div class="fixed bottom-36 sm:bottom-40 md:bottom-8 left-1/2 -translate-x-1/2 md:left-auto md:right-6 lg:right-8 md:translate-x-0 pointer-events-none z-50"
-         x-cloak
-         x-show="scrolled" 
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0 translate-y-8"
-         x-transition:enter-end="opacity-100 translate-y-0"
-         x-transition:leave="transition ease-in duration-300"
-         x-transition:leave-start="opacity-100 translate-y-0"
-         x-transition:leave-end="opacity-0 translate-y-8">
-        
-        <button 
-            @click="window.scrollTo({top: 0, behavior: 'smooth'})"
-            class="pointer-events-auto bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 px-5 py-2.5 rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zinc-900 dark:focus:ring-white flex items-center gap-2 font-semibold text-xs border border-zinc-700/20 dark:border-zinc-200/20"
-            title="Back to top"
-        >
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
-            Back to top
-        </button>
-    </div>
+</div>
 
     <!-- Edit Time Modal -->
     <div x-data="{ show: @entangle('showEditModal') }" x-show="show" style="display: none;" class="relative z-[100]">

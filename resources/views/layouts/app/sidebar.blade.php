@@ -257,6 +257,31 @@
         <livewire:notifications />
         @include('partials.help-modals')
 
+        <!-- Global Floating Back to Top Button (Active exclusively in Desktop Mode) -->
+        <div x-data="{ scrolled: false }" 
+             @scroll.window="scrolled = (window.pageYOffset > 300)"
+             x-cloak
+             x-show="scrolled" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 translate-y-6 scale-90"
+             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+             x-transition:leave-end="opacity-0 translate-y-6 scale-90"
+             class="hidden md:block fixed bottom-6 right-6 lg:bottom-8 lg:right-8 z-[9999] pointer-events-none"
+             style="display: none;">
+            
+            <button 
+                @click="window.scrollTo({top: 0, behavior: 'smooth'})"
+                type="button"
+                class="pointer-events-auto flex items-center gap-2 px-4 py-2.5 rounded-full bg-zinc-900/90 dark:bg-white/90 text-white dark:text-zinc-900 backdrop-blur-xl shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer border border-zinc-700/30 dark:border-zinc-200/30 text-xs font-semibold"
+                title="Back to top"
+            >
+                <flux:icon name="arrow-up" class="size-4" />
+                <span>Back to top</span>
+            </button>
+        </div>
+
         @fluxScripts
     </body>
 </html>
