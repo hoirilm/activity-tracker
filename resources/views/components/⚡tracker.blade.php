@@ -311,10 +311,8 @@ new class extends Component
 
 <div class="flex h-full w-full flex-col gap-5 md:gap-6 p-3 sm:p-4 text-neutral-900 dark:text-neutral-100 max-w-6xl mx-auto mt-0 md:mt-4 pb-32 md:pb-8" x-data="{ scrolled: false }" @scroll.window="scrolled = (window.pageYOffset > 300)">
     
-    <!-- Main Animated Content -->
-    <div class="flex flex-col gap-5 md:gap-6 animate-page-entrance">
-        <!-- Header -->
-    <div class="border-b border-zinc-200/80 dark:border-zinc-800/80 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <!-- Header -->
+    <div class="border-b border-zinc-200/80 dark:border-zinc-800/80 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-page-entrance">
         <div>
             <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-2.5">
                 <div class="size-8.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0">
@@ -490,7 +488,7 @@ new class extends Component
 
     <!-- Running Activities (Initial Layout with Modern Live Timer Motion Cues) -->
     @if($this->runningActivities->count() > 0)
-    <div class="space-y-3"
+    <div class="space-y-3 animate-page-entrance"
          wire:transition.slide.up>
         <h2 class="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-2 font-mono">
             <span class="relative flex h-2.5 w-2.5">
@@ -551,8 +549,8 @@ new class extends Component
     </div>
     @endif
 
-    <!-- Activity Feed / History -->
-    <div class="flex flex-col gap-4 mt-2">
+    <!-- Activity Feed / History Feed -->
+    <div class="flex flex-col gap-4 mt-2 animate-page-entrance">
         <div class="flex flex-col md:flex-row justify-between md:items-center gap-3">
             <h3 class="text-sm font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-2 shrink-0">
                 <flux:icon name="clock" class="size-4.5 text-zinc-400" />
@@ -820,7 +818,6 @@ new class extends Component
             @endif
         </div>
     </div>
-</div>
 
     <!-- Edit Time Modal -->
     <div x-data="{ show: @entangle('showEditModal') }" x-show="show" style="display: none;" class="relative z-[100]">
