@@ -494,8 +494,8 @@ new class extends Component
                     <select wire:model.live="filterStatus" class="h-9 px-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500 cursor-pointer">
                         <option value="all">Active Statuses</option>
                         <option value="new">New 🔵</option>
-                        <option value="on_progress">On Progress 🟡</option>
                         <option value="on_hold">On Hold 🟠</option>
+                        <option value="on_progress">On Progress 🟡</option>
                         <option value="done">Done 🟢</option>
                         <option value="archived">Archived 📦 ({{ $this->archivedCount }})</option>
                     </select>
@@ -548,8 +548,8 @@ new class extends Component
             @php
                 $columns = [
                     ['id' => 'new', 'label' => 'New', 'color' => 'sky', 'icon' => 'sparkles', 'bg' => 'bg-sky-500/10 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300/90 border-sky-200/80 dark:border-sky-900/40'],
-                    ['id' => 'on_progress', 'label' => 'On Progress', 'color' => 'amber', 'icon' => 'arrow-path', 'bg' => 'bg-amber-500/10 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300/90 border-amber-200/80 dark:border-amber-900/40'],
                     ['id' => 'on_hold', 'label' => 'On Hold', 'color' => 'rose', 'icon' => 'pause-circle', 'bg' => 'bg-rose-500/10 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300/90 border-rose-200/80 dark:border-rose-900/40'],
+                    ['id' => 'on_progress', 'label' => 'On Progress', 'color' => 'amber', 'icon' => 'arrow-path', 'bg' => 'bg-amber-500/10 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300/90 border-amber-200/80 dark:border-amber-900/40'],
                     ['id' => 'done', 'label' => 'Done', 'color' => 'emerald', 'icon' => 'check-circle', 'bg' => 'bg-emerald-500/10 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300/90 border-emerald-200/80 dark:border-emerald-900/40'],
                 ];
             @endphp
