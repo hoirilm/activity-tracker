@@ -29,7 +29,7 @@ new #[Title('Backup & Restore Settings')] class extends Component {
             $data = json_decode($content, true);
 
             if (! is_array($data) || ! isset($data['activities'])) {
-                session()->flash('status_error', 'Format berkas tidak valid. Harap gunakan berkas JSON hasil ekspor Activity Tracker.');
+                session()->flash('status_error', 'Invalid file format. Please use a JSON backup file exported from Activity Tracker.');
                 $this->previewData = null;
 
                 return;
@@ -49,11 +49,13 @@ new #[Title('Backup & Restore Settings')] class extends Component {
                 'total_projects' => count($data['projects'] ?? []),
                 'total_categories' => count($data['categories'] ?? []),
                 'total_activities' => count($data['activities'] ?? []),
+                'total_tasks' => count($data['tasks'] ?? []),
+                'total_labels' => count($data['labels'] ?? []),
             ];
 
             $this->confirmDifferentAccount = false;
         } catch (\Throwable $e) {
-            session()->flash('status_error', 'Gagal membaca berkas. Pastikan berkas tidak terenkripsi atau rusak.');
+            session()->flash('status_error', 'Failed to read backup file. Please ensure the file is valid and uncorrupted.');
             $this->previewData = null;
         }
     }
@@ -65,6 +67,8 @@ new #[Title('Backup & Restore Settings')] class extends Component {
 
         $projects = $user->projects()->get(['id', 'name', 'created_at']);
         $categories = $user->categories()->get(['id', 'name', 'created_at']);
+        $labels = $user->labels()->get(['id', 'name', 'color', 'created_at']);
+        $tasks = $user->tasks()->with(['project', 'labels'])->latest()->get();
         $activities = $user->activities()
             ->with(['project', 'category'])
             ->orderBy('start_time', 'asc')
@@ -73,7 +77,7 @@ new #[Title('Backup & Restore Settings')] class extends Component {
         $latestActivity = $activities->last();
 
         $backupData = [
-            'version' => '1.0',
+            'version' => '1.1',
             'generator' => 'Klakoan Activity Tracker',
             'exported_at' => now()->toIso8601String(),
             'user' => [
@@ -84,10 +88,22 @@ new #[Title('Backup & Restore Settings')] class extends Component {
                 'total_projects' => $projects->count(),
                 'total_categories' => $categories->count(),
                 'total_activities' => $activities->count(),
+                'total_tasks' => $tasks->count(),
+                'total_labels' => $labels->count(),
                 'latest_activity_at' => $latestActivity ? $latestActivity->start_time->toIso8601String() : null,
             ],
             'projects' => $projects->map(fn ($p) => ['name' => $p->name])->values()->all(),
             'categories' => $categories->map(fn ($c) => ['name' => $c->name])->values()->all(),
+            'labels' => $labels->map(fn ($l) => ['name' => $l->name, 'color' => $l->color])->values()->all(),
+            'tasks' => $tasks->map(function ($t) {
+                return [
+                    'title' => $t->title,
+                    'description' => $t->description,
+                    'project' => $t->project ? $t->project->name : null,
+                    'status' => $t->status,
+                    'labels' => $t->labels->pluck('name')->all(),
+                ];
+            })->values()->all(),
             'activities' => $activities->map(function ($act) {
                 return [
                     'project' => $act->project ? $act->project->name : 'General',
@@ -114,7 +130,7 @@ new #[Title('Backup & Restore Settings')] class extends Component {
     public function processRestore(): void
     {
         if (! $this->backupFile) {
-            session()->flash('status_error', 'Harap pilih berkas backup terlebih dahulu.');
+            session()->flash('status_error', 'Please select a backup file first.');
 
             return;
         }
@@ -127,7 +143,7 @@ new #[Title('Backup & Restore Settings')] class extends Component {
             $data = json_decode($content, true);
 
             if (! is_array($data) || ! isset($data['activities'])) {
-                session()->flash('status_error', 'Struktur berkas backup tidak valid.');
+                session()->flash('status_error', 'Invalid backup file structure.');
 
                 return;
             }
@@ -136,7 +152,7 @@ new #[Title('Backup & Restore Settings')] class extends Component {
             $currentEmail = strtolower(trim($user->email));
 
             if ($fileEmail !== '' && $fileEmail !== $currentEmail && ! $this->confirmDifferentAccount) {
-                session()->flash('status_error', "Email akun pada berkas backup ({$fileEmail}) tidak cocok dengan akun Anda ({$currentEmail}). Harap centang konfirmasi jika Anda ingin mengimpor data ini.");
+                session()->flash('status_error', "Account email in backup file ({$fileEmail}) does not match your account ({$currentEmail}). Please check confirmation if you wish to import this data.");
 
                 return;
             }
@@ -144,11 +160,14 @@ new #[Title('Backup & Restore Settings')] class extends Component {
             DB::transaction(function () use ($user, $data) {
                 if ($this->restoreMode === 'replace') {
                     $user->activities()->delete();
+                    $user->tasks()->delete();
                 }
 
                 $importedCount = 0;
+                $importedTaskCount = 0;
                 $projectMap = [];
                 $categoryMap = [];
+                $labelMap = [];
 
                 foreach ($data['projects'] ?? [] as $proj) {
                     $name = trim($proj['name'] ?? '');
@@ -163,6 +182,55 @@ new #[Title('Backup & Restore Settings')] class extends Component {
                     if ($name !== '') {
                         $c = $user->categories()->firstOrCreate(['name' => $name]);
                         $categoryMap[$name] = $c->id;
+                    }
+                }
+
+                foreach ($data['labels'] ?? [] as $lbl) {
+                    $name = trim($lbl['name'] ?? '');
+                    $color = trim($lbl['color'] ?? 'amber');
+                    if ($name !== '') {
+                        $l = $user->labels()->firstOrCreate(['name' => $name], ['color' => $color]);
+                        $labelMap[$name] = $l->id;
+                    }
+                }
+
+                foreach ($data['tasks'] ?? [] as $tData) {
+                    $title = trim($tData['title'] ?? '');
+                    if ($title !== '') {
+                        $projectName = trim($tData['project'] ?? '');
+                        $projectId = !empty($projectName) ? ($projectMap[$projectName] ?? null) : null;
+
+                        if ($this->restoreMode === 'merge') {
+                            $exists = $user->tasks()
+                                ->where('title', $title)
+                                ->where('project_id', $projectId)
+                                ->exists();
+
+                            if ($exists) {
+                                continue;
+                            }
+                        }
+
+                        $task = $user->tasks()->create([
+                            'title' => $title,
+                            'description' => $tData['description'] ?? null,
+                            'project_id' => $projectId,
+                            'status' => $tData['status'] ?? 'new',
+                        ]);
+
+                        if (!empty($tData['labels'])) {
+                            $tLabelIds = [];
+                            foreach ($tData['labels'] as $lName) {
+                                if (isset($labelMap[$lName])) {
+                                    $tLabelIds[] = $labelMap[$lName];
+                                }
+                            }
+                            if ($tLabelIds) {
+                                $task->labels()->sync($tLabelIds);
+                            }
+                        }
+
+                        $importedTaskCount++;
                     }
                 }
 
@@ -209,18 +277,18 @@ new #[Title('Backup & Restore Settings')] class extends Component {
                     $importedCount++;
                 }
 
-                session()->flash('status_success', "Berhasil memulihkan {$importedCount} aktivitas ke dalam akun Anda! 🎉");
+                session()->flash('status_success', "Successfully restored {$importedCount} activities and {$importedTaskCount} tasks to your account! 🎉");
 
                 $user->notifications()->create([
-                    'title' => '🔄 Restore Data Berhasil',
-                    'body' => "Sebanyak {$importedCount} aktivitas telah dipulihkan dari berkas cadangan.",
+                    'title' => '🔄 Data Restore Successful',
+                    'body' => "A total of {$importedCount} activities and {$importedTaskCount} tasks have been restored from the backup file.",
                     'type' => 'success',
                 ]);
             });
 
             $this->reset(['backupFile', 'previewData']);
         } catch (\Throwable $e) {
-            session()->flash('status_error', 'Gagal memproses restore data: '.$e->getMessage());
+            session()->flash('status_error', 'Failed to process data restore: '.$e->getMessage());
         }
     }
 }; ?>
@@ -241,7 +309,7 @@ new #[Title('Backup & Restore Settings')] class extends Component {
                         <flux:icon name="check-circle" class="size-4.5" />
                     </div>
                     <div class="text-xs">
-                        <h4 class="font-bold">Restore Berhasil</h4>
+                        <h4 class="font-bold">Restore Successful</h4>
                         <p class="mt-0.5 opacity-90 leading-relaxed">{{ session('status_success') }}</p>
                     </div>
                 </div>
@@ -253,7 +321,7 @@ new #[Title('Backup & Restore Settings')] class extends Component {
                         <flux:icon name="exclamation-triangle" class="size-4.5" />
                     </div>
                     <div class="text-xs">
-                        <h4 class="font-bold">Gagal Memproses</h4>
+                        <h4 class="font-bold">Processing Failed</h4>
                         <p class="mt-0.5 opacity-90 leading-relaxed">{{ session('status_error') }}</p>
                     </div>
                 </div>
@@ -266,9 +334,9 @@ new #[Title('Backup & Restore Settings')] class extends Component {
                         <flux:icon name="arrow-down-tray" class="size-5" />
                     </div>
                     <div class="flex-1 min-w-0">
-                        <h3 class="text-sm font-bold text-zinc-900 dark:text-zinc-100">Cadangkan Data (Backup)</h3>
+                        <h3 class="text-sm font-bold text-zinc-900 dark:text-zinc-100">Backup Data</h3>
                         <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 leading-relaxed">
-                            Unduh seluruh riwayat aktivitas, proyek, dan kategori Anda hingga aktivitas terbaru dalam berkas cadangan JSON yang sangat restore-friendly.
+                            Download your complete activity history, projects, and categories in a JSON backup file.
                         </p>
                     </div>
                 </div>
@@ -279,28 +347,38 @@ new #[Title('Backup & Restore Settings')] class extends Component {
                     $totalProjects = $user->projects()->count();
                     $totalCategories = $user->categories()->count();
                     $totalActivities = $user->activities()->count();
+                    $totalTasks = $user->tasks()->count();
+                    $totalLabels = $user->labels()->count();
                     $latestActivity = $user->activities()->latest('start_time')->first();
                 @endphp
 
-                <div class="grid grid-cols-3 gap-2.5 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-950/60 border border-zinc-200/60 dark:border-zinc-800/60">
+                <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-950/60 border border-zinc-200/60 dark:border-zinc-800/60">
                     <div class="text-center">
-                        <div class="text-[10px] uppercase font-bold text-zinc-400 dark:text-zinc-500">Proyek</div>
+                        <div class="text-[10px] uppercase font-bold text-zinc-400 dark:text-zinc-500">Projects</div>
                         <div class="text-base font-extrabold text-zinc-900 dark:text-zinc-100 mt-0.5 font-mono">{{ $totalProjects }}</div>
                     </div>
-                    <div class="text-center border-x border-zinc-200/60 dark:border-zinc-800/60">
-                        <div class="text-[10px] uppercase font-bold text-zinc-400 dark:text-zinc-500">Kategori</div>
+                    <div class="text-center sm:border-l border-zinc-200/60 dark:border-zinc-800/60">
+                        <div class="text-[10px] uppercase font-bold text-zinc-400 dark:text-zinc-500">Categories</div>
                         <div class="text-base font-extrabold text-zinc-900 dark:text-zinc-100 mt-0.5 font-mono">{{ $totalCategories }}</div>
                     </div>
-                    <div class="text-center">
-                        <div class="text-[10px] uppercase font-bold text-zinc-400 dark:text-zinc-500">Aktivitas</div>
+                    <div class="text-center border-l border-zinc-200/60 dark:border-zinc-800/60">
+                        <div class="text-[10px] uppercase font-bold text-zinc-400 dark:text-zinc-500">Activities</div>
                         <div class="text-base font-extrabold text-zinc-900 dark:text-zinc-100 mt-0.5 font-mono">{{ $totalActivities }}</div>
+                    </div>
+                    <div class="text-center border-l border-zinc-200/60 dark:border-zinc-800/60">
+                        <div class="text-[10px] uppercase font-bold text-zinc-400 dark:text-zinc-500">Tasks</div>
+                        <div class="text-base font-extrabold text-zinc-900 dark:text-zinc-100 mt-0.5 font-mono">{{ $totalTasks }}</div>
+                    </div>
+                    <div class="text-center border-l border-zinc-200/60 dark:border-zinc-800/60">
+                        <div class="text-[10px] uppercase font-bold text-zinc-400 dark:text-zinc-500">Labels</div>
+                        <div class="text-base font-extrabold text-zinc-900 dark:text-zinc-100 mt-0.5 font-mono">{{ $totalLabels }}</div>
                     </div>
                 </div>
 
                 @if($latestActivity)
                     <div class="text-[11px] text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5 pt-1">
                         <flux:icon name="clock" class="size-3.5 text-zinc-400" />
-                        <span>Aktivitas Terakhir: <strong>{{ $latestActivity->start_time->format('d M Y, H:i') }}</strong> ({{ $latestActivity->detail }})</span>
+                        <span>Latest Activity: <strong>{{ $latestActivity->start_time->format('d M Y, H:i') }}</strong> ({{ $latestActivity->detail }})</span>
                     </div>
                 @endif
 
@@ -311,8 +389,8 @@ new #[Title('Backup & Restore Settings')] class extends Component {
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        <span wire:loading.remove wire:target="downloadBackup">Unduh Berkas Backup (.json)</span>
-                        <span wire:loading wire:target="downloadBackup">Mengunduh...</span>
+                        <span wire:loading.remove wire:target="downloadBackup">Download Backup File (.json)</span>
+                        <span wire:loading wire:target="downloadBackup">Downloading...</span>
                     </button>
                 </div>
             </div>
@@ -324,16 +402,16 @@ new #[Title('Backup & Restore Settings')] class extends Component {
                         <flux:icon name="arrow-up-tray" class="size-5" />
                     </div>
                     <div class="flex-1 min-w-0">
-                        <h3 class="text-sm font-bold text-zinc-900 dark:text-zinc-100">Pulihkan Data (Restore)</h3>
+                        <h3 class="text-sm font-bold text-zinc-900 dark:text-zinc-100">Restore Data</h3>
                         <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 leading-relaxed">
-                            Unggah berkas cadangan JSON untuk memulihkan seluruh aktivitas, proyek, dan kategori ke akun Anda.
+                            Upload a JSON backup file to restore all activities, tasks, projects, categories, and labels to your account.
                         </p>
                     </div>
                 </div>
 
                 <!-- Upload Dropzone / Button -->
                 <div class="space-y-3">
-                    <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">Pilih Berkas Backup (.json)</label>
+                    <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">Select Backup File (.json)</label>
                     
                     <div class="relative flex items-center justify-center p-6 rounded-2xl border-2 border-dashed border-zinc-300 dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-950/40 hover:bg-zinc-100/60 dark:hover:bg-zinc-800/40 transition-colors cursor-pointer text-center">
                         <input type="file" wire:model="backupFile" accept=".json" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
@@ -342,9 +420,9 @@ new #[Title('Backup & Restore Settings')] class extends Component {
                                 <flux:icon name="document-arrow-up" class="size-5" />
                             </div>
                             <div class="text-xs text-zinc-600 dark:text-zinc-400 font-medium">
-                                <span class="text-zinc-900 dark:text-zinc-100 font-bold">Klik untuk memilih berkas</span> atau seret berkas ke sini
+                                <span class="text-zinc-900 dark:text-zinc-100 font-bold">Click to select file</span> or drag &amp; drop file here
                             </div>
-                            <div class="text-[10px] text-zinc-400">Mendukung berkas JSON backup resmi Activity Tracker (Maks 20MB)</div>
+                            <div class="text-[10px] text-zinc-400">Supports official Activity Tracker JSON backup files (Max 20MB)</div>
                         </div>
                     </div>
                 </div>
@@ -364,57 +442,65 @@ new #[Title('Backup & Restore Settings')] class extends Component {
                         @if($previewData['email_matched'])
                             <div class="p-2.5 rounded-xl bg-emerald-50/90 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-900 dark:text-emerald-100 text-xs flex items-center gap-2">
                                 <flux:icon name="check-circle" class="size-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                                <span>Email akun cocok: <strong>{{ $previewData['source_email'] }}</strong></span>
+                                <span>Account email matches: <strong>{{ $previewData['source_email'] }}</strong></span>
                             </div>
                         @else
                             <div class="p-3 rounded-xl bg-amber-50/90 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-900 dark:text-amber-100 text-xs space-y-2">
                                 <div class="flex items-start gap-2">
                                     <flux:icon name="exclamation-triangle" class="size-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                                     <div class="leading-relaxed">
-                                        <strong>Perhatian:</strong> Berkas backup berasal dari email <strong>{{ $previewData['source_email'] }}</strong>, sedangkan akun Anda saat ini adalah <strong>{{ auth()->user()->email }}</strong>.
+                                        <strong>Warning:</strong> Backup file originates from email <strong>{{ $previewData['source_email'] }}</strong>, while your current account is <strong>{{ auth()->user()->email }}</strong>.
                                     </div>
                                 </div>
                                 
                                 <label class="flex items-center gap-2 pt-1 font-semibold text-[11px] cursor-pointer text-amber-950 dark:text-amber-100 border-t border-amber-200/60 dark:border-amber-800/60">
                                     <input type="checkbox" wire:model.live="confirmDifferentAccount" class="rounded border-amber-300 text-amber-600 focus:ring-amber-500">
-                                    <span>Saya mengerti &amp; tetap ingin mengimpor data ini ke akun saya</span>
+                                    <span>I understand &amp; wish to import this data into my account anyway</span>
                                 </label>
                             </div>
                         @endif
 
-                        <div class="grid grid-cols-3 gap-2 text-center text-xs">
+                        <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center text-xs">
                             <div class="p-2 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800">
-                                <div class="text-[10px] text-zinc-400 font-bold">Proyek</div>
+                                <div class="text-[10px] text-zinc-400 font-bold">Projects</div>
                                 <div class="font-bold text-zinc-900 dark:text-zinc-100 font-mono mt-0.5">{{ $previewData['total_projects'] }}</div>
                             </div>
                             <div class="p-2 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800">
-                                <div class="text-[10px] text-zinc-400 font-bold">Kategori</div>
+                                <div class="text-[10px] text-zinc-400 font-bold">Categories</div>
                                 <div class="font-bold text-zinc-900 dark:text-zinc-100 font-mono mt-0.5">{{ $previewData['total_categories'] }}</div>
                             </div>
                             <div class="p-2 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800">
-                                <div class="text-[10px] text-zinc-400 font-bold">Aktivitas</div>
+                                <div class="text-[10px] text-zinc-400 font-bold">Activities</div>
                                 <div class="font-bold text-zinc-900 dark:text-zinc-100 font-mono mt-0.5">{{ $previewData['total_activities'] }}</div>
+                            </div>
+                            <div class="p-2 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800">
+                                <div class="text-[10px] text-zinc-400 font-bold">Tasks</div>
+                                <div class="font-bold text-zinc-900 dark:text-zinc-100 font-mono mt-0.5">{{ $previewData['total_tasks'] ?? 0 }}</div>
+                            </div>
+                            <div class="p-2 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800">
+                                <div class="text-[10px] text-zinc-400 font-bold">Labels</div>
+                                <div class="font-bold text-zinc-900 dark:text-zinc-100 font-mono mt-0.5">{{ $previewData['total_labels'] ?? 0 }}</div>
                             </div>
                         </div>
 
                         <!-- Mode Options with Instant Alpine Switching -->
                         <div class="pt-2 space-y-2" x-data="{ selectedMode: @entangle('restoreMode') }">
-                            <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">Metode Pemulihan Data:</label>
+                            <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">Restore Method:</label>
                             
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 <label :class="selectedMode === 'merge' ? 'border-zinc-900 dark:border-white bg-white dark:bg-zinc-900 shadow-2xs' : 'border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/50'" class="flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition-all duration-150">
                                     <input type="radio" x-model="selectedMode" value="merge" class="mt-0.5">
                                     <div class="text-xs">
-                                        <div class="font-bold text-zinc-900 dark:text-zinc-100">Gabungkan (Merge)</div>
-                                        <div class="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5 leading-relaxed">Tambahkan data baru tanpa menghapus data lama (Recommended).</div>
+                                        <div class="font-bold text-zinc-900 dark:text-zinc-100">Merge Data</div>
+                                        <div class="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5 leading-relaxed">Append new data without removing existing data (Recommended).</div>
                                     </div>
                                 </label>
 
                                 <label :class="selectedMode === 'replace' ? 'border-rose-500 bg-rose-50/30 dark:bg-rose-950/20' : 'border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/50'" class="flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition-all duration-150">
                                     <input type="radio" x-model="selectedMode" value="replace" class="mt-0.5 text-rose-600">
                                     <div class="text-xs">
-                                        <div class="font-bold text-rose-600 dark:text-rose-400">Timpa (Replace)</div>
-                                        <div class="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5 leading-relaxed">Hapus riwayat lama &amp; gantikan dengan data dari berkas backup.</div>
+                                        <div class="font-bold text-rose-600 dark:text-rose-400">Replace Data</div>
+                                        <div class="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5 leading-relaxed">Wipe existing history and replace with data from backup file.</div>
                                     </div>
                                 </label>
                             </div>
@@ -428,8 +514,8 @@ new #[Title('Backup & Restore Settings')] class extends Component {
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
-                                <span wire:loading.remove wire:target="processRestore">Proses &amp; Pulihkan Data Sekarang</span>
-                                <span wire:loading wire:target="processRestore">Memulihkan Data...</span>
+                                <span wire:loading.remove wire:target="processRestore">Process &amp; Restore Data Now</span>
+                                <span wire:loading wire:target="processRestore">Restoring Data...</span>
                             </button>
                         </div>
                     </div>

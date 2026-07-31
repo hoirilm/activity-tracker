@@ -3,29 +3,287 @@
 use Livewire\Component;
 use App\Models\Project;
 use App\Models\Category;
+use App\Models\Task;
+use App\Models\Label;
 
 new class extends Component
 {
-    public $projectName = '';
-    public $projectClient = '';
-    public $categoryName = '';
+    public string $activeTab = 'tasks';
 
-    public $editingProjectId = null;
-    public $editingProjectName = '';
-    public $editingProjectClient = '';
+    // Task Form Properties
+    public string $taskTitle = '';
+    public string $taskDescription = '';
+    public ?int $taskProjectId = null;
+    public string $taskStatus = Task::STATUS_NEW;
+    public array $taskLabelIds = [];
 
-    public $editingCategoryId = null;
-    public $editingCategoryName = '';
+    // Task Editing Properties
+    public ?int $editingTaskId = null;
+    public string $editingTaskTitle = '';
+    public string $editingTaskDescription = '';
+    public ?int $editingTaskProjectId = null;
+    public string $editingTaskStatus = Task::STATUS_NEW;
+    public array $editingTaskLabelIds = [];
+
+    // Task Filters
+    public string $filterProject = 'all'; // 'all', 'non_project', or project ID
+    public string $filterStatus = 'all';  // 'all', 'new', 'on_progress', 'done', 'on_hold', 'archived'
+    public string $searchTask = '';
+    public string $viewMode = 'kanban';    // 'kanban' or 'list'
+    public bool $showArchived = false;
+
+    // Project Form & Editing Properties
+    public string $projectName = '';
+    public string $projectClient = '';
+    public ?int $editingProjectId = null;
+    public string $editingProjectName = '';
+    public string $editingProjectClient = '';
+
+    // Category Form & Editing Properties
+    public string $categoryName = '';
+    public ?int $editingCategoryId = null;
+    public string $editingCategoryName = '';
+
+    // Label Form Properties
+    public string $labelName = '';
+    public string $labelColor = 'amber';
+
+    public function mount()
+    {
+        if (request()->query('tab')) {
+            $tab = request()->query('tab');
+            if (in_array($tab, ['tasks', 'projects', 'categories'])) {
+                $this->activeTab = $tab;
+            }
+        }
+    }
 
     public function getProjectsProperty()
     {
-        return auth()->user()->projects()->get();
+        return auth()->user()->projects()->withCount('tasks')->get();
     }
 
     public function getCategoriesProperty()
     {
         return auth()->user()->categories()->get();
     }
+
+    public function getLabelsProperty()
+    {
+        return auth()->user()->labels()->withCount('tasks')->get();
+    }
+
+    public function getArchivedCountProperty()
+    {
+        return auth()->user()->tasks()->where('status', Task::STATUS_ARCHIVED)->count();
+    }
+
+    public function getArchivedTasksProperty()
+    {
+        $query = auth()->user()->tasks()->with(['project', 'labels'])->where('status', Task::STATUS_ARCHIVED)->latest();
+
+        if ($this->filterProject === 'non_project') {
+            $query->whereNull('project_id');
+        } elseif ($this->filterProject !== 'all' && is_numeric($this->filterProject)) {
+            $query->where('project_id', $this->filterProject);
+        }
+
+        if (!empty($this->searchTask)) {
+            $query->where(function ($q) {
+                $q->where('title', 'like', '%' . $this->searchTask . '%')
+                  ->orWhere('description', 'like', '%' . $this->searchTask . '%')
+                  ->orWhereHas('labels', function ($lq) {
+                      $lq->where('name', 'like', '%' . $this->searchTask . '%');
+                  });
+            });
+        }
+
+        return $query->get();
+    }
+
+    public function getTasksQueryProperty()
+    {
+        $query = auth()->user()->tasks()->with(['project', 'labels'])->latest();
+
+        if ($this->filterProject === 'non_project') {
+            $query->whereNull('project_id');
+        } elseif ($this->filterProject !== 'all' && is_numeric($this->filterProject)) {
+            $query->where('project_id', $this->filterProject);
+        }
+
+        if ($this->filterStatus !== 'all') {
+            $query->where('status', $this->filterStatus);
+        } elseif (!$this->showArchived) {
+            $query->where('status', '!=', Task::STATUS_ARCHIVED);
+        }
+
+        if (!empty($this->searchTask)) {
+            $query->where(function ($q) {
+                $q->where('title', 'like', '%' . $this->searchTask . '%')
+                  ->orWhere('description', 'like', '%' . $this->searchTask . '%')
+                  ->orWhereHas('labels', function ($lq) {
+                      $lq->where('name', 'like', '%' . $this->searchTask . '%');
+                  });
+            });
+        }
+
+        return $query;
+    }
+
+    public function getTasksProperty()
+    {
+        return $this->getTasksQueryProperty()->get();
+    }
+
+    // --- Task Actions ---
+
+    public function addTask()
+    {
+        $this->validate([
+            'taskTitle' => 'required|string|max:255',
+            'taskDescription' => 'nullable|string',
+            'taskProjectId' => 'nullable|exists:projects,id',
+            'taskStatus' => 'required|in:new,on_progress,done,on_hold,archived',
+            'taskLabelIds' => 'array',
+            'taskLabelIds.*' => 'exists:labels,id',
+        ]);
+
+        // Ensure project belongs to auth user if provided
+        $projectId = null;
+        if ($this->taskProjectId) {
+            $project = auth()->user()->projects()->find($this->taskProjectId);
+            if ($project) {
+                $projectId = $project->id;
+            }
+        }
+
+        $task = auth()->user()->tasks()->create([
+            'title' => $this->taskTitle,
+            'description' => $this->taskDescription ?: null,
+            'project_id' => $projectId,
+            'status' => $this->taskStatus,
+        ]);
+
+        if (!empty($this->taskLabelIds)) {
+            $userLabelIds = auth()->user()->labels()->whereIn('id', $this->taskLabelIds)->pluck('id')->toArray();
+            $task->labels()->sync($userLabelIds);
+        }
+
+        $this->reset(['taskTitle', 'taskDescription', 'taskProjectId', 'taskLabelIds']);
+        $this->taskStatus = Task::STATUS_NEW;
+
+        $this->dispatch('close-modal', name: 'create-task-modal');
+        session()->flash('task_message', 'Task added successfully.');
+    }
+
+    public function updateTaskStatus(int $taskId, string $status)
+    {
+        if (!in_array($status, [Task::STATUS_NEW, Task::STATUS_ON_PROGRESS, Task::STATUS_DONE, Task::STATUS_ON_HOLD, Task::STATUS_ARCHIVED])) {
+            return;
+        }
+
+        auth()->user()->tasks()->where('id', $taskId)->update([
+            'status' => $status,
+            'updated_at' => now(),
+        ]);
+    }
+
+    public function editTask(int $id)
+    {
+        $task = auth()->user()->tasks()->with('labels')->find($id);
+        if ($task) {
+            $this->editingTaskId = $id;
+            $this->editingTaskTitle = $task->title;
+            $this->editingTaskDescription = $task->description ?? '';
+            $this->editingTaskProjectId = $task->project_id;
+            $this->editingTaskStatus = $task->status;
+            $this->editingTaskLabelIds = $task->labels->pluck('id')->toArray();
+            
+            $this->dispatch('open-modal', name: 'edit-task-modal');
+        }
+    }
+
+    public function updateTask()
+    {
+        $this->validate([
+            'editingTaskTitle' => 'required|string|max:255',
+            'editingTaskDescription' => 'nullable|string',
+            'editingTaskProjectId' => 'nullable|exists:projects,id',
+            'editingTaskStatus' => 'required|in:new,on_progress,done,on_hold,archived',
+            'editingTaskLabelIds' => 'array',
+            'editingTaskLabelIds.*' => 'exists:labels,id',
+        ]);
+
+        $task = auth()->user()->tasks()->find($this->editingTaskId);
+        if ($task) {
+            $projectId = null;
+            if ($this->editingTaskProjectId) {
+                $project = auth()->user()->projects()->find($this->editingTaskProjectId);
+                if ($project) {
+                    $projectId = $project->id;
+                }
+            }
+
+            $task->update([
+                'title' => $this->editingTaskTitle,
+                'description' => $this->editingTaskDescription ?: null,
+                'project_id' => $projectId,
+                'status' => $this->editingTaskStatus,
+            ]);
+
+            $userLabelIds = auth()->user()->labels()->whereIn('id', $this->editingTaskLabelIds)->pluck('id')->toArray();
+            $task->labels()->sync($userLabelIds);
+
+            $this->editingTaskId = null;
+            $this->dispatch('close-modal', name: 'edit-task-modal');
+            session()->flash('task_message', 'Task updated successfully.');
+        }
+    }
+
+    public function deleteTask(int $id)
+    {
+        auth()->user()->tasks()->find($id)?->delete();
+        session()->flash('task_message', 'Task deleted successfully.');
+    }
+
+    // --- Label Actions ---
+
+    public function addLabel()
+    {
+        $this->validate([
+            'labelName' => 'required|string|max:255',
+            'labelColor' => 'required|string|in:amber,indigo,emerald,rose,sky,purple,zinc',
+        ]);
+
+        auth()->user()->labels()->create([
+            'name' => $this->labelName,
+            'color' => $this->labelColor,
+        ]);
+
+        $this->reset(['labelName']);
+        $this->labelColor = 'amber';
+        session()->flash('label_message', 'Label added successfully.');
+    }
+
+    public function addPresetLabel(string $name, string $color = 'amber')
+    {
+        $existing = auth()->user()->labels()->where('name', $name)->first();
+        if (!$existing) {
+            auth()->user()->labels()->create([
+                'name' => $name,
+                'color' => $color,
+            ]);
+            session()->flash('label_message', "Label '{$name}' added.");
+        }
+    }
+
+    public function deleteLabel(int $id)
+    {
+        auth()->user()->labels()->find($id)?->delete();
+        session()->flash('label_message', 'Label deleted successfully.');
+    }
+
+    // --- Project Actions ---
 
     public function addProject()
     {
@@ -41,20 +299,6 @@ new class extends Component
 
         $this->reset(['projectName', 'projectClient']);
         session()->flash('project_message', 'Project added successfully.');
-    }
-
-    public function addCategory()
-    {
-        $this->validate([
-            'categoryName' => 'required|string|max:255',
-        ]);
-
-        auth()->user()->categories()->create([
-            'name' => $this->categoryName,
-        ]);
-
-        $this->reset('categoryName');
-        session()->flash('category_message', 'Category added successfully.');
     }
 
     public function editProject($id)
@@ -88,6 +332,27 @@ new class extends Component
         $this->editingProjectId = null;
     }
 
+    public function deleteProject($id)
+    {
+        auth()->user()->projects()->find($id)?->delete();
+    }
+
+    // --- Category Actions ---
+
+    public function addCategory()
+    {
+        $this->validate([
+            'categoryName' => 'required|string|max:255',
+        ]);
+
+        auth()->user()->categories()->create([
+            'name' => $this->categoryName,
+        ]);
+
+        $this->reset('categoryName');
+        session()->flash('category_message', 'Category added successfully.');
+    }
+
     public function editCategory($id)
     {
         $category = auth()->user()->categories()->find($id);
@@ -116,197 +381,911 @@ new class extends Component
         $this->editingCategoryId = null;
     }
 
-    public function deleteProject($id)
-    {
-        auth()->user()->projects()->find($id)?->delete();
-    }
-
     public function deleteCategory($id)
     {
         auth()->user()->categories()->find($id)?->delete();
     }
+
+    // --- Helper color mappings ---
+    public function getLabelBgClass(string $color): string
+    {
+        return match ($color) {
+            'amber' => 'bg-amber-500/10 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300/90 border-amber-200/80 dark:border-amber-900/40',
+            'emerald' => 'bg-emerald-500/10 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300/90 border-emerald-200/80 dark:border-emerald-900/40',
+            'rose' => 'bg-rose-500/10 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300/90 border-rose-200/80 dark:border-rose-900/40',
+            'sky' => 'bg-sky-500/10 text-sky-800 dark:bg-sky-950/40 dark:text-sky-300/90 border-sky-200/80 dark:border-sky-900/40',
+            'purple' => 'bg-purple-500/10 text-purple-800 dark:bg-purple-950/40 dark:text-purple-300/90 border-purple-200/80 dark:border-purple-900/40',
+            'zinc' => 'bg-zinc-500/10 text-zinc-700 dark:bg-zinc-800/60 dark:text-zinc-300/90 border-zinc-200/80 dark:border-zinc-700/60',
+            default => 'bg-indigo-500/10 text-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-300/90 border-indigo-200/80 dark:border-indigo-900/40',
+        };
+    }
 };
 ?>
 
-<div class="flex h-full w-full flex-col gap-6 p-3 sm:p-4 text-neutral-900 dark:text-neutral-100 max-w-6xl mx-auto mt-2 sm:mt-4 pb-16" x-data="{ mounted: false }" x-init="setTimeout(() => mounted = true, 50)">
-    <!-- Header -->
-    <div class="border-b border-zinc-200/80 dark:border-zinc-800/80 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all duration-700 ease-out"
-         :class="mounted ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'">
+<div class="flex h-full w-full flex-col gap-6 p-3 sm:p-4 text-neutral-900 dark:text-neutral-100 max-w-7xl mx-auto mt-2 sm:mt-4 pb-20 animate-page-entrance"
+     x-data="{ activeTab: @entangle('activeTab') }">
+    
+    <!-- Top Header Studio Banner -->
+    <div class="border-b border-zinc-200/80 dark:border-zinc-800/80 pb-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
             <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-2.5">
-                <div class="size-8 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0">
+                <div class="size-8.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0">
                     <flux:icon name="cog-8-tooth" class="size-4.5 text-zinc-700 dark:text-zinc-300" />
                 </div>
-                <span>Workspace Management</span>
+                <span>Workspace Management Studio</span>
             </h2>
-            <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1">Organize and manage your projects, clients, and categories for tracking.</p>
+            <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1">Manage tasks, projects, clients, tracker categories, and dynamic task labels all in one place.</p>
         </div>
-        <div class="flex items-center gap-2 self-start sm:self-auto">
-            <span class="text-[11px] font-mono font-semibold px-3 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700/60">
-                {{ $this->projects->count() }} Projects &bull; {{ $this->categories->count() }} Categories
-            </span>
+        
+        <!-- Tab Navigation Switcher -->
+        <div class="flex items-center p-1 bg-zinc-100 dark:bg-zinc-900 rounded-xl border border-zinc-200/80 dark:border-zinc-800 self-start md:self-auto overflow-x-auto max-w-full">
+            <button @click="activeTab = 'tasks'" 
+                    type="button"
+                    :class="activeTab === 'tasks' ? 'bg-white dark:bg-zinc-800 text-indigo-600 dark:text-indigo-400 shadow-xs font-semibold' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 font-medium'"
+                    class="px-3.5 py-1.5 rounded-lg text-xs transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap">
+                <flux:icon name="clipboard-document-list" class="size-4 shrink-0" />
+                <span>Tasks</span>
+                <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-zinc-200/60 dark:bg-zinc-700/60 text-zinc-700 dark:text-zinc-300">
+                    {{ $this->tasks->count() }}
+                </span>
+            </button>
+
+            <button @click="activeTab = 'projects'" 
+                    type="button"
+                    :class="activeTab === 'projects' ? 'bg-white dark:bg-zinc-800 text-indigo-600 dark:text-indigo-400 shadow-xs font-semibold' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 font-medium'"
+                    class="px-3.5 py-1.5 rounded-lg text-xs transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap">
+                <flux:icon name="briefcase" class="size-4 shrink-0" />
+                <span>Projects</span>
+                <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-zinc-200/60 dark:bg-zinc-700/60 text-zinc-700 dark:text-zinc-300">
+                    {{ $this->projects->count() }}
+                </span>
+            </button>
+
+            <button @click="activeTab = 'categories'" 
+                    type="button"
+                    :class="activeTab === 'categories' ? 'bg-white dark:bg-zinc-800 text-indigo-600 dark:text-indigo-400 shadow-xs font-semibold' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 font-medium'"
+                    class="px-3.5 py-1.5 rounded-lg text-xs transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap">
+                <flux:icon name="tag" class="size-4 shrink-0" />
+                <span>Categories &amp; Labels</span>
+                <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-zinc-200/60 dark:bg-zinc-700/60 text-zinc-700 dark:text-zinc-300">
+                    {{ $this->categories->count() + $this->labels->count() }}
+                </span>
+            </button>
         </div>
     </div>
 
-    <!-- Grid Container (2-Column Command Center) -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 transition-all duration-700 ease-out delay-100"
-         :class="mounted ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'">
-        
-        <!-- Projects Section -->
-        <div class="flex flex-col gap-4">
-            <!-- Section Header -->
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <div class="size-7 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0">
-                        <flux:icon name="briefcase" class="size-4 text-zinc-700 dark:text-zinc-300" />
-                    </div>
-                    <h3 class="font-bold text-sm text-zinc-900 dark:text-zinc-100">Projects &amp; Clients</h3>
-                    <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[10px] font-mono font-medium px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60">
-                        {{ $this->projects->count() }} Total
-                    </span>
+    <!-- Global Notification Flash -->
+    @if(session()->has('task_message'))
+        <div class="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-2 bg-emerald-50 dark:bg-emerald-500/10 p-3 rounded-xl border border-emerald-200 dark:border-emerald-500/20 shadow-2xs">
+            <flux:icon name="check-circle" class="size-4 shrink-0" />
+            <span>{{ session('task_message') }}</span>
+        </div>
+    @endif
+
+    <!-- TAB 1: TASKS MANAGEMENT -->
+    <div x-show="activeTab === 'tasks'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" class="space-y-4" x-data="{ showArchived: false }">
+        <!-- Controls Bar: Search, Project Filter, Status Filter, View Mode & Add Task -->
+        <div class="bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-3 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+            <!-- Left Controls: Search & Filters -->
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 flex-1 min-w-0">
+                <!-- Search Input -->
+                <div class="relative flex-1 min-w-[200px]">
+                    <input type="text" 
+                           wire:model.live.debounce.300ms="searchTask" 
+                           placeholder="Search task title or label..." 
+                           autocomplete="off"
+                           class="w-full h-9 pl-9 pr-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500 transition-all">
+                    <flux:icon name="magnifying-glass" class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-zinc-400 pointer-events-none" />
+                </div>
+
+                <!-- Project Filter Dropdown -->
+                <div class="w-full sm:w-auto">
+                    <select wire:model.live="filterProject" class="h-9 px-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500 cursor-pointer">
+                        <option value="all">All Projects</option>
+                        <option value="non_project">Non-Project Only</option>
+                        @foreach($this->projects as $p)
+                            <option value="{{ $p->id }}">{{ $p->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Status Filter -->
+                <div class="w-full sm:w-auto">
+                    <select wire:model.live="filterStatus" class="h-9 px-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500 cursor-pointer">
+                        <option value="all">Active Statuses</option>
+                        <option value="new">New 🔵</option>
+                        <option value="on_progress">On Progress 🟡</option>
+                        <option value="on_hold">On Hold 🟠</option>
+                        <option value="done">Done 🟢</option>
+                        <option value="archived">Archived 📦 ({{ $this->archivedCount }})</option>
+                    </select>
                 </div>
             </div>
 
-            <!-- Add Project Card (Modern Glassmorphism) -->
-            <div class="border border-zinc-200/80 dark:border-zinc-800 rounded-2xl bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl p-4.5 shadow-xs relative overflow-hidden group hover:border-zinc-400 dark:hover:border-zinc-700 transition-all">
+            <!-- Right Controls: View Switcher, Archive Toggle, & Create Task Button -->
+            <div class="flex items-center gap-2 shrink-0">
+                <!-- Toggle Archive Button (Pure 60 FPS Client-Side Alpine Toggle) -->
+                <button type="button" 
+                        @click="showArchived = !showArchived" 
+                        class="h-9 px-3 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs active:scale-95"
+                        :class="(showArchived || $wire.filterStatus === 'archived') 
+                            ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30 ring-1 ring-purple-500/30' 
+                            : 'bg-zinc-50 dark:bg-zinc-950 text-zinc-600 dark:text-zinc-400 border-zinc-200/80 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-900'"
+                        title="Toggle Archived Tasks Section">
+                    <flux:icon name="archive-box" class="size-3.5" :class="(showArchived || $wire.filterStatus === 'archived') ? 'text-purple-500' : 'text-zinc-400'" />
+                    <span>Archived</span>
+                    <span class="px-1.5 py-0.2 rounded-md text-[10px] font-mono font-bold" :class="(showArchived || $wire.filterStatus === 'archived') ? 'bg-purple-500/20 text-purple-700 dark:text-purple-300' : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400'">
+                        {{ $this->archivedCount }}
+                    </span>
+                </button>
 
-                <form wire:submit.prevent="addProject" class="space-y-3 relative z-10">
-                    <div class="relative w-full">
-                        <input type="text" wire:model="projectName" placeholder="Project Name" required autocomplete="off"
-                               class="w-full h-10 pl-9 pr-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-zinc-600 focus:ring-2 focus:ring-zinc-600/20 shadow-2xs transition-all">
-                        <flux:icon name="briefcase" class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-zinc-400 pointer-events-none" />
-                    </div>
-                    <div class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
-                        <div class="flex-1 w-full">
-                            <div class="relative w-full">
-                                <input type="text" wire:model="projectClient" placeholder="Client Name (Optional)" autocomplete="off"
-                                       class="w-full h-10 pl-9 pr-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-zinc-600 focus:ring-2 focus:ring-zinc-600/20 shadow-2xs transition-all">
-                                <flux:icon name="user" class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-zinc-400 pointer-events-none" />
+                <!-- View Mode Switcher -->
+                <div class="flex items-center p-0.5 bg-zinc-100 dark:bg-zinc-800/80 rounded-xl border border-zinc-200 dark:border-zinc-700/60">
+                    <button wire:click="$set('viewMode', 'kanban')" 
+                            class="p-1.5 rounded-lg text-xs transition-all cursor-pointer {{ $viewMode === 'kanban' ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200' }}"
+                            title="Kanban Board View">
+                        <flux:icon name="rectangle-stack" class="size-4" />
+                    </button>
+                    <button wire:click="$set('viewMode', 'list')" 
+                            class="p-1.5 rounded-lg text-xs transition-all cursor-pointer {{ $viewMode === 'list' ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200' }}"
+                            title="List Table View">
+                        <flux:icon name="bars-3-bottom-left" class="size-4" />
+                    </button>
+                </div>
+
+                <!-- Add Task Button Modal Trigger -->
+                <flux:modal.trigger name="create-task-modal">
+                    <button type="button" class="cursor-pointer bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl px-3.5 py-2 text-xs border border-indigo-500/80 active:scale-95 transition-all shadow-xs shadow-indigo-500/20 flex items-center gap-1.5">
+                        <flux:icon name="plus" class="size-3.5 text-white" />
+                        <span>Add Task</span>
+                    </button>
+                </flux:modal.trigger>
+            </div>
+        </div>
+
+        <!-- KANBAN VIEW -->
+        @if($viewMode === 'kanban')
+            @php
+                $columns = [
+                    ['id' => 'new', 'label' => 'New', 'color' => 'sky', 'icon' => 'sparkles', 'bg' => 'bg-sky-500/10 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300/90 border-sky-200/80 dark:border-sky-900/40'],
+                    ['id' => 'on_progress', 'label' => 'On Progress', 'color' => 'amber', 'icon' => 'arrow-path', 'bg' => 'bg-amber-500/10 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300/90 border-amber-200/80 dark:border-amber-900/40'],
+                    ['id' => 'on_hold', 'label' => 'On Hold', 'color' => 'rose', 'icon' => 'pause-circle', 'bg' => 'bg-rose-500/10 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300/90 border-rose-200/80 dark:border-rose-900/40'],
+                    ['id' => 'done', 'label' => 'Done', 'color' => 'emerald', 'icon' => 'check-circle', 'bg' => 'bg-emerald-500/10 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300/90 border-emerald-200/80 dark:border-emerald-900/40'],
+                ];
+            @endphp
+
+            <!-- 4 Main Kanban Columns -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-start">
+                @foreach($columns as $col)
+                    @php
+                        $colTasks = $this->tasks->where('status', $col['id']);
+                    @endphp
+                    <div class="bg-zinc-50/70 dark:bg-zinc-900/60 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 p-3.5 flex flex-col gap-3 min-h-[400px]">
+                        <!-- Column Header -->
+                        <div class="flex items-center justify-between pb-2 border-b border-zinc-200/60 dark:border-zinc-800">
+                            <div class="flex items-center gap-2">
+                                <span class="px-2 py-0.5 rounded-lg text-xs font-semibold border flex items-center gap-1.5 {{ $col['bg'] }}">
+                                    <flux:icon name="{{ $col['icon'] }}" class="size-3.5" />
+                                    <span>{{ $col['label'] }}</span>
+                                </span>
                             </div>
+                            <span class="text-[11px] font-mono font-medium text-zinc-500 dark:text-zinc-400 bg-zinc-200/60 dark:bg-zinc-800 px-2 py-0.5 rounded-md">
+                                {{ $colTasks->count() }}
+                            </span>
                         </div>
-                        <button type="submit" class="w-full sm:w-auto cursor-pointer bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl px-4 py-2.5 text-xs border border-indigo-500/80 active:scale-95 transition-all shadow-xs shadow-indigo-500/20 flex items-center justify-center gap-1.5 shrink-0">
-                            <flux:icon name="plus" class="size-3.5 text-white" />
-                            <span>Add Project</span>
-                        </button>
-                    </div>
-                </form>
 
-                @if(session()->has('project_message'))
-                    <div class="mt-3 text-xs font-semibold text-emerald-600 dark:text-emerald-500 flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-500/10 p-2 rounded-lg border border-emerald-200 dark:border-emerald-500/20">
-                        <flux:icon name="check-circle" class="size-4" />
-                        <span>{{ session('project_message') }}</span>
+                        <!-- Column Tasks Card List -->
+                        <div class="flex flex-col gap-2.5 flex-1">
+                            @forelse($colTasks as $task)
+                                <div wire:key="task-kanban-{{ $task->id }}" 
+                                     wire:loading.class="opacity-50 scale-[0.98] pointer-events-none ring-2 ring-indigo-500/40 transition-all duration-200"
+                                     wire:target="updateTaskStatus({{ $task->id }}, 'new'), updateTaskStatus({{ $task->id }}, 'on_progress'), updateTaskStatus({{ $task->id }}, 'on_hold'), updateTaskStatus({{ $task->id }}, 'done'), updateTaskStatus({{ $task->id }}, 'archived')"
+                                     class="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-xl p-3 shadow-2xs hover:border-zinc-300 dark:hover:border-zinc-700 transition-all group flex flex-col gap-2 relative overflow-hidden">
+                                    
+                                    <!-- Processing Loading Progress Bar -->
+                                    <div wire:loading 
+                                         wire:target="updateTaskStatus({{ $task->id }}, 'new'), updateTaskStatus({{ $task->id }}, 'on_progress'), updateTaskStatus({{ $task->id }}, 'on_hold'), updateTaskStatus({{ $task->id }}, 'done'), updateTaskStatus({{ $task->id }}, 'archived')" 
+                                         class="absolute top-0 left-0 right-0 h-1 bg-indigo-500 rounded-t-xl animate-pulse"></div>
+                                    <!-- Title & Actions -->
+                                    <div class="flex items-start justify-between gap-2">
+                                        <h4 class="text-xs font-bold text-zinc-900 dark:text-zinc-100 leading-snug line-clamp-2">{{ $task->title }}</h4>
+                                        
+                                        <div class="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5 shrink-0">
+                                            <flux:modal.trigger name="edit-task-modal">
+                                                <button wire:click="editTask({{ $task->id }})" class="p-1 rounded text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer">
+                                                    <flux:icon name="pencil" class="size-3" />
+                                                </button>
+                                            </flux:modal.trigger>
+                                            <flux:modal.trigger name="delete-task-{{ $task->id }}">
+                                                <button class="p-1 rounded text-red-400 hover:text-red-600 cursor-pointer">
+                                                    <flux:icon name="trash" class="size-3" />
+                                                </button>
+                                            </flux:modal.trigger>
+                                        </div>
+                                    </div>
+
+                                    <!-- Description preview if exists -->
+                                    @if($task->description)
+                                        <p class="text-[11px] text-zinc-500 dark:text-zinc-400 line-clamp-2 leading-tight">{{ $task->description }}</p>
+                                    @endif
+
+                                    <!-- Project & Labels row -->
+                                    <div class="flex flex-wrap items-center gap-1.5 pt-1">
+                                        <!-- Project Badge -->
+                                        @if($task->project)
+                                            <span class="inline-flex items-center gap-1 text-[10px] font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-1.5 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60 max-w-[150px] truncate" title="{{ $task->project->name }}">
+                                                <flux:icon name="folder" class="size-2.5 text-zinc-500 shrink-0" />
+                                                <span class="truncate">{{ $task->project->name }}</span>
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center text-[10px] font-medium bg-zinc-100/60 dark:bg-zinc-800/40 text-zinc-500 dark:text-zinc-400 px-1.5 py-0.5 rounded-md border border-zinc-200/50 dark:border-zinc-800/80">
+                                                Non-Project
+                                            </span>
+                                        @endif
+
+                                        <!-- Dynamic Labels -->
+                                        @foreach($task->labels as $label)
+                                            <span class="inline-flex items-center text-[10px] font-semibold px-1.5 py-0.5 rounded-md border {{ $this->getLabelBgClass($label->color) }}">
+                                                {{ $label->name }}
+                                            </span>
+                                        @endforeach
+                                    </div>
+
+                                    <!-- Status Quick Action Controls -->
+                                    <div class="flex items-center justify-between pt-2 border-t border-zinc-100 dark:border-zinc-800/60 mt-1">
+                                        <span class="text-[10px] text-zinc-400 font-mono">{{ $task->created_at->diffForHumans() }}</span>
+
+                                        <div class="flex items-center gap-1">
+                                            @if($col['id'] !== 'new')
+                                                <button wire:click="updateTaskStatus({{ $task->id }}, 'new')" 
+                                                        wire:loading.attr="disabled"
+                                                        class="p-1 rounded hover:bg-sky-500/10 text-sky-500 hover:scale-110 active:scale-95 transition-all cursor-pointer disabled:opacity-50" 
+                                                        title="Move to New">
+                                                    <flux:icon name="sparkles" class="size-3" wire:loading.class="animate-spin" wire:target="updateTaskStatus({{ $task->id }}, 'new')" />
+                                                </button>
+                                            @endif
+                                            @if($col['id'] !== 'on_progress')
+                                                <button wire:click="updateTaskStatus({{ $task->id }}, 'on_progress')" 
+                                                        wire:loading.attr="disabled"
+                                                        class="p-1 rounded hover:bg-amber-500/10 text-amber-500 hover:scale-110 active:scale-95 transition-all cursor-pointer disabled:opacity-50" 
+                                                        title="Move to On Progress">
+                                                    <flux:icon name="arrow-path" class="size-3" wire:loading.class="animate-spin" wire:target="updateTaskStatus({{ $task->id }}, 'on_progress')" />
+                                                </button>
+                                            @endif
+                                            @if($col['id'] !== 'on_hold')
+                                                <button wire:click="updateTaskStatus({{ $task->id }}, 'on_hold')" 
+                                                        wire:loading.attr="disabled"
+                                                        class="p-1 rounded hover:bg-rose-500/10 text-rose-500 hover:scale-110 active:scale-95 transition-all cursor-pointer disabled:opacity-50" 
+                                                        title="Move to On Hold">
+                                                    <flux:icon name="pause-circle" class="size-3" wire:loading.class="animate-spin" wire:target="updateTaskStatus({{ $task->id }}, 'on_hold')" />
+                                                </button>
+                                            @endif
+                                            @if($col['id'] !== 'done')
+                                                <button wire:click="updateTaskStatus({{ $task->id }}, 'done')" 
+                                                        wire:loading.attr="disabled"
+                                                        class="p-1 rounded hover:bg-emerald-500/10 text-emerald-500 hover:scale-110 active:scale-95 transition-all cursor-pointer disabled:opacity-50" 
+                                                        title="Move to Done">
+                                                    <flux:icon name="check-circle" class="size-3" wire:loading.class="animate-spin" wire:target="updateTaskStatus({{ $task->id }}, 'done')" />
+                                                </button>
+                                            @endif
+                                            <button wire:click="updateTaskStatus({{ $task->id }}, 'archived')" 
+                                                    wire:loading.attr="disabled"
+                                                    class="p-1 rounded hover:bg-purple-500/10 text-purple-500 hover:scale-110 active:scale-95 transition-all cursor-pointer disabled:opacity-50" 
+                                                    title="Archive Task">
+                                                <flux:icon name="archive-box" class="size-3" wire:loading.class="animate-spin" wire:target="updateTaskStatus({{ $task->id }}, 'archived')" />
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Delete Modal -->
+                                    <flux:modal name="delete-task-{{ $task->id }}" class="w-[calc(100vw-2rem)] max-w-md backdrop:backdrop-blur-md z-[200]">
+                                        <div class="space-y-4">
+                                            <div class="flex items-center gap-3">
+                                                <div class="size-9 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 flex items-center justify-center text-red-600 dark:text-red-500 shrink-0">
+                                                    <flux:icon name="trash" class="size-4.5" />
+                                                </div>
+                                                <div>
+                                                    <flux:heading size="lg" class="font-bold text-sm">Delete Task?</flux:heading>
+                                                    <flux:text class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+                                                        Are you sure you want to delete <strong>{{ $task->title }}</strong>?
+                                                    </flux:text>
+                                                </div>
+                                            </div>
+                                            <div class="flex justify-end gap-2 pt-2">
+                                                <flux:modal.close>
+                                                    <flux:button variant="ghost" size="xs">Cancel</flux:button>
+                                                </flux:modal.close>
+                                                <flux:modal.close>
+                                                    <flux:button variant="danger" size="xs" wire:click="deleteTask({{ $task->id }})">Delete</flux:button>
+                                                </flux:modal.close>
+                                            </div>
+                                        </div>
+                                    </flux:modal>
+                                </div>
+                            @empty
+                                <div class="text-[11px] text-zinc-400 text-center py-8 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl flex flex-col items-center justify-center gap-1 my-auto">
+                                    <span>No tasks in {{ $col['label'] }}</span>
+                                </div>
+                            @endforelse
+                        </div>
                     </div>
-                @endif
+                @endforeach
             </div>
 
-            <!-- Projects Grouped List Card -->
-            <div class="bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-xs divide-y divide-zinc-200/50 dark:divide-zinc-800/50">
-                @forelse($this->projects as $project)
-                    <div wire:key="project-{{ $project->id }}" class="p-3.5 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors group relative">
-                        @if($this->editingProjectId === $project->id)
-                            <form wire:submit.prevent="updateProject" class="space-y-2.5 p-1">
-                                <div class="relative w-full">
-                                    <input type="text" wire:model="editingProjectName" placeholder="Project Name" required autocomplete="off"
-                                           class="w-full h-9 pl-8 pr-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-zinc-600">
-                                    <flux:icon name="briefcase" class="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-zinc-400 pointer-events-none" />
+            <!-- Standalone Dedicated Archived Section (Native CSS GPU Grid 60 FPS Transition) -->
+            <div class="grid transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+                 :class="(showArchived || $wire.filterStatus === 'archived') ? 'grid-rows-[1fr] opacity-100 mt-6' : 'grid-rows-[0fr] opacity-0 mt-0 pointer-events-none'">
+                <div class="overflow-hidden">
+                    @php
+                        $archivedTasks = $this->archivedTasks;
+                    @endphp
+                    <div class="rounded-2xl border border-purple-200/80 dark:border-purple-900/30 bg-purple-50/50 dark:bg-purple-950/15 backdrop-blur-xl p-4 sm:p-5 space-y-4 shadow-sm">
+                        <!-- Header -->
+                        <div class="flex items-center justify-between pb-3 border-b border-purple-200/60 dark:border-purple-900/30">
+                            <div class="flex items-center gap-2.5">
+                                <div class="size-8 rounded-xl bg-purple-500/10 border border-purple-200/60 dark:border-purple-900/40 flex items-center justify-center text-purple-700 dark:text-purple-300/90 shrink-0">
+                                    <flux:icon name="archive-box" class="size-4.5" />
                                 </div>
-                                <div class="relative w-full">
-                                    <input type="text" wire:model="editingProjectClient" placeholder="Client Name (Optional)" autocomplete="off"
-                                           class="w-full h-9 pl-8 pr-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-zinc-600">
-                                    <flux:icon name="user" class="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-zinc-400 pointer-events-none" />
-                                </div>
-                                <div class="flex gap-2 justify-end mt-1">
-                                    <flux:button variant="ghost" wire:click="cancelEditProject" size="xs">Cancel</flux:button>
-                                    <flux:button type="submit" size="xs" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold border border-emerald-500 cursor-pointer px-3">Save</flux:button>
-                                </div>
-                            </form>
-                        @else
-                            <div class="flex justify-between items-center gap-3">
-                                <div class="flex items-center gap-3 flex-1 min-w-0">
-                                    <div class="size-9 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0 group-hover:scale-105 transition-transform">
-                                        <flux:icon name="folder" class="size-4 text-zinc-700 dark:text-zinc-300" />
-                                    </div>
-                                    <div class="min-w-0">
-                                        <div class="font-bold text-sm text-zinc-900 dark:text-zinc-100 truncate group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-colors">{{ $project->name }}</div>
-                                        @if($project->client_name)
-                                            <div class="text-[10px] font-mono font-medium text-zinc-700 dark:text-zinc-300 mt-1 truncate flex items-center gap-1 inline-flex bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60">
-                                                <flux:icon name="user" class="size-3 shrink-0 text-zinc-500 dark:text-zinc-400" />
-                                                <span>{{ $project->client_name }}</span>
-                                            </div>
-                                        @else
-                                            <div class="text-[10px] text-zinc-400 dark:text-zinc-500 mt-0.5">Internal Project</div>
-                                        @endif
-                                    </div>
-                                </div>
-                                
-                                <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 flex items-center gap-1 shrink-0">
-                                    <flux:button wire:click="editProject({{ $project->id }})" variant="ghost" size="xs" icon="pencil" square class="cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200 active:scale-95" />
-                                    <flux:modal.trigger name="delete-project-{{ $project->id }}">
-                                        <flux:button variant="ghost" size="xs" icon="trash" square class="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/20 cursor-pointer active:scale-95" />
-                                    </flux:modal.trigger>
+                                <div>
+                                    <h3 class="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                                        <span>Archived Tasks Repository</span>
+                                        <span class="text-[11px] font-mono font-semibold px-2.5 py-0.5 rounded-full bg-purple-500/10 text-purple-800 dark:bg-purple-950/40 dark:text-purple-300/90 border border-purple-200/80 dark:border-purple-900/40">
+                                            {{ $archivedTasks->count() }} Tasks
+                                        </span>
+                                    </h3>
+                                    <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Repository for inactive tasks. You can restore them to active status anytime.</p>
                                 </div>
                             </div>
-                        @endif
 
-                        <flux:modal name="delete-project-{{ $project->id }}" class="w-[calc(100vw-2rem)] max-w-md backdrop:backdrop-blur-md z-[200]">
-                            <div class="space-y-5">
+                            <button type="button" @click="showArchived = false" class="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 p-1.5 rounded-lg transition-colors cursor-pointer" title="Close Archive Section">
+                                <flux:icon name="x-mark" class="size-4" />
+                            </button>
+                        </div>
+
+                    <!-- Archived Tasks Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        @forelse($archivedTasks as $task)
+                            <div wire:key="archived-card-{{ $task->id }}" 
+                                 wire:loading.class="opacity-50 scale-[0.98] pointer-events-none ring-2 ring-purple-500/40 transition-all duration-200"
+                                 wire:target="updateTaskStatus({{ $task->id }}, 'new'), updateTaskStatus({{ $task->id }}, 'on_progress'), updateTaskStatus({{ $task->id }}, 'done')"
+                                 class="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-xl p-3.5 shadow-2xs flex flex-col justify-between gap-3 group relative overflow-hidden">
+                                
+                                <!-- Processing Loading Progress Bar -->
+                                <div wire:loading 
+                                     wire:target="updateTaskStatus({{ $task->id }}, 'new'), updateTaskStatus({{ $task->id }}, 'on_progress'), updateTaskStatus({{ $task->id }}, 'done')" 
+                                     class="absolute top-0 left-0 right-0 h-1 bg-purple-500 rounded-t-xl animate-pulse"></div>
+                                <div class="space-y-2">
+                                    <div class="flex items-start justify-between gap-2">
+                                        <h4 class="text-xs font-bold text-zinc-900 dark:text-zinc-100 leading-snug line-clamp-2">{{ $task->title }}</h4>
+                                        
+                                        <div class="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <flux:modal.trigger name="edit-task-modal">
+                                                <button wire:click="editTask({{ $task->id }})" class="p-1 rounded text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer">
+                                                    <flux:icon name="pencil" class="size-3" />
+                                                </button>
+                                            </flux:modal.trigger>
+                                            <flux:modal.trigger name="delete-task-{{ $task->id }}">
+                                                <button class="p-1 rounded text-red-400 hover:text-red-600 cursor-pointer">
+                                                    <flux:icon name="trash" class="size-3" />
+                                                </button>
+                                            </flux:modal.trigger>
+                                        </div>
+                                    </div>
+
+                                    @if($task->description)
+                                        <p class="text-[11px] text-zinc-500 dark:text-zinc-400 line-clamp-2 leading-tight">{{ $task->description }}</p>
+                                    @endif
+
+                                    <div class="flex flex-wrap items-center gap-1.5 pt-1">
+                                        @if($task->project)
+                                            <span class="inline-flex items-center gap-1 text-[10px] font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-1.5 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60 max-w-[140px] truncate">
+                                                <flux:icon name="folder" class="size-2.5 text-zinc-500 shrink-0" />
+                                                <span class="truncate">{{ $task->project->name }}</span>
+                                            </span>
+                                        @endif
+
+                                        @foreach($task->labels as $label)
+                                            <span class="inline-flex items-center text-[10px] font-semibold px-1.5 py-0.5 rounded-md border {{ $this->getLabelBgClass($label->color) }}">
+                                                {{ $label->name }}
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                </div>
+
+                                <!-- Restore Controls -->
+                                <div class="flex items-center justify-between pt-2.5 border-t border-zinc-100 dark:border-zinc-800/60 mt-1">
+                                    <span class="text-[10px] text-purple-600 dark:text-purple-400 font-mono font-medium">Archived</span>
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="text-[10px] text-zinc-400">Restore to:</span>
+                                        <button wire:click="updateTaskStatus({{ $task->id }}, 'new')" 
+                                                wire:loading.attr="disabled"
+                                                class="px-2 py-0.5 rounded text-[10px] font-semibold bg-sky-500/10 text-sky-600 dark:text-sky-400 hover:bg-sky-500/20 transition-colors cursor-pointer flex items-center gap-1 disabled:opacity-50" 
+                                                title="Restore to New">
+                                            <span>New 🔵</span>
+                                        </button>
+                                        <button wire:click="updateTaskStatus({{ $task->id }}, 'on_progress')" 
+                                                wire:loading.attr="disabled"
+                                                class="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-colors cursor-pointer flex items-center gap-1 disabled:opacity-50" 
+                                                title="Restore to On Progress">
+                                            <span>Progress 🟡</span>
+                                        </button>
+                                        <button wire:click="updateTaskStatus({{ $task->id }}, 'done')" 
+                                                wire:loading.attr="disabled"
+                                                class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 transition-colors cursor-pointer flex items-center gap-1 disabled:opacity-50" 
+                                                title="Restore to Done">
+                                            <span>Done 🟢</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="col-span-full py-8 text-center text-xs text-zinc-400 border border-dashed border-purple-500/20 rounded-xl">
+                                No archived tasks found.
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LIST VIEW -->
+        @else
+            <div class="bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-xs divide-y divide-zinc-200/50 dark:divide-zinc-800/50">
+                @forelse($this->tasks as $task)
+                    <div wire:key="task-list-{{ $task->id }}" class="p-3.5 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors group flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div class="flex items-start sm:items-center gap-3 flex-1 min-w-0">
+                            <!-- Status Selector Dropdown -->
+                            <select wire:change="updateTaskStatus({{ $task->id }}, $event.target.value)"
+                                    class="h-8 px-2 rounded-lg text-xs font-semibold cursor-pointer border focus:outline-none transition-all shrink-0
+                                           {{ $task->status === 'new' ? 'bg-sky-500/10 text-sky-800 dark:bg-sky-950/40 dark:text-sky-300/90 border-sky-200/80 dark:border-sky-900/40' : '' }}
+                                           {{ $task->status === 'on_progress' ? 'bg-amber-500/10 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300/90 border-amber-200/80 dark:border-amber-900/40' : '' }}
+                                           {{ $task->status === 'on_hold' ? 'bg-rose-500/10 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300/90 border-rose-200/80 dark:border-rose-900/40' : '' }}
+                                           {{ $task->status === 'done' ? 'bg-emerald-500/10 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300/90 border-emerald-200/80 dark:border-emerald-900/40' : '' }}
+                                           {{ $task->status === 'archived' ? 'bg-purple-500/10 text-purple-800 dark:bg-purple-950/40 dark:text-purple-300/90 border-purple-200/80 dark:border-purple-900/40' : '' }}">
+                                <option value="new" {{ $task->status === 'new' ? 'selected' : '' }}>New 🔵</option>
+                                <option value="on_progress" {{ $task->status === 'on_progress' ? 'selected' : '' }}>On Progress 🟡</option>
+                                <option value="on_hold" {{ $task->status === 'on_hold' ? 'selected' : '' }}>On Hold 🟠</option>
+                                <option value="done" {{ $task->status === 'done' ? 'selected' : '' }}>Done 🟢</option>
+                                <option value="archived" {{ $task->status === 'archived' ? 'selected' : '' }}>Archived 📦</option>
+                            </select>
+
+                            <div class="min-w-0 flex-1">
+                                <div class="font-bold text-sm text-zinc-900 dark:text-zinc-100 flex items-center gap-2 flex-wrap">
+                                    <span>{{ $task->title }}</span>
+                                    
+                                    <!-- Project Tag -->
+                                    @if($task->project)
+                                        <span class="inline-flex items-center gap-1 text-[10px] font-mono font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60">
+                                            <flux:icon name="folder" class="size-3 text-zinc-500" />
+                                            <span>{{ $task->project->name }}</span>
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center text-[10px] font-mono text-zinc-400 bg-zinc-100/60 dark:bg-zinc-800/40 px-2 py-0.5 rounded-md border border-zinc-200/50 dark:border-zinc-800/80">
+                                            Non-Project
+                                        </span>
+                                    @endif
+
+                                    <!-- Labels -->
+                                    @foreach($task->labels as $label)
+                                        <span class="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-md border {{ $this->getLabelBgClass($label->color) }}">
+                                            {{ $label->name }}
+                                        </span>
+                                    @endforeach
+                                </div>
+                                @if($task->description)
+                                    <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 truncate">{{ $task->description }}</p>
+                                @endif
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3 shrink-0 self-end sm:self-center">
+                            <span class="text-[10px] text-zinc-400 font-mono">{{ $task->created_at->format('d M Y') }}</span>
+                            <div class="flex items-center gap-1">
+                                <flux:modal.trigger name="edit-task-modal">
+                                    <flux:button wire:click="editTask({{ $task->id }})" variant="ghost" size="xs" icon="pencil" square class="cursor-pointer text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200" />
+                                </flux:modal.trigger>
+                                <flux:modal.trigger name="delete-task-list-{{ $task->id }}">
+                                    <flux:button variant="ghost" size="xs" icon="trash" square class="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/20 cursor-pointer" />
+                                </flux:modal.trigger>
+                            </div>
+                        </div>
+
+                        <flux:modal name="delete-task-list-{{ $task->id }}" class="w-[calc(100vw-2rem)] max-w-md backdrop:backdrop-blur-md z-[200]">
+                            <div class="space-y-4">
                                 <div class="flex items-center gap-3">
-                                    <div class="size-10 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 flex items-center justify-center text-red-600 dark:text-red-500 shrink-0">
-                                        <flux:icon name="trash" class="size-5" />
+                                    <div class="size-9 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 flex items-center justify-center text-red-600 dark:text-red-500 shrink-0">
+                                        <flux:icon name="trash" class="size-4.5" />
                                     </div>
                                     <div>
-                                        <flux:heading size="lg" class="font-bold">Delete Project?</flux:heading>
+                                        <flux:heading size="lg" class="font-bold text-sm">Delete Task?</flux:heading>
                                         <flux:text class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
-                                            Are you sure you want to delete <strong>{{ $project->name }}</strong>? All linked activity logs will be removed.
+                                            Are you sure you want to delete <strong>{{ $task->title }}</strong>?
                                         </flux:text>
                                     </div>
                                 </div>
                                 <div class="flex justify-end gap-2 pt-2">
                                     <flux:modal.close>
-                                        <flux:button variant="ghost" size="sm">Cancel</flux:button>
+                                        <flux:button variant="ghost" size="xs">Cancel</flux:button>
                                     </flux:modal.close>
                                     <flux:modal.close>
-                                        <flux:button variant="danger" size="sm" wire:click="deleteProject({{ $project->id }})">Delete</flux:button>
+                                        <flux:button variant="danger" size="xs" wire:click="deleteTask({{ $task->id }})">Delete</flux:button>
                                     </flux:modal.close>
                                 </div>
                             </div>
                         </flux:modal>
                     </div>
                 @empty
-                    <div class="text-xs text-neutral-400 text-center py-10 flex flex-col items-center gap-2 bg-zinc-50/50 dark:bg-zinc-950/20">
+                    <div class="text-xs text-neutral-400 text-center py-12 flex flex-col items-center gap-2 bg-zinc-50/50 dark:bg-zinc-950/20">
                         <div class="size-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-500 dark:text-zinc-400">
-                            <flux:icon name="folder" class="size-5" />
+                            <flux:icon name="clipboard-document-list" class="size-5" />
                         </div>
-                        <span class="font-semibold text-zinc-700 dark:text-zinc-300">No projects created yet.</span>
-                        <span class="text-[11px] text-zinc-500 dark:text-zinc-400">Add a new project using the form above.</span>
+                        <span class="font-semibold text-zinc-700 dark:text-zinc-300">No tasks found.</span>
+                        <span class="text-[11px] text-zinc-500 dark:text-zinc-400">Click "Add Task" to create your first task.</span>
                     </div>
                 @endforelse
             </div>
+        @endif
+
+        <!-- CREATE TASK MODAL -->
+        <flux:modal name="create-task-modal" class="w-[calc(100vw-2rem)] max-w-lg backdrop:backdrop-blur-md z-[200]">
+            <form wire:submit.prevent="addTask" class="space-y-4">
+                <div class="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-zinc-800">
+                    <div class="flex items-center gap-2">
+                        <div class="size-7 rounded-lg bg-indigo-50 dark:bg-indigo-500/20 border border-indigo-200 dark:border-indigo-500/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                            <flux:icon name="plus" class="size-4" />
+                        </div>
+                        <flux:heading size="lg" class="font-bold">Create New Task</flux:heading>
+                    </div>
+                </div>
+
+                <!-- Task Title -->
+                <div class="space-y-1">
+                    <label class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Task Title <span class="text-red-500">*</span></label>
+                    <input type="text" wire:model="taskTitle" placeholder="What needs to be done?" required autocomplete="off"
+                           class="w-full h-9 px-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500">
+                    @error('taskTitle') <span class="text-[10px] text-red-500">{{ $message }}</span> @enderror
+                </div>
+
+                <!-- Task Description -->
+                <div class="space-y-1">
+                    <label class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Description (Optional)</label>
+                    <textarea wire:model="taskDescription" placeholder="Add additional task context or specs..." rows="3"
+                              class="w-full p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500"></textarea>
+                </div>
+
+                <!-- Grid Row: Project & Initial Status -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <!-- Project Selector -->
+                    <div class="space-y-1">
+                        <label class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Project Reference</label>
+                        <select wire:model="taskProjectId" class="w-full h-9 px-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500 cursor-pointer">
+                            <option value="">Non-Project (Standalone)</option>
+                            @foreach($this->projects as $p)
+                                <option value="{{ $p->id }}">{{ $p->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Initial Status -->
+                    <div class="space-y-1">
+                        <label class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Status</label>
+                        <select wire:model="taskStatus" class="w-full h-9 px-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500 cursor-pointer">
+                            <option value="new">New 🔵 (Default)</option>
+                            <option value="on_progress">On Progress 🟡</option>
+                            <option value="on_hold">On Hold 🟠</option>
+                            <option value="done">Done 🟢</option>
+                            <option value="archived">Archived 📦</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Labels Picker -->
+                <div class="space-y-1.5" x-data="{ selectedLabels: $wire.entangle('taskLabelIds') }">
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Attach Labels</label>
+                        <span class="text-[10px] text-zinc-400">Select multiple</span>
+                    </div>
+
+                    <div class="flex flex-wrap gap-1.5 p-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-800 rounded-xl min-h-[42px] max-h-32 overflow-y-auto">
+                        @forelse($this->labels as $label)
+                            @php $bgColorClass = $this->getLabelBgClass($label->color); @endphp
+                            <button type="button" 
+                                    wire:key="task-label-chip-{{ $label->id }}"
+                                    @click="
+                                        let id = {{ $label->id }};
+                                        if (!Array.isArray(selectedLabels)) selectedLabels = [];
+                                        let idx = selectedLabels.map(Number).indexOf(id);
+                                        if (idx > -1) { selectedLabels.splice(idx, 1); } 
+                                        else { selectedLabels.push(id); }
+                                    "
+                                    class="cursor-pointer inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-semibold transition-all active:scale-95"
+                                    :class="(Array.isArray(selectedLabels) && selectedLabels.map(Number).includes({{ $label->id }}))
+                                        ? '{{ $bgColorClass }} ring-2 ring-indigo-500 shadow-2xs' 
+                                        : 'bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700'">
+                                <template x-if="Array.isArray(selectedLabels) && selectedLabels.map(Number).includes({{ $label->id }})">
+                                    <flux:icon name="check" class="size-3 shrink-0" />
+                                </template>
+                                <span>{{ $label->name }}</span>
+                            </button>
+                        @empty
+                            <div class="text-[11px] text-zinc-400 py-1 px-1">
+                                No custom labels created yet. Add labels in the "Categories &amp; Labels" tab.
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+
+                <!-- Form Footer -->
+                <div class="flex justify-end gap-2 pt-3 border-t border-zinc-200 dark:border-zinc-800">
+                    <flux:modal.close>
+                        <flux:button variant="ghost" size="sm">Cancel</flux:button>
+                    </flux:modal.close>
+                    <flux:modal.close>
+                        <flux:button type="submit" size="sm" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold cursor-pointer px-4">
+                            Save Task
+                        </flux:button>
+                    </flux:modal.close>
+                </div>
+            </form>
+        </flux:modal>
+
+        <!-- EDIT TASK MODAL -->
+        <flux:modal name="edit-task-modal" class="w-[calc(100vw-2rem)] max-w-lg backdrop:backdrop-blur-md z-[200]">
+            <form wire:submit.prevent="updateTask" class="space-y-4">
+                <div class="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-zinc-800">
+                    <div class="flex items-center gap-2">
+                        <div class="size-7 rounded-lg bg-indigo-50 dark:bg-indigo-500/20 border border-indigo-200 dark:border-indigo-500/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                            <flux:icon name="pencil" class="size-4" />
+                        </div>
+                        <flux:heading size="lg" class="font-bold">Edit Task</flux:heading>
+                    </div>
+                </div>
+
+                <!-- Task Title -->
+                <div class="space-y-1">
+                    <label class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Task Title <span class="text-red-500">*</span></label>
+                    <input type="text" wire:model="editingTaskTitle" placeholder="Task Title" required autocomplete="off"
+                           class="w-full h-9 px-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500">
+                </div>
+
+                <!-- Task Description -->
+                <div class="space-y-1">
+                    <label class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Description</label>
+                    <textarea wire:model="editingTaskDescription" placeholder="Add details..." rows="3"
+                              class="w-full p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500"></textarea>
+                </div>
+
+                <!-- Grid Row: Project & Status -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="space-y-1">
+                        <label class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Project Reference</label>
+                        <select wire:model="editingTaskProjectId" class="w-full h-9 px-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500 cursor-pointer">
+                            <option value="">Non-Project (Standalone)</option>
+                            @foreach($this->projects as $p)
+                                <option value="{{ $p->id }}">{{ $p->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Status</label>
+                        <select wire:model="editingTaskStatus" class="w-full h-9 px-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500 cursor-pointer">
+                            <option value="new">New 🔵</option>
+                            <option value="on_progress">On Progress 🟡</option>
+                            <option value="on_hold">On Hold 🟠</option>
+                            <option value="done">Done 🟢</option>
+                            <option value="archived">Archived 📦</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Labels Picker -->
+                <div class="space-y-1.5" x-data="{ selectedLabels: $wire.entangle('editingTaskLabelIds') }">
+                    <label class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Attach Labels</label>
+                    <div class="flex flex-wrap gap-1.5 p-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-800 rounded-xl min-h-[42px] max-h-32 overflow-y-auto">
+                        @forelse($this->labels as $label)
+                            @php $bgColorClass = $this->getLabelBgClass($label->color); @endphp
+                            <button type="button" 
+                                    wire:key="edit-task-label-chip-{{ $label->id }}"
+                                    @click="
+                                        let id = {{ $label->id }};
+                                        if (!Array.isArray(selectedLabels)) selectedLabels = [];
+                                        let idx = selectedLabels.map(Number).indexOf(id);
+                                        if (idx > -1) { selectedLabels.splice(idx, 1); } 
+                                        else { selectedLabels.push(id); }
+                                    "
+                                    class="cursor-pointer inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-semibold transition-all active:scale-95"
+                                    :class="(Array.isArray(selectedLabels) && selectedLabels.map(Number).includes({{ $label->id }}))
+                                        ? '{{ $bgColorClass }} ring-2 ring-indigo-500 shadow-2xs' 
+                                        : 'bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700'">
+                                <template x-if="Array.isArray(selectedLabels) && selectedLabels.map(Number).includes({{ $label->id }})">
+                                    <flux:icon name="check" class="size-3 shrink-0" />
+                                </template>
+                                <span>{{ $label->name }}</span>
+                            </button>
+                        @empty
+                            <div class="text-[11px] text-zinc-400 py-1 px-1">
+                                No labels available.
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+
+                <!-- Form Footer -->
+                <div class="flex justify-end gap-2 pt-3 border-t border-zinc-200 dark:border-zinc-800">
+                    <flux:modal.close>
+                        <flux:button variant="ghost" size="sm">Cancel</flux:button>
+                    </flux:modal.close>
+                    <flux:modal.close>
+                        <flux:button type="submit" size="sm" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold cursor-pointer px-4">
+                            Update Task
+                        </flux:button>
+                    </flux:modal.close>
+                </div>
+            </form>
+        </flux:modal>
+
+    </div>
+
+    <!-- TAB 2: PROJECTS & CLIENTS -->
+    <div x-show="activeTab === 'projects'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" class="flex flex-col gap-4">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="size-7 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0">
+                    <flux:icon name="briefcase" class="size-4 text-zinc-700 dark:text-zinc-300" />
+                </div>
+                <h3 class="font-bold text-sm text-zinc-900 dark:text-zinc-100">Projects &amp; Clients Portfolio</h3>
+                <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[10px] font-mono font-medium px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60">
+                    {{ $this->projects->count() }} Total
+                </span>
+            </div>
         </div>
 
-        <!-- Categories Section -->
+        <!-- Add Project Card -->
+        <div class="border border-zinc-200/80 dark:border-zinc-800 rounded-2xl bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl p-4.5 shadow-xs relative overflow-hidden group hover:border-zinc-400 dark:hover:border-zinc-700 transition-all">
+            <form wire:submit.prevent="addProject" class="space-y-3 relative z-10">
+                <div class="relative w-full">
+                    <input type="text" wire:model="projectName" placeholder="Project Name" required autocomplete="off"
+                           class="w-full h-10 pl-9 pr-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500 shadow-2xs transition-all">
+                    <flux:icon name="briefcase" class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-zinc-400 pointer-events-none" />
+                </div>
+                <div class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
+                    <div class="flex-1 w-full">
+                        <div class="relative w-full">
+                            <input type="text" wire:model="projectClient" placeholder="Client Name (Optional)" autocomplete="off"
+                                   class="w-full h-10 pl-9 pr-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500 shadow-2xs transition-all">
+                            <flux:icon name="user" class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-zinc-400 pointer-events-none" />
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full sm:w-auto cursor-pointer bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl px-4 py-2.5 text-xs border border-indigo-500/80 active:scale-95 transition-all shadow-xs shadow-indigo-500/20 flex items-center justify-center gap-1.5 shrink-0">
+                        <flux:icon name="plus" class="size-3.5 text-white" />
+                        <span>Add Project</span>
+                    </button>
+                </div>
+            </form>
+
+            @if(session()->has('project_message'))
+                <div class="mt-3 text-xs font-semibold text-emerald-600 dark:text-emerald-500 flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-500/10 p-2 rounded-lg border border-emerald-200 dark:border-emerald-500/20">
+                    <flux:icon name="check-circle" class="size-4" />
+                    <span>{{ session('project_message') }}</span>
+                </div>
+            @endif
+        </div>
+
+        <!-- Projects Grouped List Card -->
+        <div class="bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-xs divide-y divide-zinc-200/50 dark:divide-zinc-800/50">
+            @forelse($this->projects as $project)
+                <div wire:key="project-{{ $project->id }}" class="p-3.5 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors group relative">
+                    @if($this->editingProjectId === $project->id)
+                        <form wire:submit.prevent="updateProject" class="space-y-2.5 p-1">
+                            <div class="relative w-full">
+                                <input type="text" wire:model="editingProjectName" placeholder="Project Name" required autocomplete="off"
+                                       class="w-full h-9 pl-8 pr-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500">
+                                <flux:icon name="briefcase" class="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-zinc-400 pointer-events-none" />
+                            </div>
+                            <div class="relative w-full">
+                                <input type="text" wire:model="editingProjectClient" placeholder="Client Name (Optional)" autocomplete="off"
+                                       class="w-full h-9 pl-8 pr-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500">
+                                <flux:icon name="user" class="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-zinc-400 pointer-events-none" />
+                            </div>
+                            <div class="flex gap-2 justify-end mt-1">
+                                <flux:button variant="ghost" wire:click="cancelEditProject" size="xs">Cancel</flux:button>
+                                <flux:button type="submit" size="xs" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold border border-emerald-500 cursor-pointer px-3">Save</flux:button>
+                            </div>
+                        </form>
+                    @else
+                        <div class="flex justify-between items-center gap-3">
+                            <div class="flex items-center gap-3 flex-1 min-w-0">
+                                <div class="size-9 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0 group-hover:scale-105 transition-transform">
+                                    <flux:icon name="folder" class="size-4 text-zinc-700 dark:text-zinc-300" />
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="font-bold text-sm text-zinc-900 dark:text-zinc-100 truncate flex items-center gap-2">
+                                        <span>{{ $project->name }}</span>
+                                        <span class="text-[10px] font-mono font-medium px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/20">
+                                            {{ $project->tasks_count }} Tasks
+                                        </span>
+                                    </div>
+                                    @if($project->client_name)
+                                        <div class="text-[10px] font-mono font-medium text-zinc-700 dark:text-zinc-300 mt-1 truncate flex items-center gap-1 inline-flex bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60">
+                                            <flux:icon name="user" class="size-3 shrink-0 text-zinc-500 dark:text-zinc-400" />
+                                            <span>{{ $project->client_name }}</span>
+                                        </div>
+                                    @else
+                                        <div class="text-[10px] text-zinc-400 dark:text-zinc-500 mt-0.5">Internal Project</div>
+                                    @endif
+                                </div>
+                            </div>
+                            
+                            <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 flex items-center gap-1 shrink-0">
+                                <flux:button wire:click="editProject({{ $project->id }})" variant="ghost" size="xs" icon="pencil" square class="cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200 active:scale-95" />
+                                <flux:modal.trigger name="delete-project-{{ $project->id }}">
+                                    <flux:button variant="ghost" size="xs" icon="trash" square class="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/20 cursor-pointer active:scale-95" />
+                                </flux:modal.trigger>
+                            </div>
+                        </div>
+                    @endif
+
+                    <flux:modal name="delete-project-{{ $project->id }}" class="w-[calc(100vw-2rem)] max-w-md backdrop:backdrop-blur-md z-[200]">
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-3">
+                                <div class="size-10 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 flex items-center justify-center text-red-600 dark:text-red-500 shrink-0">
+                                    <flux:icon name="trash" class="size-5" />
+                                </div>
+                                <div>
+                                    <flux:heading size="lg" class="font-bold">Delete Project?</flux:heading>
+                                    <flux:text class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+                                        Are you sure you want to delete <strong>{{ $project->name }}</strong>? All linked activity logs and task references will be removed.
+                                    </flux:text>
+                                </div>
+                            </div>
+                            <div class="flex justify-end gap-2 pt-2">
+                                <flux:modal.close>
+                                    <flux:button variant="ghost" size="sm">Cancel</flux:button>
+                                </flux:modal.close>
+                                <flux:modal.close>
+                                    <flux:button variant="danger" size="sm" wire:click="deleteProject({{ $project->id }})">Delete</flux:button>
+                                </flux:modal.close>
+                            </div>
+                        </div>
+                    </flux:modal>
+                </div>
+            @empty
+                <div class="text-xs text-neutral-400 text-center py-10 flex flex-col items-center gap-2 bg-zinc-50/50 dark:bg-zinc-950/20">
+                    <div class="size-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-500 dark:text-zinc-400">
+                        <flux:icon name="folder" class="size-5" />
+                    </div>
+                    <span class="font-semibold text-zinc-700 dark:text-zinc-300">No projects created yet.</span>
+                    <span class="text-[11px] text-zinc-500 dark:text-zinc-400">Add a new project using the form above.</span>
+                </div>
+            @endforelse
+        </div>
+    </div>
+
+    <!-- TAB 3: CATEGORIES & TASK LABELS -->
+    <div x-show="activeTab === 'categories'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Tracker Categories Section -->
         <div class="flex flex-col gap-4">
-            <!-- Section Header -->
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
                     <div class="size-7 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0">
                         <flux:icon name="tag" class="size-4 text-zinc-700 dark:text-zinc-300" />
                     </div>
-                    <h3 class="font-bold text-sm text-zinc-900 dark:text-zinc-100">Categories</h3>
+                    <h3 class="font-bold text-sm text-zinc-900 dark:text-zinc-100">Tracker Categories</h3>
                     <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[10px] font-mono font-medium px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60">
                         {{ $this->categories->count() }} Total
                     </span>
                 </div>
             </div>
 
-            <!-- Add Category Card (Modern Glassmorphism) -->
+            <!-- Add Category Card -->
             <div class="border border-zinc-200/80 dark:border-zinc-800 rounded-2xl bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl p-4.5 shadow-xs relative overflow-hidden group hover:border-zinc-400 dark:hover:border-zinc-700 transition-all">
-
                 <form wire:submit.prevent="addCategory" class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center relative z-10">
                     <div class="flex-1 w-full">
                         <div class="relative w-full">
                             <input type="text" wire:model="categoryName" placeholder="Category Name" required autocomplete="off"
-                                   class="w-full h-10 pl-9 pr-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-zinc-600 focus:ring-2 focus:ring-zinc-600/20 shadow-2xs transition-all">
+                                   class="w-full h-10 pl-9 pr-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500 shadow-2xs transition-all">
                             <flux:icon name="tag" class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-zinc-400 pointer-events-none" />
                         </div>
                     </div>
@@ -324,7 +1303,7 @@ new class extends Component
                 @endif
             </div>
 
-            <!-- Categories Grouped List Card -->
+            <!-- Categories List Card -->
             <div class="bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-xs divide-y divide-zinc-200/50 dark:divide-zinc-800/50">
                 @forelse($this->categories as $category)
                     <div wire:key="category-{{ $category->id }}" class="p-3.5 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors group relative">
@@ -332,7 +1311,7 @@ new class extends Component
                             <form wire:submit.prevent="updateCategory" class="space-y-2.5 p-1">
                                 <div class="relative w-full">
                                     <input type="text" wire:model="editingCategoryName" placeholder="Category Name" required autocomplete="off"
-                                           class="w-full h-9 pl-8 pr-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-zinc-600">
+                                           class="w-full h-9 pl-8 pr-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500">
                                     <flux:icon name="tag" class="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-zinc-400 pointer-events-none" />
                                 </div>
                                 <div class="flex gap-2 justify-end mt-1">
@@ -347,24 +1326,24 @@ new class extends Component
                                         <flux:icon name="tag" class="size-4 text-zinc-700 dark:text-zinc-300" />
                                     </div>
                                     <div class="min-w-0">
-                                        <div class="font-bold text-sm text-zinc-900 dark:text-zinc-100 truncate group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-colors">{{ $category->name }}</div>
-                                        <div class="text-[10px] font-mono font-medium text-zinc-600 dark:text-zinc-400 mt-1 inline-flex bg-zinc-100 dark:bg-zinc-800/60 px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-800">
-                                            Category Tag
+                                        <div class="font-bold text-sm text-zinc-900 dark:text-zinc-100 truncate">{{ $category->name }}</div>
+                                        <div class="text-[10px] font-mono font-medium text-zinc-600 dark:text-zinc-400 mt-0.5 inline-flex bg-zinc-100 dark:bg-zinc-800/60 px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-800">
+                                            Activity Tracker Tag
                                         </div>
                                     </div>
                                 </div>
                                 
                                 <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 flex items-center gap-1 shrink-0">
-                                    <flux:button wire:click="editCategory({{ $category->id }})" variant="ghost" size="xs" icon="pencil" square class="cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200 active:scale-95" />
+                                    <flux:button wire:click="editCategory({{ $category->id }})" variant="ghost" size="xs" icon="pencil" square class="cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200" />
                                     <flux:modal.trigger name="delete-category-{{ $category->id }}">
-                                        <flux:button variant="ghost" size="xs" icon="trash" square class="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/20 cursor-pointer active:scale-95" />
+                                        <flux:button variant="ghost" size="xs" icon="trash" square class="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/20 cursor-pointer" />
                                     </flux:modal.trigger>
                                 </div>
                             </div>
                         @endif
 
                         <flux:modal name="delete-category-{{ $category->id }}" class="w-[calc(100vw-2rem)] max-w-md backdrop:backdrop-blur-md z-[200]">
-                            <div class="space-y-5">
+                            <div class="space-y-4">
                                 <div class="flex items-center gap-3">
                                     <div class="size-10 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 flex items-center justify-center text-red-600 dark:text-red-500 shrink-0">
                                         <flux:icon name="trash" class="size-5" />
@@ -372,7 +1351,7 @@ new class extends Component
                                     <div>
                                         <flux:heading size="lg" class="font-bold">Delete Category?</flux:heading>
                                         <flux:text class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
-                                            Are you sure you want to delete <strong>{{ $category->name }}</strong>? All linked activity logs will be removed.
+                                            Are you sure you want to delete <strong>{{ $category->name }}</strong>?
                                         </flux:text>
                                     </div>
                                 </div>
@@ -393,9 +1372,87 @@ new class extends Component
                             <flux:icon name="tag" class="size-5" />
                         </div>
                         <span class="font-semibold text-zinc-700 dark:text-zinc-300">No categories created yet.</span>
-                        <span class="text-[11px] text-zinc-500 dark:text-zinc-400">Add a new category using the form above.</span>
                     </div>
                 @endforelse
+            </div>
+        </div>
+
+        <!-- Task Dynamic Labels Section -->
+        <div class="flex flex-col gap-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <div class="size-7 rounded-lg bg-amber-500/10 dark:bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
+                        <flux:icon name="bookmark" class="size-4 text-amber-600 dark:text-amber-400" />
+                    </div>
+                    <h3 class="font-bold text-sm text-zinc-900 dark:text-zinc-100">Dynamic Task Labels</h3>
+                    <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[10px] font-mono font-medium px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60">
+                        {{ $this->labels->count() }} Total
+                    </span>
+                </div>
+
+                <!-- Quick Add Suggested Label -->
+                @if(!$this->labels->pluck('name')->contains('belum ada open project'))
+                    <button wire:click="addPresetLabel('belum ada open project', 'amber')" type="button" class="text-[11px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-200 dark:border-amber-500/30 hover:bg-amber-100 dark:hover:bg-amber-500/20 transition-all flex items-center gap-1 cursor-pointer">
+                        <flux:icon name="plus" class="size-3" />
+                        <span>+ Add "belum ada open project"</span>
+                    </button>
+                @endif
+            </div>
+
+            <!-- Add Label Form Card -->
+            <div class="border border-zinc-200/80 dark:border-zinc-800 rounded-2xl bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl p-4.5 shadow-xs relative overflow-hidden group hover:border-zinc-400 dark:hover:border-zinc-700 transition-all">
+                <form wire:submit.prevent="addLabel" class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center relative z-10">
+                    <div class="flex-1">
+                        <input type="text" wire:model="labelName" placeholder="Label Name (e.g. belum ada open project)" required autocomplete="off"
+                               class="w-full h-10 px-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-amber-500 shadow-2xs transition-all">
+                    </div>
+                    
+                    <!-- Color Picker -->
+                    <select wire:model="labelColor" class="h-10 px-2.5 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-amber-500 cursor-pointer shrink-0">
+                        <option value="amber">Amber 🟡</option>
+                        <option value="indigo">Indigo 🔵</option>
+                        <option value="emerald">Emerald 🟢</option>
+                        <option value="rose">Rose 🔴</option>
+                        <option value="sky">Sky 🩵</option>
+                        <option value="purple">Purple 🟣</option>
+                        <option value="zinc">Zinc ⚪</option>
+                    </select>
+
+                    <button type="submit" class="w-full sm:w-auto cursor-pointer bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-xl px-4 py-2.5 text-xs border border-amber-500/80 active:scale-95 transition-all shadow-xs shadow-amber-500/20 flex items-center justify-center gap-1.5 shrink-0">
+                        <flux:icon name="plus" class="size-3.5 text-white" />
+                        <span>Add Label</span>
+                    </button>
+                </form>
+
+                @if(session()->has('label_message'))
+                    <div class="mt-3 text-xs font-semibold text-amber-700 dark:text-amber-400 flex items-center gap-1.5 bg-amber-50 dark:bg-amber-500/10 p-2 rounded-lg border border-amber-200 dark:border-amber-500/20">
+                        <flux:icon name="check-circle" class="size-4" />
+                        <span>{{ session('label_message') }}</span>
+                    </div>
+                @endif
+            </div>
+
+            <!-- Labels Grid List -->
+            <div class="bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-4 shadow-xs">
+                <div class="flex flex-wrap gap-2">
+                    @forelse($this->labels as $label)
+                        <div wire:key="label-tag-{{ $label->id }}" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all group {{ $this->getLabelBgClass($label->color) }}">
+                            <span>{{ $label->name }}</span>
+                            <span class="text-[10px] font-mono opacity-80">({{ $label->tasks_count }})</span>
+                            <button wire:click="deleteLabel({{ $label->id }})" class="opacity-60 group-hover:opacity-100 hover:text-red-600 transition-opacity ml-1 cursor-pointer" title="Delete label">
+                                <flux:icon name="x-mark" class="size-3.5" />
+                            </button>
+                        </div>
+                    @empty
+                        <div class="w-full text-xs text-neutral-400 text-center py-8 flex flex-col items-center gap-2 bg-zinc-50/50 dark:bg-zinc-950/20 rounded-xl">
+                            <div class="size-10 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-500">
+                                <flux:icon name="bookmark" class="size-5" />
+                            </div>
+                            <span class="font-semibold text-zinc-700 dark:text-zinc-300">No task labels created yet.</span>
+                            <span class="text-[11px] text-zinc-500 dark:text-zinc-400">Add custom labels like "belum ada open project" using the form above.</span>
+                        </div>
+                    @endforelse
+                </div>
             </div>
         </div>
 

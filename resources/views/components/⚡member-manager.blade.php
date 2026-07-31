@@ -46,7 +46,7 @@ new class extends Component
 
         // Prevent self-lockout
         if (auth()->id() === (int) $userId) {
-            session()->flash('error', 'Anda tidak dapat menghapus hak admin Anda sendiri.');
+            session()->flash('error', 'You cannot revoke your own administrator privileges.');
             return;
         }
 
@@ -64,28 +64,27 @@ new class extends Component
         $adminName = auth()->user()->name;
         if ($user->is_admin) {
             $user->notifications()->create([
-                'title' => 'Hak Akses Diperbarui 👑',
-                'body' => "Anda telah dipromosikan sebagai Administrator oleh {$adminName}.",
+                'title' => 'Access Privileges Updated 👑',
+                'body' => "You have been promoted to Administrator by {$adminName}.",
                 'type' => 'success',
             ]);
         } else {
             $user->notifications()->create([
-                'title' => 'Hak Akses Diperbarui 🛡️',
-                'body' => "Peran administrator Anda telah dicabut oleh {$adminName}.",
+                'title' => 'Access Privileges Updated 🛡️',
+                'body' => "Your administrator role has been revoked by {$adminName}.",
                 'type' => 'warning',
             ]);
         }
 
-        $status = $user->is_admin ? 'dijadikan Administrator' : 'dihapus dari Administrator';
-        session()->flash('status_updated', "User {$user->name} berhasil {$status}.");
+        $status = $user->is_admin ? 'promoted to Administrator' : 'removed from Administrator';
+        session()->flash('status_updated', "User {$user->name} successfully {$status}.");
     }
 };
 ?>
 
-<div class="flex h-full w-full flex-col gap-6 p-3 sm:p-4 text-neutral-900 dark:text-neutral-100 max-w-6xl mx-auto mt-2 sm:mt-4 pb-16" x-data="{ mounted: false }" x-init="setTimeout(() => mounted = true, 50)">
+<div class="flex h-full w-full flex-col gap-6 p-3 sm:p-4 text-neutral-900 dark:text-neutral-100 max-w-6xl mx-auto mt-2 sm:mt-4 pb-16 animate-page-entrance">
     <!-- Header -->
-    <div class="border-b border-zinc-200/80 dark:border-zinc-800/80 pb-4 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all duration-700 ease-out"
-         :class="mounted ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'">
+    <div class="border-b border-zinc-200/80 dark:border-zinc-800/80 pb-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
             <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-2.5">
                 <div class="size-8.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0">
@@ -146,8 +145,7 @@ new class extends Component
     @endif
 
     <!-- Member Cards Container -->
-    <div class="space-y-3.5 transition-all duration-700 ease-out delay-100"
-         :class="mounted ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'">
+    <div class="space-y-3.5">
         @forelse($this->members as $member)
             <div wire:key="member-{{ $member->id }}" 
                  class="bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-4 sm:p-5 shadow-xs hover:border-zinc-400 dark:hover:border-zinc-700 transition-all group flex flex-col md:flex-row justify-between items-start md:items-center gap-4">

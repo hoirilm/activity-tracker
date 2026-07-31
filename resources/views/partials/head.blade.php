@@ -19,6 +19,7 @@
     // Livewire manually syncs attributes and would otherwise strip the class, triggering a visual flash (especially with View Transitions).
     document.addEventListener('livewire:navigating', () => {
         const html = document.documentElement;
+        html.classList.add('is-navigating');
         const isDark = html.classList.contains('dark');
         
         html.__originalSetAttribute = html.setAttribute;
@@ -49,6 +50,12 @@
             delete html.__originalSetAttribute;
             delete html.__originalRemoveAttribute;
         }
+
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                html.classList.remove('is-navigating');
+            }, 80);
+        });
     });
 </script>
 
@@ -67,5 +74,20 @@
     html.dark [ui-checkbox]:not([data-checked]) [data-flux-checkbox-indicator] {
         border-color: transparent !important;
         background-color: rgba(255, 255, 255, 0.05) !important;
+    }
+
+    /* Smooth Upward Page Entrance Animation */
+    @keyframes pageSlideUp {
+        from {
+            opacity: 0;
+            transform: translateY(12px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    .animate-page-entrance {
+        animation: pageSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 </style>

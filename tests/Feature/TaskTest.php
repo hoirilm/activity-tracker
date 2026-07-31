@@ -1,0 +1,111 @@
+<?php
+
+use App\Models\User;
+use App\Models\Project;
+use App\Models\Task;
+use App\Models\Label;
+use Livewire\Livewire;
+
+test('authenticated user can create project and non-project tasks via livewire', function () {
+    $user = User::factory()->create();
+    $project = Project::create(['user_id' => $user->id, 'name' => 'Project Antigravity']);
+
+    Livewire::actingAs($user)
+        ->test('manage')
+        ->set('taskTitle', 'Feature Task Project')
+        ->set('taskProjectId', $project->id)
+        ->set('taskStatus', 'new')
+        ->call('addTask')
+        ->assertHasNoErrors();
+
+    expect(Task::where('title', 'Feature Task Project')->exists())->toBeTrue();
+    $task = Task::where('title', 'Feature Task Project')->first();
+    expect($task->project_id)->toBe($project->id);
+    expect($task->status)->toBe('new');
+
+    // Create non-project task
+    Livewire::actingAs($user)
+        ->test('manage')
+        ->set('taskTitle', 'Standalone Task Non Project')
+        ->set('taskProjectId', null)
+        ->call('addTask')
+        ->assertHasNoErrors();
+
+    $nonProjectTask = Task::where('title', 'Standalone Task Non Project')->first();
+    expect($nonProjectTask->project_id)->toBeNull();
+    expect($nonProjectTask->status)->toBe('new');
+});
+
+test('user can update task status and attach labels', function () {
+    $user = User::factory()->create();
+    $task = Task::create([
+        'user_id' => $user->id,
+        'title' => 'Sample Task',
+        'status' => 'new',
+    ]);
+    $label = Label::create([
+        'user_id' => $user->id,
+        'name' => 'belum ada open project',
+        'color' => 'amber',
+    ]);
+
+    Livewire::actingAs($user)
+        ->test('manage')
+        ->call('updateTaskStatus', $task->id, 'on_progress');
+
+    expect($task->fresh()->status)->toBe('on_progress');
+
+    Livewire::actingAs($user)
+        ->test('manage')
+        ->set('editingTaskId', $task->id)
+        ->set('editingTaskTitle', 'Sample Task Updated')
+        ->set('editingTaskStatus', 'done')
+        ->set('editingTaskLabelIds', [$label->id])
+        ->call('updateTask');
+
+    expect($task->fresh()->status)->toBe('done');
+    expect($task->fresh()->labels->first()->name)->toBe('belum ada open project');
+});
+
+test('user can manage dynamic task labels', function () {
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('manage')
+        ->set('labelName', 'urgent bug')
+        ->set('labelColor', 'rose')
+        ->call('addLabel');
+
+    expect(Label::where('name', 'urgent bug')->exists())->toBeTrue();
+
+    Livewire::actingAs($user)
+        ->test('manage')
+        ->call('addPresetLabel', 'belum ada open project', 'amber');
+
+    expect(Label::where('name', 'belum ada open project')->exists())->toBeTrue();
+});
+
+test('starting activity linked to task automatically updates task status to on_progress', function () {
+    $user = User::factory()->create();
+    $project = Project::create(['user_id' => $user->id, 'name' => 'Project Demo']);
+    $category = \App\Models\Category::create(['user_id' => $user->id, 'name' => 'Dev']);
+    $task = Task::create([
+        'user_id' => $user->id,
+        'title' => 'Fix Login Bug',
+        'status' => 'new',
+        'project_id' => $project->id,
+    ]);
+
+    Livewire::actingAs($user)
+        ->test('tracker')
+        ->set('task_id', $task->id)
+        ->set('project_id', $project->id)
+        ->set('category_id', $category->id)
+        ->set('detail', 'Working on Login Bug')
+        ->call('startActivity')
+        ->assertHasNoErrors();
+
+    $activity = \App\Models\Activity::where('detail', 'Working on Login Bug')->first();
+    expect($activity->task_id)->toBe($task->id);
+    expect($task->fresh()->status)->toBe('on_progress');
+});

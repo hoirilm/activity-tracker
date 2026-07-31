@@ -19,7 +19,7 @@
                     </div>
                     <flux:heading size="md" class="font-semibold text-sm">User Guides</flux:heading>
                 </div>
-                <flux:text class="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">Read our detailed documentation on how to set up projects, define categories, manage custom times, and generate weekly exports.</flux:text>
+                <flux:text class="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">Read our detailed documentation on how to manage tasks, set up projects, define categories &amp; labels, track activity time, and export/restore data.</flux:text>
                 <div class="pt-1">
                     <button type="button" onclick="window.open('https://laravel.com/docs/starter-kits#livewire', '_blank')" class="bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-white dark:text-zinc-900 font-semibold text-xs px-3.5 py-1.5 rounded-xl active:scale-95 transition-all shadow-2xs cursor-pointer">Open Docs &rarr;</button>
                 </div>
@@ -47,7 +47,7 @@
                     </div>
                     <flux:heading size="md" class="font-semibold text-sm">Contact Administrator</flux:heading>
                 </div>
-                <flux:text class="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">If you require immediate help or technical support for your user account (such as password resets or permission changes), contact platform administrator at <a href="mailto:admin@marikerja.com" class="text-zinc-900 dark:text-zinc-100 underline font-semibold">admin@marikerja.com</a>.</flux:text>
+                <flux:text class="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">If you require immediate help or technical support for your user account (such as password resets or permission changes), contact platform administrator at <a href="mailto:horimo.me@gmail.com" class="text-zinc-900 dark:text-zinc-100 underline font-semibold">horimo.me@gmail.com</a>.</flux:text>
             </div>
         </div>
 
@@ -89,7 +89,7 @@
                         </button>
                         <div x-show="open === 'g1'" x-collapse class="px-4 pb-3" style="display:none">
                             <div class="p-3 bg-zinc-200/60 dark:bg-zinc-950 rounded-xl border-l-2 border-zinc-400 dark:border-zinc-600 text-xs text-zinc-800 dark:text-zinc-300 leading-relaxed">
-                                Activity Tracker is a real-time time management platform for teams and individuals to log work hours, categorize tasks by project, and review productivity through an interactive dashboard.
+                                Activity Tracker is a real-time time management platform for teams and individuals to log work hours, organize task workflows, categorize projects, and review productivity through an interactive dashboard.
                             </div>
                         </div>
                     </div>
@@ -100,7 +100,7 @@
                         </button>
                         <div x-show="open === 'g2'" x-collapse class="px-4 pb-3" style="display:none">
                             <div class="p-3 bg-zinc-200/60 dark:bg-zinc-950 rounded-xl border-l-2 border-zinc-400 dark:border-zinc-600 text-xs text-zinc-800 dark:text-zinc-300 leading-relaxed">
-                                Any registered user can track their activities, view their dashboard, and export reports. Admins additionally can manage workspace members, projects, categories, broadcast announcements, and review bug reports.
+                                Any registered user can track their activities, manage tasks, view their dashboard, and export reports. Admins additionally can manage workspace members, projects, categories, broadcast announcements, and review bug reports.
                             </div>
                         </div>
                     </div>
@@ -112,6 +112,50 @@
                         <div x-show="open === 'g3'" x-collapse class="px-4 pb-3" style="display:none">
                             <div class="p-3 bg-zinc-200/60 dark:bg-zinc-950 rounded-xl border-l-2 border-zinc-400 dark:border-zinc-600 text-xs text-zinc-800 dark:text-zinc-300 leading-relaxed">
                                 Yes. Activity Tracker fully supports both light and dark modes. You can toggle the theme from the user menu in the navigation bar.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MANAGE & TASKS -->
+            <div class="space-y-2">
+                <div class="flex items-center gap-2">
+                    <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[10px] font-mono font-medium px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60 uppercase tracking-wider">
+                        Manage &amp; Tasks
+                    </span>
+                </div>
+                <div class="space-y-2">
+                    <div class="bg-zinc-100/80 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-700/40 rounded-xl overflow-hidden transition-all">
+                        <button type="button" @click="open = open === 'm1' ? null : 'm1'" class="w-full flex items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-left text-zinc-800 dark:text-zinc-200 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors cursor-pointer" :class="open === 'm1' && 'text-zinc-900 dark:text-zinc-100'">
+                            <span>How does the Kanban Board &amp; Task Management work?</span>
+                            <flux:icon name="chevron-down" class="size-4 text-zinc-400 shrink-0 transition-transform duration-200" ::class="open === 'm1' && 'rotate-180 text-zinc-700 dark:text-zinc-300'" />
+                        </button>
+                        <div x-show="open === 'm1'" x-collapse class="px-4 pb-3" style="display:none">
+                            <div class="p-3 bg-zinc-200/60 dark:bg-zinc-950 rounded-xl border-l-2 border-zinc-400 dark:border-zinc-600 text-xs text-zinc-800 dark:text-zinc-300 leading-relaxed">
+                                Go to the <strong>Manage</strong> page to view your Tasks tab. Tasks are organized in a 4-column Kanban board (<strong>New, On Progress, On Hold, Done</strong>). You can filter tasks by project, search by title or dynamic labels, edit details, or archive inactive items into the Archived Tasks Repository.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-zinc-100/80 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-700/40 rounded-xl overflow-hidden transition-all">
+                        <button type="button" @click="open = open === 'm2' ? null : 'm2'" class="w-full flex items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-left text-zinc-800 dark:text-zinc-200 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors cursor-pointer" :class="open === 'm2' && 'text-zinc-900 dark:text-zinc-100'">
+                            <span>How do Dynamic Task Labels work?</span>
+                            <flux:icon name="chevron-down" class="size-4 text-zinc-400 shrink-0 transition-transform duration-200" ::class="open === 'm2' && 'rotate-180 text-zinc-700 dark:text-zinc-300'" />
+                        </button>
+                        <div x-show="open === 'm2'" x-collapse class="px-4 pb-3" style="display:none">
+                            <div class="p-3 bg-zinc-200/60 dark:bg-zinc-950 rounded-xl border-l-2 border-zinc-400 dark:border-zinc-600 text-xs text-zinc-800 dark:text-zinc-300 leading-relaxed">
+                                Dynamic task labels allow you to tag and organize tasks by custom topics or priorities with custom color coding (Amber, Indigo, Emerald, Rose, Sky, Purple, Zinc). You can create custom labels or click pre-built suggested labels under <strong>Manage &rarr; Tasks &rarr; Dynamic Task Labels</strong>.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-zinc-100/80 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-700/40 rounded-xl overflow-hidden transition-all">
+                        <button type="button" @click="open = open === 'm3' ? null : 'm3'" class="w-full flex items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-left text-zinc-800 dark:text-zinc-200 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors cursor-pointer" :class="open === 'm3' && 'text-zinc-900 dark:text-zinc-100'">
+                            <span>How does Backup &amp; Restore handle my Tasks and Labels?</span>
+                            <flux:icon name="chevron-down" class="size-4 text-zinc-400 shrink-0 transition-transform duration-200" ::class="open === 'm3' && 'rotate-180 text-zinc-700 dark:text-zinc-300'" />
+                        </button>
+                        <div x-show="open === 'm3'" x-collapse class="px-4 pb-3" style="display:none">
+                            <div class="p-3 bg-zinc-200/60 dark:bg-zinc-950 rounded-xl border-l-2 border-zinc-400 dark:border-zinc-600 text-xs text-zinc-800 dark:text-zinc-300 leading-relaxed">
+                                When you export a JSON backup from <strong>Settings &rarr; Backup &amp; Restore</strong>, all your tasks, descriptions, statuses, and custom labels are included alongside projects, categories, and activity history. Importing a backup file restores all tasks and labels seamlessly.
                             </div>
                         </div>
                     </div>

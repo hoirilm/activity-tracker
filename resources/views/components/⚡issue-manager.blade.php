@@ -71,10 +71,9 @@ new class extends Component
 };
 ?>
 
-<div class="flex h-full w-full flex-col gap-6 p-3 sm:p-4 text-neutral-900 dark:text-neutral-100 max-w-6xl mx-auto mt-2 sm:mt-4 pb-16" x-data="{ mounted: false }" x-init="setTimeout(() => mounted = true, 50)">
+<div class="flex h-full w-full flex-col gap-6 p-3 sm:p-4 text-neutral-900 dark:text-neutral-100 max-w-6xl mx-auto mt-2 sm:mt-4 pb-16 animate-page-entrance">
     <!-- Header -->
-    <div class="border-b border-zinc-200/80 dark:border-zinc-800/80 pb-4 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all duration-700 ease-out"
-         :class="mounted ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'">
+    <div class="border-b border-zinc-200/80 dark:border-zinc-800/80 pb-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
             <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-2.5">
                 <div class="size-8.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0">
@@ -126,8 +125,7 @@ new class extends Component
     @endif
 
     <!-- Issue Cards Container -->
-    <div class="space-y-4 transition-all duration-700 ease-out delay-100"
-         :class="mounted ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'">
+    <div class="space-y-4">
         @forelse($this->issues as $issue)
             <div wire:key="issue-{{ $issue->id }}" 
                  class="bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-4 sm:p-5 shadow-xs hover:border-zinc-400 dark:hover:border-zinc-700 transition-all group relative overflow-hidden flex flex-col gap-3.5">

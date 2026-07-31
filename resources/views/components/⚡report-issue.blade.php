@@ -24,8 +24,8 @@ new class extends Component
 
         // Notify the user themselves
         $user->notifications()->create([
-            'title' => 'Laporan Bug Diterima 🐛',
-            'body' => "Terima kasih! Laporan bug Anda terkait '{$issue->formatted_title}' telah diterima oleh Administrator.",
+            'title' => 'Bug Report Received 🐛',
+            'body' => "Thank you! Your bug report regarding '{$issue->formatted_title}' has been received by Administrators.",
             'type' => 'info',
         ]);
 
@@ -34,8 +34,8 @@ new class extends Component
         foreach ($admins as $admin) {
             if ($admin->id !== $user->id) {
                 $admin->notifications()->create([
-                    'title' => 'Laporan Bug Baru ⚠️',
-                    'body' => "Pengguna {$user->name} melaporkan bug baru: '{$issue->formatted_title}'.",
+                    'title' => 'New Bug Report ⚠️',
+                    'body' => "User {$user->name} reported a new bug: '{$issue->formatted_title}'.",
                     'type' => 'warning',
                 ]);
             }

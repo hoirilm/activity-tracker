@@ -36,28 +36,22 @@ new class extends Component
 
         $count = $users->count();
         $this->reset(['title', 'body', 'type']);
-        $this->successMessage = "Broadcast berhasil dikirimkan ke {$count} user!";
+        $this->successMessage = "Broadcast successfully sent to {$count} users!";
     }
 };
 ?>
 
-<div class="flex h-full w-full flex-col gap-6 p-3 sm:p-4 text-neutral-900 dark:text-neutral-100 max-w-6xl mx-auto mt-2 sm:mt-4 pb-16" x-data="{ mounted: false }" x-init="setTimeout(() => mounted = true, 50)">
+<div class="flex h-full w-full flex-col gap-6 p-3 sm:p-4 text-neutral-900 dark:text-neutral-100 max-w-6xl mx-auto mt-2 sm:mt-4 pb-16 animate-page-entrance">
     <!-- Header -->
-    <div class="border-b border-zinc-200/80 dark:border-zinc-800/80 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all duration-700 ease-out"
-         :class="mounted ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'">
+    <div class="border-b border-zinc-200/80 dark:border-zinc-800/80 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
             <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-2.5">
                 <div class="size-8.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0">
-                    <flux:icon name="megaphone" class="size-4.5 text-zinc-700 dark:text-zinc-300" />
+                    <flux:icon name="speaker-wave" class="size-5" />
                 </div>
-                <span>System Broadcast Studio</span>
+                <span>Broadcast Center</span>
             </h2>
-            <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1">Send global notification broadcasts and system announcements to all team members.</p>
-        </div>
-        <div class="flex items-center gap-2 self-start sm:self-auto">
-            <span class="text-[11px] font-mono font-semibold px-3 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700/60">
-                Admin Panel Only
-            </span>
+            <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1">Send mass announcements and system updates to all registered users.</p>
         </div>
     </div>
 
@@ -73,8 +67,7 @@ new class extends Component
     @endif
 
     <!-- Split Layout -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 transition-all duration-700 ease-out delay-100"
-         :class="mounted ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         <!-- Left Side: Form (Spans 2 columns) -->
         <div class="lg:col-span-2 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl p-5 sm:p-6 shadow-xs relative overflow-hidden group hover:border-zinc-400 dark:hover:border-zinc-700 transition-all">

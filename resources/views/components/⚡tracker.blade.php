@@ -4,6 +4,7 @@ use Livewire\Component;
 use App\Models\Activity;
 use App\Models\Project;
 use App\Models\Category;
+use App\Models\Task;
 use Carbon\Carbon;
 use Livewire\WithFileUploads;
 use Maatwebsite\Excel\Facades\Excel;
@@ -18,6 +19,7 @@ new class extends Component
     public $detail = '';
     public $project_id;
     public $category_id;
+    public $task_id = null;
     public $is_parallel = false;
     public $importFile;
     public $startDate;
@@ -27,6 +29,7 @@ new class extends Component
     
     public $editingActivityId = null;
     public $editDetail;
+    public $editTaskId = null;
     public $editStartTime;
     public $editEndTime;
     public $showEditModal = false;
@@ -37,6 +40,31 @@ new class extends Component
         $this->category_id = Category::where('user_id', auth()->id())->first()->id ?? null;
     }
 
+    public function updatedProjectId($val)
+    {
+        if ($this->task_id) {
+            $task = auth()->user()->tasks()->find($this->task_id);
+            if ($task && $task->project_id && $task->project_id != $val) {
+                $this->task_id = null;
+            }
+        }
+    }
+
+    public function updatedTaskId($val)
+    {
+        if ($val) {
+            $task = auth()->user()->tasks()->find($val);
+            if ($task) {
+                if ($task->project_id) {
+                    $this->project_id = $task->project_id;
+                }
+                if (empty(trim($this->detail))) {
+                    $this->detail = $task->title;
+                }
+            }
+        }
+    }
+
     public function getProjectsProperty()
     {
         return Project::where('user_id', auth()->id())->get();
@@ -45,6 +73,22 @@ new class extends Component
     public function getCategoriesProperty()
     {
         return Category::where('user_id', auth()->id())->get();
+    }
+
+    public function getTasksProperty()
+    {
+        $query = auth()->user()->tasks()
+            ->with('project')
+            ->whereIn('status', [Task::STATUS_NEW, Task::STATUS_ON_PROGRESS, Task::STATUS_ON_HOLD]);
+
+        if ($this->project_id) {
+            $query->where(function ($q) {
+                $q->where('project_id', $this->project_id)
+                  ->orWhereNull('project_id');
+            });
+        }
+
+        return $query->latest()->get();
     }
 
     public function loadMore()
@@ -88,7 +132,7 @@ new class extends Component
         }
 
         $activitiesQuery = clone $query;
-        $activities = $activitiesQuery->with(['project', 'category'])
+        $activities = $activitiesQuery->with(['project', 'category', 'task'])
             ->whereIn(DB::raw('DATE(start_time)'), $datesToFetch)
             ->orderBy('start_time', 'desc')
             ->get()
@@ -104,7 +148,7 @@ new class extends Component
 
     public function getRunningActivitiesProperty()
     {
-        return auth()->user()->activities()->with(['project', 'category'])
+        return auth()->user()->activities()->with(['project', 'category', 'task'])
             ->whereNull('end_time')
             ->orderBy('start_time', 'desc')
             ->get();
@@ -116,6 +160,7 @@ new class extends Component
             'detail' => 'required|string',
             'project_id' => 'required|exists:projects,id',
             'category_id' => 'required|exists:categories,id',
+            'task_id' => 'nullable|exists:tasks,id',
         ]);
 
         if (!$this->is_parallel) {
@@ -128,12 +173,21 @@ new class extends Component
         auth()->user()->activities()->create([
             'project_id' => $this->project_id,
             'category_id' => $this->category_id,
+            'task_id' => $this->task_id ?: null,
             'detail' => $this->detail,
             'is_parallel' => $this->is_parallel,
             'start_time' => now(),
         ]);
 
-        $this->detail = '';
+        // Auto update task status to on_progress if currently new or on_hold
+        if ($this->task_id) {
+            $task = auth()->user()->tasks()->find($this->task_id);
+            if ($task && in_array($task->status, [Task::STATUS_NEW, Task::STATUS_ON_HOLD])) {
+                $task->update(['status' => Task::STATUS_ON_PROGRESS]);
+            }
+        }
+
+        $this->reset(['detail', 'task_id']);
     }
 
     public function stopActivity($id)
@@ -159,9 +213,9 @@ new class extends Component
             $this->validate([
                 'importFile' => 'required|file|mimes:xlsx,csv,xls|max:10240',
             ], [
-                'importFile.required' => 'Silakan pilih berkas Excel (.xlsx atau .csv) terlebih dahulu.',
-                'importFile.mimes' => 'Format berkas tidak didukung. Harap unggah berkas bertipe .xlsx atau .csv.',
-                'importFile.max' => 'Ukuran berkas terlalu besar. Maksimal 10 MB.',
+                'importFile.required' => 'Please select an Excel (.xlsx or .csv) file first.',
+                'importFile.mimes' => 'Unsupported file format. Please upload a .xlsx or .csv file.',
+                'importFile.max' => 'File size is too large. Maximum 10 MB.',
             ]);
 
             $fileName = $this->importFile ? $this->importFile->getClientOriginalName() : 'Excel';
@@ -171,33 +225,33 @@ new class extends Component
 
             session()->flash('import_status', [
                 'type' => 'success',
-                'title' => 'Import Berhasil! 🎉',
-                'message' => "Berkas '{$fileName}' telah berhasil diimpor dan ditambahkan ke dalam riwayat aktivitas Anda.",
+                'title' => 'Import Successful! 🎉',
+                'message' => "File '{$fileName}' has been successfully imported and added to your activity history.",
             ]);
 
             auth()->user()->notifications()->create([
-                'title' => '📥 Impor Aktivitas Berhasil',
-                'body' => "Berkas aktivitas '{$fileName}' telah berhasil diimpor.",
+                'title' => '📥 Activity Import Successful',
+                'body' => "Activity file '{$fileName}' has been successfully imported.",
                 'type' => 'success',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             $errorMsg = $e->validator->errors()->first('importFile');
             session()->flash('import_status', [
                 'type' => 'error',
-                'title' => 'Format Berkas Tidak Valid ⚠️',
-                'message' => $errorMsg ?: 'Harap periksa kembali berkas yang Anda unggah.',
+                'title' => 'Invalid File Format ⚠️',
+                'message' => $errorMsg ?: 'Please double-check your uploaded file.',
             ]);
         } catch (\Throwable $e) {
             $this->importFile = null;
             session()->flash('import_status', [
                 'type' => 'error',
-                'title' => 'Import Gagal ❌',
-                'message' => 'Terjadi kesalahan saat memproses berkas Excel. Pastikan struktur kolom sesuai (project, category, detail, start_time, end_time).',
+                'title' => 'Import Failed ❌',
+                'message' => 'An error occurred while processing the Excel file. Please ensure column headers match (project, category, detail, start_time, end_time).',
             ]);
 
             auth()->user()->notifications()->create([
-                'title' => '⚠️ Impor Aktivitas Gagal',
-                'body' => 'Proses impor berkas Excel gagal. Pastikan format kolom sesuai dengan ketentuan.',
+                'title' => '⚠️ Activity Import Failed',
+                'body' => 'Excel file import failed. Please ensure the column formats match requirements.',
                 'type' => 'danger',
             ]);
         }
@@ -209,6 +263,7 @@ new class extends Component
         if ($activity) {
             $this->editingActivityId = $activity->id;
             $this->editDetail = $activity->detail;
+            $this->editTaskId = $activity->task_id;
             $this->editStartTime = $activity->start_time->format('Y-m-d\TH:i');
             $this->editEndTime = $activity->end_time ? $activity->end_time->format('Y-m-d\TH:i') : null;
             $this->showEditModal = true;
@@ -219,6 +274,7 @@ new class extends Component
     {
         $this->validate([
             'editDetail' => 'required|string',
+            'editTaskId' => 'nullable|exists:tasks,id',
             'editStartTime' => 'required|date',
             'editEndTime' => 'required|date|after_or_equal:editStartTime',
         ]);
@@ -227,6 +283,7 @@ new class extends Component
         if ($activity) {
             $activity->update([
                 'detail' => $this->editDetail,
+                'task_id' => $this->editTaskId ?: null,
                 'start_time' => Carbon::parse($this->editStartTime),
                 'end_time' => Carbon::parse($this->editEndTime),
             ]);
@@ -252,11 +309,10 @@ new class extends Component
 };
 ?>
 
-<div class="flex h-full w-full flex-col gap-5 md:gap-6 p-3 sm:p-4 text-neutral-900 dark:text-neutral-100 max-w-6xl mx-auto mt-0 md:mt-4 pb-32 md:pb-8" x-data="{ scrolled: false, mounted: false }" x-init="setTimeout(() => mounted = true, 50)" @scroll.window="scrolled = (window.pageYOffset > 300)">
+<div class="flex h-full w-full flex-col gap-5 md:gap-6 p-3 sm:p-4 text-neutral-900 dark:text-neutral-100 max-w-6xl mx-auto mt-0 md:mt-4 pb-32 md:pb-8 animate-page-entrance" x-data="{ scrolled: false }" @scroll.window="scrolled = (window.pageYOffset > 300)">
     
     <!-- Header -->
-    <div class="border-b border-zinc-200/80 dark:border-zinc-800/80 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all duration-700 ease-out"
-         :class="mounted ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'">
+    <div class="border-b border-zinc-200/80 dark:border-zinc-800/80 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
             <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-2.5">
                 <div class="size-8.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0">
@@ -276,8 +332,7 @@ new class extends Component
     </div>
 
     <!-- Start Activity Form -->
-    <div class="fixed bottom-3 left-3 right-3 z-20 md:sticky md:top-4 md:left-auto md:right-auto overflow-visible md:overflow-hidden rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 bg-zinc-50/95 dark:bg-zinc-900/95 backdrop-blur-xl p-3 md:p-5 shadow-[0_8px_32px_rgba(0,0,0,0.18)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)] mb-0 md:mb-6 transition-all duration-500 ease-out"
-         :class="mounted ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'"
+    <div class="fixed bottom-3 left-3 right-3 z-20 md:sticky md:top-4 md:left-auto md:right-auto overflow-visible md:overflow-hidden rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 bg-zinc-50/95 dark:bg-zinc-900/95 backdrop-blur-xl p-3 md:p-5 shadow-[0_8px_32px_rgba(0,0,0,0.18)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)] mb-0 md:mb-6"
          x-data="{}"
          @keydown.window.prevent.ctrl.slash="$refs.detailInput.focus()"
          @keydown.window.ctrl.enter="$wire.startActivity()">
@@ -296,13 +351,12 @@ new class extends Component
                     <span>Start</span>
                 </button>
             </div>
-
-            <!-- Context Controls Row (Project, Category, Parallel Chip) -->
+            <!-- Context Controls Row (Project, Task, Category, Parallel Chip) -->
             <div class="flex items-center gap-2 overflow-x-auto py-0.5 shrink-0 hide-scrollbar" style="scrollbar-width: none;">
                 <!-- Project Select Chip -->
-                <div class="relative shrink-0">
-                    <select wire:model="project_id" required 
-                            class="appearance-none h-7 pl-6 pr-5 rounded-lg bg-white dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-800 text-[11px] font-medium text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-500 cursor-pointer shadow-2xs">
+                <div class="relative shrink-0 max-w-[180px]">
+                    <select wire:model.live="project_id" required 
+                            class="w-full max-w-full appearance-none [-webkit-appearance:none] [-moz-appearance:none] bg-none h-7 pl-6.5 pr-6 rounded-lg bg-white dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-800 text-[11px] font-medium text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-500 cursor-pointer shadow-2xs truncate">
                         @foreach($this->projects as $project)
                             <option value="{{ $project->id }}">{{ $project->name }}</option>
                         @endforeach
@@ -311,10 +365,23 @@ new class extends Component
                     <flux:icon name="chevron-down" class="absolute right-1.5 top-1/2 -translate-y-1/2 size-2.5 text-zinc-400 pointer-events-none" />
                 </div>
 
+                <!-- Task Select Chip (Optional) -->
+                <div class="relative shrink-0 max-w-[180px]">
+                    <select wire:model.live="task_id" 
+                            class="w-full max-w-full appearance-none [-webkit-appearance:none] [-moz-appearance:none] bg-none h-7 pl-6.5 pr-6 rounded-lg bg-white dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-800 text-[11px] font-medium text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-500 cursor-pointer shadow-2xs truncate">
+                        <option value="">-- Task (Optional) --</option>
+                        @foreach($this->tasks as $task)
+                            <option value="{{ $task->id }}">{{ $task->title }}</option>
+                        @endforeach
+                    </select>
+                    <flux:icon name="clipboard-document-list" class="absolute left-2 top-1/2 -translate-y-1/2 size-3 text-zinc-400 pointer-events-none" />
+                    <flux:icon name="chevron-down" class="absolute right-1.5 top-1/2 -translate-y-1/2 size-2.5 text-zinc-400 pointer-events-none" />
+                </div>
+
                 <!-- Category Select Chip -->
-                <div class="relative shrink-0">
+                <div class="relative shrink-0 max-w-[160px]">
                     <select wire:model="category_id" required 
-                            class="appearance-none h-7 pl-6 pr-5 rounded-lg bg-white dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-800 text-[11px] font-medium text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-500 cursor-pointer shadow-2xs">
+                            class="w-full max-w-full appearance-none [-webkit-appearance:none] [-moz-appearance:none] bg-none h-7 pl-6.5 pr-6 rounded-lg bg-white dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-800 text-[11px] font-medium text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-500 cursor-pointer shadow-2xs truncate">
                         @foreach($this->categories as $category)
                             <option value="{{ $category->id }}">{{ $category->name }}</option>
                         @endforeach
@@ -336,48 +403,92 @@ new class extends Component
             </div>
         </form>
 
-        <!-- Desktop Form -->
-        <form wire:submit.prevent="startActivity" class="hidden md:block space-y-4 max-w-5xl mx-auto">
-            <div class="flex flex-row gap-3 items-center">
-                <div class="flex-1 w-full">
-                    <div class="relative w-full">
-                        <input type="text" wire:model="detail" x-ref="detailInput" placeholder="What are you working on?" required autocomplete="off"
-                               class="w-full h-10 pl-9 pr-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 shadow-2xs transition-all">
-                        <flux:icon name="play-circle" class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-zinc-400 pointer-events-none" />
+        <!-- Desktop Form (Raycast / Linear Inspired 2-Row Command Studio) -->
+        <form wire:submit.prevent="startActivity" class="hidden md:block space-y-3 max-w-5xl mx-auto">
+            <!-- Row 1: Hero Activity Input + Primary Start Button -->
+            <div class="flex items-center gap-3">
+                <div class="relative flex-1">
+                    <input type="text" wire:model="detail" x-ref="detailInput" placeholder="What are you working on?" required autocomplete="off"
+                           class="w-full h-11 pl-10 pr-4 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-sm font-medium border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 shadow-2xs transition-all">
+                    <flux:icon name="play-circle" class="absolute left-3.5 top-1/2 -translate-y-1/2 size-4.5 text-zinc-400 pointer-events-none" />
+                </div>
+                <button type="submit" class="h-11 px-6 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl border border-indigo-500/80 active:scale-95 transition-all shrink-0 shadow-xs shadow-indigo-500/20 flex items-center justify-center gap-2 cursor-pointer text-xs">
+                    <flux:icon name="play" class="size-4 text-white" />
+                    <span>Start Tracking</span>
+                </button>
+            </div>
+
+            <!-- Row 2: Context Selector Chips & Shortcuts -->
+            <div class="flex items-center justify-between gap-3 pt-0.5">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <!-- Project Selector Chip -->
+                    <div class="relative shrink-0 max-w-[200px] sm:max-w-[220px]">
+                        <select wire:model.live="project_id" required title="Project Reference"
+                                class="w-full max-w-full appearance-none [-webkit-appearance:none] [-moz-appearance:none] bg-none h-8 pl-7.5 pr-6 rounded-lg bg-white dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-500 cursor-pointer shadow-2xs truncate transition-all">
+                            @foreach($this->projects as $project)
+                                <option value="{{ $project->id }}">{{ $project->name }}</option>
+                            @endforeach
+                        </select>
+                        <flux:icon name="folder" class="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-zinc-400 pointer-events-none" />
+                        <flux:icon name="chevron-down" class="absolute right-2 top-1/2 -translate-y-1/2 size-2.5 text-zinc-400 pointer-events-none" />
                     </div>
-                </div>
-                <div class="w-48">
-                    <flux:select wire:model="project_id" placeholder="Project" required size="sm" class="!bg-white dark:!bg-zinc-950 !rounded-xl">
-                        @foreach($this->projects as $project)
-                            <flux:select.option value="{{ $project->id }}">{{ $project->name }}</flux:select.option>
-                        @endforeach
-                    </flux:select>
-                </div>
-                <div class="w-48">
-                    <flux:select wire:model="category_id" placeholder="Category" required size="sm" class="!bg-white dark:!bg-zinc-950 !rounded-xl">
-                        @foreach($this->categories as $category)
-                            <flux:select.option value="{{ $category->id }}">{{ $category->name }}</flux:select.option>
-                        @endforeach
-                    </flux:select>
-                </div>
-                <div>
-                    <button type="submit" class="w-auto cursor-pointer bg-indigo-600 hover:bg-indigo-500 text-white font-semibold border border-indigo-500/80 px-6 py-2 rounded-xl text-sm active:scale-95 transition-all shadow-xs shadow-indigo-500/20 flex items-center justify-center gap-2">
-                        <flux:icon name="play" class="size-4 text-white" />
-                        <span>Start</span>
+
+                    <!-- Task Selector Chip (Optional) -->
+                    <div class="relative shrink-0 max-w-[220px] sm:max-w-[240px]">
+                        <select wire:model.live="task_id" title="Task Reference"
+                                class="w-full max-w-full appearance-none [-webkit-appearance:none] [-moz-appearance:none] bg-none h-8 pl-7.5 pr-7 rounded-lg text-xs font-semibold cursor-pointer shadow-2xs truncate transition-all focus:outline-none focus:border-indigo-500 {{ $task_id ? 'bg-indigo-50/90 text-indigo-900 dark:bg-indigo-500/15 dark:text-indigo-200 border-indigo-300 dark:border-indigo-500/40 ring-1 ring-indigo-500/30' : 'bg-white dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 border-zinc-200/80 dark:border-zinc-800' }}">
+                            <option value="">-- Task (Optional) --</option>
+                            @foreach($this->tasks as $task)
+                                <option value="{{ $task->id }}">{{ $task->title }}</option>
+                            @endforeach
+                        </select>
+                        <flux:icon name="clipboard-document-list" class="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 {{ $task_id ? 'text-indigo-500' : 'text-zinc-400' }} pointer-events-none" />
+                        @if($task_id)
+                            <button type="button" wire:click="$set('task_id', null)" class="absolute right-2 top-1/2 -translate-y-1/2 size-3.5 rounded-full bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 flex items-center justify-center cursor-pointer" title="Clear task">
+                                <flux:icon name="x-mark" class="size-2" />
+                            </button>
+                        @else
+                            <flux:icon name="chevron-down" class="absolute right-2 top-1/2 -translate-y-1/2 size-2.5 text-zinc-400 pointer-events-none" />
+                        @endif
+                    </div>
+
+                    <!-- Category Selector Chip -->
+                    <div class="relative shrink-0 max-w-[180px] sm:max-w-[200px]">
+                        <select wire:model="category_id" required title="Category Reference"
+                                class="w-full max-w-full appearance-none [-webkit-appearance:none] [-moz-appearance:none] bg-none h-8 pl-7.5 pr-6 rounded-lg bg-white dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-500 cursor-pointer shadow-2xs truncate transition-all">
+                            @foreach($this->categories as $category)
+                                <option value="{{ $category->id }}">{{ $category->name }}</option>
+                            @endforeach
+                        </select>
+                        <flux:icon name="tag" class="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-zinc-400 pointer-events-none" />
+                        <flux:icon name="chevron-down" class="absolute right-2 top-1/2 -translate-y-1/2 size-2.5 text-zinc-400 pointer-events-none" />
+                    </div>
+
+                    <!-- Parallel Toggle Chip -->
+                    <button type="button" 
+                            wire:click="$toggle('is_parallel')" 
+                            class="h-8 px-3 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-all duration-200 shrink-0 cursor-pointer active:scale-95 shadow-2xs"
+                            :class="$wire.is_parallel 
+                                ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs shadow-indigo-500/20' 
+                                : 'bg-white dark:bg-zinc-950 text-zinc-600 dark:text-zinc-400 border-zinc-200/80 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900'">
+                        <flux:icon name="arrows-right-left" class="size-3.5" />
+                        <span>Parallel</span>
                     </button>
                 </div>
-            </div>
-            <div class="flex items-center justify-between mt-1">
-                <flux:checkbox wire:model="is_parallel" label="Parallel (allow running with other tasks)" />
-                <span class="text-[10px] text-zinc-500 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 rounded-lg">Shortcuts: <strong>Ctrl + /</strong> to focus, <strong>Ctrl + Enter</strong> to Start</span>
+
+                <!-- Keyboard Shortcuts Hint -->
+                <div class="text-[11px] text-zinc-400 dark:text-zinc-500 flex items-center gap-1.5 shrink-0">
+                    <span class="font-mono bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/60 px-1.5 py-0.5 rounded text-[10px]">Ctrl /</span> focus
+                    <span class="text-zinc-300 dark:text-zinc-700">•</span>
+                    <span class="font-mono bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/60 px-1.5 py-0.5 rounded text-[10px]">Ctrl Enter</span> start
+                </div>
             </div>
         </form>
     </div>
 
     <!-- Running Activities (Initial Layout with Modern Live Timer Motion Cues) -->
     @if($this->runningActivities->count() > 0)
-    <div class="space-y-3 transition-all duration-700 ease-out delay-200"
-         :class="mounted ? 'translate-x-0 opacity-100' : '-translate-x-8 opacity-0'"
+    <div class="space-y-3"
          wire:transition.slide.up>
         <h2 class="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-2 font-mono">
             <span class="relative flex h-2.5 w-2.5">
@@ -439,8 +550,7 @@ new class extends Component
     @endif
 
     <!-- Activity Feed / History -->
-    <div class="flex flex-col gap-4 mt-2 transition-all duration-700 ease-out delay-300"
-         :class="mounted ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'">
+    <div class="flex flex-col gap-4 mt-2">
         <div class="flex flex-col md:flex-row justify-between md:items-center gap-3">
             <h3 class="text-sm font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-2 shrink-0">
                 <flux:icon name="clock" class="size-4.5 text-zinc-400" />
@@ -633,6 +743,12 @@ new class extends Component
                                             {{ $activity->detail }}
                                         </div>
                                         <div class="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 flex flex-wrap items-center gap-2">
+                                            @if($activity->task)
+                                                <span class="bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[10px] font-medium px-2 py-0.5 rounded-md border border-indigo-200 dark:border-indigo-500/20 flex items-center gap-1">
+                                                    <flux:icon name="clipboard-document-list" class="size-3 shrink-0" />
+                                                    <span class="truncate max-w-[150px]">{{ $activity->task->title }}</span>
+                                                </span>
+                                            @endif
                                             <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[10px] font-medium px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60">
                                                 {{ $activity->project->name }}
                                             </span>
@@ -748,6 +864,15 @@ new class extends Component
                             <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Activity Name</label>
                             <input type="text" wire:model="editDetail" class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:ring-indigo-500 focus:border-indigo-500 shadow-xs text-xs py-2 px-3 transition-colors">
                             @error('editDetail') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Associated Task</label>
+                            <select wire:model="editTaskId" class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:ring-indigo-500 focus:border-indigo-500 shadow-xs text-xs py-2 px-3 transition-colors">
+                                <option value="">-- Non-Task Activity --</option>
+                                @foreach($this->tasks as $t)
+                                    <option value="{{ $t->id }}">{{ $t->title }}</option>
+                                @endforeach
+                            </select>
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Start Time</label>

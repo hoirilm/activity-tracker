@@ -259,7 +259,7 @@ new class extends Component
 .custom-scrollbar::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 9999px; }
 </style>
 
-<div class="flex h-full w-full flex-col gap-6 p-3 sm:p-4 text-neutral-900 dark:text-neutral-100 max-w-6xl mx-auto mt-2 sm:mt-4 pb-12" x-data="{ scrolled: false }" @scroll.window="scrolled = (window.pageYOffset > 300)">
+<div class="flex h-full w-full flex-col gap-6 p-3 sm:p-4 text-neutral-900 dark:text-neutral-100 max-w-6xl mx-auto mt-2 sm:mt-4 pb-12 animate-page-entrance" x-data="{ scrolled: false }" @scroll.window="scrolled = (window.pageYOffset > 300)">
 
     <!-- Header -->
     <div class="border-b border-zinc-200/80 dark:border-zinc-800/80 pb-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
