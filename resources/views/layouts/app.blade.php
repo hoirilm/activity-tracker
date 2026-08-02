@@ -10,4 +10,5 @@
         </footer>
     </flux:main>
     <livewire:onboarding-tour />
+    <livewire:task-celebration />
 </x-layouts::app.sidebar>

@@ -169,6 +169,11 @@ new class extends Component
             $task->labels()->sync($userLabelIds);
         }
 
+        if ($task->status === Task::STATUS_DONE) {
+            $this->dispatch('task-completed', title: $task->title);
+            $this->js("window.dispatchEvent(new CustomEvent('task-completed', { detail: { title: " . json_encode($task->title) . " } }))");
+        }
+
         $this->reset(['taskTitle', 'taskDescription', 'taskProjectId', 'taskLabelIds']);
         $this->taskStatus = Task::STATUS_NEW;
 
@@ -182,10 +187,22 @@ new class extends Component
             return;
         }
 
-        auth()->user()->tasks()->where('id', $taskId)->update([
+        $task = auth()->user()->tasks()->find($taskId);
+        if (!$task) {
+            return;
+        }
+
+        $oldStatus = $task->status;
+
+        $task->update([
             'status' => $status,
             'updated_at' => now(),
         ]);
+
+        if ($status === Task::STATUS_DONE && $oldStatus !== Task::STATUS_DONE) {
+            $this->dispatch('task-completed', title: $task->title);
+            $this->js("window.dispatchEvent(new CustomEvent('task-completed', { detail: { title: " . json_encode($task->title) . " } }))");
+        }
     }
 
     public function editTask(int $id)
@@ -216,6 +233,8 @@ new class extends Component
 
         $task = auth()->user()->tasks()->find($this->editingTaskId);
         if ($task) {
+            $oldStatus = $task->status;
+
             $projectId = null;
             if ($this->editingTaskProjectId) {
                 $project = auth()->user()->projects()->find($this->editingTaskProjectId);
@@ -230,6 +249,11 @@ new class extends Component
                 'project_id' => $projectId,
                 'status' => $this->editingTaskStatus,
             ]);
+
+            if ($this->editingTaskStatus === Task::STATUS_DONE && $oldStatus !== Task::STATUS_DONE) {
+                $this->dispatch('task-completed', title: $task->title);
+                $this->js("window.dispatchEvent(new CustomEvent('task-completed', { detail: { title: " . json_encode($task->title) . " } }))");
+            }
 
             $userLabelIds = auth()->user()->labels()->whereIn('id', $this->editingTaskLabelIds)->pluck('id')->toArray();
             $task->labels()->sync($userLabelIds);
