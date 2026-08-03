@@ -21,9 +21,8 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <x-app-logo-icon class="size-8 text-amber-500" />
-                    <span class="font-extrabold text-xl tracking-tight text-zinc-900 dark:text-white flex items-center gap-2">
-                        <span>{{ config('app.name', 'Klakoan') }}</span>
-                        <span class="px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">v5.0</span>
+                    <span class="font-extrabold text-xl tracking-tight text-zinc-900 dark:text-white">
+                        {{ config('app.name', 'Klakoan') }}
                     </span>
                 </div>
                 
@@ -560,7 +559,6 @@
                     <span class="font-bold text-lg text-white tracking-tight">
                         {{ config('app.name', 'Klakoan') }}
                     </span>
-                    <span class="text-xs text-zinc-500 font-mono">v5.0.0</span>
                 </div>
                 
                 <p class="text-xs text-zinc-500 font-mono">
