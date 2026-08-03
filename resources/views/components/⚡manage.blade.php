@@ -426,7 +426,7 @@ new class extends Component
 };
 ?>
 
-<div class="flex h-full w-full flex-col gap-6 p-3 sm:p-4 text-neutral-900 dark:text-neutral-100 max-w-7xl mx-auto mt-2 sm:mt-4 pb-20"
+<div class="flex h-full w-full flex-col gap-5 sm:gap-6 px-3 sm:px-4 py-2 text-neutral-900 dark:text-neutral-100 max-w-7xl mx-auto mt-1 sm:mt-4 pb-20"
      x-data="{ activeTab: @entangle('activeTab') }">
     
     <!-- Main Animated Content -->
@@ -586,7 +586,7 @@ new class extends Component
                     @php
                         $colTasks = $this->tasks->where('status', $col['id']);
                     @endphp
-                    <div class="bg-zinc-50/70 dark:bg-zinc-900/60 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 p-3.5 flex flex-col gap-3 min-h-[400px]">
+                    <div class="bg-zinc-50/70 dark:bg-zinc-900/60 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 p-3 sm:p-3.5 flex flex-col gap-3 min-h-[140px] md:min-h-[400px]">
                         <!-- Column Header -->
                         <div class="flex items-center justify-between pb-2 border-b border-zinc-200/60 dark:border-zinc-800">
                             <div class="flex items-center gap-2">

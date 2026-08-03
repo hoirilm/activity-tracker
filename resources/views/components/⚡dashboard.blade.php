@@ -413,7 +413,7 @@ new class extends Component
 .custom-scrollbar::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 9999px; }
 </style>
 
-<div class="flex h-full w-full flex-col gap-6 p-3 sm:p-4 text-neutral-900 dark:text-neutral-100 max-w-6xl mx-auto mt-2 sm:mt-4 pb-12" x-data="{ scrolled: false }" @scroll.window="scrolled = (window.pageYOffset > 300)">
+<div class="flex min-h-[calc(100vh-10rem)] w-full flex-col gap-5 sm:gap-6 px-3 sm:px-4 py-2 text-neutral-900 dark:text-neutral-100 max-w-6xl mx-auto mt-1 sm:mt-4 pb-12" x-data="{ scrolled: false }" @scroll.window="scrolled = (window.pageYOffset > 300)">
 
     <!-- Main Animated Content -->
     <div class="flex flex-col gap-6 animate-page-entrance">
@@ -438,22 +438,22 @@ new class extends Component
     </div>
 
     <!-- Summary Cards (3 Sejajar Grid) -->
-    <div class="grid grid-cols-3 gap-2.5 sm:gap-5">
+    <div class="grid grid-cols-3 gap-2 sm:gap-5">
         <!-- Card 1: Today's Total -->
-        <div class="relative overflow-hidden bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-3.5 sm:p-5 shadow-xs flex flex-col justify-between group hover:border-zinc-400 dark:hover:border-zinc-700 transition-all duration-300">
+        <div class="relative overflow-hidden bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800 rounded-xl sm:rounded-2xl p-2.5 sm:p-5 shadow-xs flex flex-col justify-between group hover:border-zinc-400 dark:hover:border-zinc-700 transition-all duration-300">
             <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-300/60 dark:via-zinc-600/40 to-transparent"></div>
-            <div class="flex items-center justify-between mb-2 sm:mb-3">
-                <div class="size-8 sm:size-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0 group-hover:scale-105 transition-transform">
-                    <flux:icon name="clock" class="size-4 sm:size-5 text-zinc-700 dark:text-zinc-300" />
+            <div class="flex items-center justify-between mb-1.5 sm:mb-3">
+                <div class="size-7 sm:size-10 rounded-lg sm:rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0 group-hover:scale-105 transition-transform">
+                    <flux:icon name="clock" class="size-3.5 sm:size-5 text-zinc-700 dark:text-zinc-300" />
                 </div>
-                <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-[8px] sm:text-[10px] font-mono font-medium px-1.5 sm:px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60">
+                <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-[8px] sm:text-[10px] font-mono font-medium px-1 sm:px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60">
                     Today
                 </span>
             </div>
 
             <div>
-                <div class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 truncate">Today's Total</div>
-                <div class="text-xl sm:text-3xl font-mono font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100 mt-0.5 sm:mt-1 truncate">{{ $this->todayDuration }}</div>
+                <div class="text-[8px] sm:text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 truncate">Today's Total</div>
+                <div class="text-base sm:text-3xl font-mono font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100 mt-0.5 sm:mt-1 truncate">{{ $this->todayDuration }}</div>
                 <p class="text-[10px] sm:text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 hidden sm:block truncate">
                     Logged today
                 </p>
@@ -461,20 +461,20 @@ new class extends Component
         </div>
         
         <!-- Card 2: This Week -->
-        <div class="relative overflow-hidden bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-3.5 sm:p-5 shadow-xs flex flex-col justify-between group hover:border-zinc-400 dark:hover:border-zinc-700 transition-all duration-300">
+        <div class="relative overflow-hidden bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800 rounded-xl sm:rounded-2xl p-2.5 sm:p-5 shadow-xs flex flex-col justify-between group hover:border-zinc-400 dark:hover:border-zinc-700 transition-all duration-300">
             <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-300/60 dark:via-zinc-600/40 to-transparent"></div>
-            <div class="flex items-center justify-between mb-2 sm:mb-3">
-                <div class="size-8 sm:size-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0 group-hover:scale-105 transition-transform">
-                    <flux:icon name="calendar-days" class="size-4 sm:size-5 text-zinc-700 dark:text-zinc-300" />
+            <div class="flex items-center justify-between mb-1.5 sm:mb-3">
+                <div class="size-7 sm:size-10 rounded-lg sm:rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0 group-hover:scale-105 transition-transform">
+                    <flux:icon name="calendar-days" class="size-3.5 sm:size-5 text-zinc-700 dark:text-zinc-300" />
                 </div>
-                <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-[8px] sm:text-[10px] font-mono font-medium px-1.5 sm:px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60">
+                <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-[8px] sm:text-[10px] font-mono font-medium px-1 sm:px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60">
                     Week
                 </span>
             </div>
 
             <div>
-                <div class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 truncate">This Week</div>
-                <div class="text-xl sm:text-3xl font-mono font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100 mt-0.5 sm:mt-1 truncate">{{ $this->weekDuration }}</div>
+                <div class="text-[8px] sm:text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 truncate">This Week</div>
+                <div class="text-base sm:text-3xl font-mono font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100 mt-0.5 sm:mt-1 truncate">{{ $this->weekDuration }}</div>
                 <p class="text-[10px] sm:text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 hidden sm:block truncate">
                     Cumulative week
                 </p>
@@ -482,20 +482,20 @@ new class extends Component
         </div>
 
         <!-- Card 3: Active Projects -->
-        <div class="relative overflow-hidden bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-3.5 sm:p-5 shadow-xs flex flex-col justify-between group hover:border-zinc-400 dark:hover:border-zinc-700 transition-all duration-300">
+        <div class="relative overflow-hidden bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800 rounded-xl sm:rounded-2xl p-2.5 sm:p-5 shadow-xs flex flex-col justify-between group hover:border-zinc-400 dark:hover:border-zinc-700 transition-all duration-300">
             <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-300/60 dark:via-zinc-600/40 to-transparent"></div>
-            <div class="flex items-center justify-between mb-2 sm:mb-3">
-                <div class="size-8 sm:size-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0 group-hover:scale-105 transition-transform">
-                    <flux:icon name="briefcase" class="size-4 sm:size-5 text-zinc-700 dark:text-zinc-300" />
+            <div class="flex items-center justify-between mb-1.5 sm:mb-3">
+                <div class="size-7 sm:size-10 rounded-lg sm:rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0 group-hover:scale-105 transition-transform">
+                    <flux:icon name="briefcase" class="size-3.5 sm:size-5 text-zinc-700 dark:text-zinc-300" />
                 </div>
-                <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-[8px] sm:text-[10px] font-mono font-medium px-1.5 sm:px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60">
+                <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-[8px] sm:text-[10px] font-mono font-medium px-1 sm:px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60">
                     Active
                 </span>
             </div>
 
             <div>
-                <div class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 truncate">Projects</div>
-                <div class="text-xl sm:text-3xl font-mono font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100 mt-0.5 sm:mt-1 truncate">{{ $this->activeProjectsCount }}</div>
+                <div class="text-[8px] sm:text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 truncate">Projects</div>
+                <div class="text-base sm:text-3xl font-mono font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100 mt-0.5 sm:mt-1 truncate">{{ $this->activeProjectsCount }}</div>
                 <p class="text-[10px] sm:text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 hidden sm:block truncate">
                     Logged projects
                 </p>

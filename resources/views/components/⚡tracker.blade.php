@@ -309,7 +309,7 @@ new class extends Component
 };
 ?>
 
-<div class="flex h-full w-full flex-col gap-5 md:gap-6 p-3 sm:p-4 text-neutral-900 dark:text-neutral-100 max-w-6xl mx-auto mt-0 md:mt-4 pb-32 md:pb-8" x-data="{ scrolled: false }" @scroll.window="scrolled = (window.pageYOffset > 300)">
+<div class="flex h-full w-full flex-col gap-5 md:gap-6 px-3 sm:px-4 py-2 text-neutral-900 dark:text-neutral-100 max-w-6xl mx-auto mt-0 md:mt-4 pb-32 md:pb-8" x-data="{ scrolled: false }" @scroll.window="scrolled = (window.pageYOffset > 300)">
     
     <!-- Header -->
     <div class="border-b border-zinc-200/80 dark:border-zinc-800/80 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-page-entrance">

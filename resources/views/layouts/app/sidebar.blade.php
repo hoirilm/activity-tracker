@@ -9,6 +9,7 @@
                             padding 400ms cubic-bezier(0.2, 0, 0, 1) !important;
                 will-change: width;
                 overflow-x: hidden !important;
+                min-height: 100vh !important;
             }
             body {
                 transition: grid-template-columns 400ms cubic-bezier(0.2, 0, 0, 1) !important;
@@ -28,7 +29,7 @@
     </head>
     <body class="min-h-screen bg-white dark:bg-zinc-800" x-data="{ mobileNavOpen: false }">
         <!-- Desktop Sidebar (Hidden on mobile) -->
-        <flux:sidebar sticky collapsible class="hidden lg:flex border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
+        <flux:sidebar sticky collapsible class="hidden lg:flex h-screen border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
             <flux:sidebar.header>
                 <x-app-logo :sidebar="true" href="{{ route('dashboard') }}" wire:navigate />
                 <flux:sidebar.collapse />
@@ -79,7 +80,7 @@
         </flux:sidebar>
 
         <!-- Mobile Top Bar (Clean & Compact) -->
-        <header class="lg:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-3 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border-b border-zinc-200/80 dark:border-zinc-800">
+        <header class="lg:hidden sticky top-0 z-30 flex items-center justify-between px-3 sm:px-4 py-2.5 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border-b border-zinc-200/80 dark:border-zinc-800">
             <div class="flex items-center gap-3">
                 <button @click="mobileNavOpen = true" type="button" class="p-2 rounded-xl text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 active:scale-95 transition-all cursor-pointer">
                     <flux:icon name="bars-2" class="size-6" />

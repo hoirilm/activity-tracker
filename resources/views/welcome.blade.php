@@ -18,10 +18,10 @@
     <body class="bg-zinc-50 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 antialiased selection:bg-amber-500 selection:text-white overflow-x-hidden">
         <!-- Navigation Header -->
         <header class="sticky top-0 z-50 w-full border-b border-zinc-200/80 dark:border-zinc-800/80 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md transition-all duration-300">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <x-app-logo-icon class="size-8 text-amber-500" />
-                    <span class="font-extrabold text-xl tracking-tight text-zinc-900 dark:text-white">
+            <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between">
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <x-app-logo-icon class="size-6 sm:size-8 text-amber-500" />
+                    <span class="font-extrabold text-base sm:text-xl tracking-tight text-zinc-900 dark:text-white">
                         {{ config('app.name', 'Klakoan') }}
                     </span>
                 </div>
@@ -32,15 +32,15 @@
                     <a href="#security" class="text-sm font-medium text-zinc-600 hover:text-amber-600 dark:text-zinc-400 dark:hover:text-amber-400 transition-colors">{{ __('welcome.nav_security') }}</a>
                 </nav>
 
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-1.5 sm:gap-3">
                     <!-- Language Toggle Switcher -->
-                    <div class="flex items-center bg-zinc-100 dark:bg-zinc-900 rounded-xl p-1 border border-zinc-200/60 dark:border-zinc-800/60 text-[11px] font-bold font-mono">
+                    <div class="flex items-center bg-zinc-100 dark:bg-zinc-900 rounded-lg sm:rounded-xl p-0.5 sm:p-1 border border-zinc-200/60 dark:border-zinc-800/60 text-[10px] sm:text-[11px] font-bold font-mono">
                         <a href="{{ route('language.switch', 'id') }}"
-                           class="px-2.5 py-0.5 rounded-lg transition-all cursor-pointer {{ app()->getLocale() === 'id' ? 'bg-amber-500 text-white shadow-2xs' : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200' }}">
+                           class="px-2 py-0.5 rounded-md sm:rounded-lg transition-all cursor-pointer {{ app()->getLocale() === 'id' ? 'bg-amber-500 text-white shadow-2xs' : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200' }}">
                             ID
                         </a>
                         <a href="{{ route('language.switch', 'en') }}"
-                           class="px-2.5 py-0.5 rounded-lg transition-all cursor-pointer {{ app()->getLocale() === 'en' ? 'bg-amber-500 text-white shadow-2xs' : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200' }}">
+                           class="px-2 py-0.5 rounded-md sm:rounded-lg transition-all cursor-pointer {{ app()->getLocale() === 'en' ? 'bg-amber-500 text-white shadow-2xs' : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200' }}">
                             EN
                         </a>
                     </div>
@@ -48,18 +48,18 @@
                     @if (Route::has('login'))
                         @auth
                             <a href="{{ route('dashboard') }}"
-                               class="inline-flex items-center justify-center px-4 py-2 text-xs font-semibold text-white bg-amber-500 hover:bg-amber-600 rounded-xl shadow-md shadow-amber-500/20 active:scale-95 transition-all">
+                               class="inline-flex items-center justify-center px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-semibold text-white bg-amber-500 hover:bg-amber-600 rounded-lg sm:rounded-xl shadow-md shadow-amber-500/20 active:scale-95 transition-all whitespace-nowrap">
                                 Dashboard
                             </a>
                         @else
                             <a href="{{ route('login') }}"
-                               class="inline-flex items-center justify-center px-4 py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">
+                               class="inline-flex items-center justify-center px-2 sm:px-3 py-1.5 sm:py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors whitespace-nowrap">
                                 Log in
                             </a>
 
                             @if (Route::has('register'))
                                 <a href="{{ route('register') }}"
-                                   class="inline-flex items-center justify-center px-4 py-2 text-xs font-semibold text-white bg-amber-500 hover:bg-amber-600 rounded-xl shadow-md shadow-amber-500/20 active:scale-95 transition-all">
+                                   class="inline-flex items-center justify-center px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-semibold text-white bg-amber-500 hover:bg-amber-600 rounded-lg sm:rounded-xl shadow-md shadow-amber-500/20 active:scale-95 transition-all whitespace-nowrap">
                                     {{ __('welcome.nav_register') }}
                                 </a>
                             @endif
@@ -70,33 +70,33 @@
         </header>
 
         <!-- Hero Section with Motion Mouse Parallax & Interactive Mockup Tabs -->
-        <section class="relative overflow-hidden pt-16 pb-20 lg:pt-28 lg:pb-32" id="hero-parallax-container">
+        <section class="relative overflow-hidden pt-8 pb-14 sm:pt-16 sm:pb-20 lg:pt-28 lg:pb-32" id="hero-parallax-container">
             <!-- Background Ambient Glow & Mesh Elements -->
             <div class="parallax-element absolute -top-24 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-gradient-to-tr from-amber-500/15 via-emerald-500/10 to-indigo-500/10 rounded-full blur-3xl pointer-events-none" data-speed="0.2"></div>
             <div class="parallax-element absolute top-1/3 -left-32 size-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" data-speed="0.4"></div>
             <div class="parallax-element absolute bottom-10 right-0 size-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" data-speed="0.3"></div>
 
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+            <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 relative">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12 lg:gap-8 items-center">
                     <!-- Hero Text -->
                     <div class="lg:col-span-6 text-center lg:text-left reveal">
-                        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/25 mb-4 shadow-2xs backdrop-blur-md">
-                            <span class="relative flex h-2 w-2">
+                        <div class="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-semibold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/25 mb-3 sm:mb-4 shadow-2xs backdrop-blur-md">
+                            <span class="relative flex h-1.5 sm:h-2 w-1.5 sm:w-2">
                                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                                <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                                <span class="relative inline-flex rounded-full h-1.5 sm:h-2 w-1.5 sm:w-2 bg-amber-500"></span>
                             </span>
                             <span>{{ __('welcome.hero_badge') }}</span>
                         </div>
 
-                        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-zinc-900 dark:text-white leading-[1.15] mb-4">
+                        <h1 class="text-2xl sm:text-4xl lg:text-6xl font-extrabold tracking-tight text-zinc-900 dark:text-white leading-[1.15] mb-3 sm:mb-4">
                             <span>{{ app()->getLocale() === 'id' ? 'Lacak Waktu Kerja' : 'Track Work Time' }}</span>
                             <span class="text-zinc-500 dark:text-zinc-400">{{ app()->getLocale() === 'id' ? ' Lebih Cerdas' : ' Smarter' }}</span>
                         </h1>
 
                         <!-- Feature Highlight Badge with Smooth Typewriter Animation -->
-                        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25 mb-6 shadow-sm backdrop-blur-md max-w-full">
-                            <flux:icon name="sparkles" class="size-4 text-amber-500 shrink-0 animate-pulse" />
-                            <span class="text-xs sm:text-sm font-mono font-bold tracking-wide">
+                        <div class="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25 mb-4 sm:mb-6 shadow-sm backdrop-blur-md max-w-full">
+                            <flux:icon name="sparkles" class="size-3.5 sm:size-4 text-amber-500 shrink-0 animate-pulse" />
+                            <span class="text-[11px] sm:text-sm font-mono font-bold tracking-wide">
                                 <span>{{ app()->getLocale() === 'id' ? 'Tingkatkan Hasil dengan' : 'Boost Results with' }}</span>
                                 <span class="text-amber-500 font-extrabold ml-1">
                                     <span id="hero-typewriter-text">Task Stream ⚡</span><span class="animate-pulse text-amber-500 font-normal">|</span>
@@ -104,57 +104,57 @@
                             </span>
                         </div>
 
-                        <p class="text-base sm:text-lg text-zinc-600 dark:text-zinc-400 max-w-xl mx-auto lg:mx-0 mb-8 leading-relaxed">
+                        <p class="text-xs sm:text-base text-zinc-600 dark:text-zinc-400 max-w-xl mx-auto lg:mx-0 mb-6 sm:mb-8 leading-relaxed font-normal">
                             {{ __('welcome.hero_desc') }}
                         </p>
 
-                        <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3.5">
+                        <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-2.5 sm:gap-3.5">
                             @auth
-                                <a href="{{ route('dashboard') }}" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3.5 text-sm font-bold text-white bg-amber-500 hover:bg-amber-600 rounded-2xl shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 active:scale-95 transition-all">
+                                <a href="{{ route('dashboard') }}" class="w-full sm:w-auto inline-flex items-center justify-center px-5 sm:px-6 py-3 sm:py-3.5 text-xs sm:text-sm font-bold text-white bg-amber-500 hover:bg-amber-600 rounded-xl sm:rounded-2xl shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 active:scale-95 transition-all">
                                     {{ __('welcome.hero_cta_dashboard') }}
                                 </a>
                             @else
-                                <a href="{{ route('register') }}" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3.5 text-sm font-bold text-white bg-amber-500 hover:bg-amber-600 rounded-2xl shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 active:scale-95 transition-all">
+                                <a href="{{ route('register') }}" class="w-full sm:w-auto inline-flex items-center justify-center px-5 sm:px-6 py-3 sm:py-3.5 text-xs sm:text-sm font-bold text-white bg-amber-500 hover:bg-amber-600 rounded-xl sm:rounded-2xl shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 active:scale-95 transition-all">
                                     {{ __('welcome.hero_cta_start') }}
                                 </a>
-                                <a href="#features" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3.5 text-sm font-bold text-zinc-700 dark:text-zinc-300 bg-zinc-200/60 hover:bg-zinc-200 dark:bg-zinc-800/60 dark:hover:bg-zinc-800 rounded-2xl transition-all">
+                                <a href="#features" class="w-full sm:w-auto inline-flex items-center justify-center px-5 sm:px-6 py-3 sm:py-3.5 text-xs sm:text-sm font-bold text-zinc-700 dark:text-zinc-300 bg-zinc-200/60 hover:bg-zinc-200 dark:bg-zinc-800/60 dark:hover:bg-zinc-800 rounded-xl sm:rounded-2xl transition-all">
                                     {{ __('welcome.hero_cta_explore') }}
                                 </a>
                             @endauth
                         </div>
 
                         <!-- Quick Info Stats (3 Glassmorphism Mini Feature Cards) -->
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mt-10 pt-8 border-t border-zinc-200/80 dark:border-zinc-800/80">
+                        <div class="grid grid-cols-3 gap-2 sm:gap-3.5 mt-6 sm:mt-10 pt-6 sm:pt-8 border-t border-zinc-200/80 dark:border-zinc-800/80">
                             <!-- Stat Card 1 -->
-                            <div class="p-3 rounded-2xl bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 flex items-center gap-3 shadow-2xs hover:border-amber-500/40 transition-all group cursor-default">
-                                <div class="size-9 rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                                    <flux:icon name="bolt" class="size-4 text-amber-500" />
+                            <div class="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 flex flex-col sm:flex-row items-center text-center sm:text-left gap-1.5 sm:gap-3 shadow-2xs hover:border-amber-500/40 transition-all group cursor-default">
+                                <div class="size-7 sm:size-9 rounded-lg sm:rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                                    <flux:icon name="bolt" class="size-3.5 sm:size-4 text-amber-500" />
                                 </div>
-                                <div class="min-w-0">
-                                    <div class="text-xs font-bold text-zinc-900 dark:text-white truncate">Task Stream</div>
-                                    <div class="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">Quick Add & Search</div>
+                                <div class="min-w-0 w-full">
+                                    <div class="text-[11px] sm:text-xs font-bold text-zinc-900 dark:text-white truncate">Task Stream</div>
+                                    <div class="text-[9px] sm:text-[10px] text-zinc-500 dark:text-zinc-400 truncate">Quick Add</div>
                                 </div>
                             </div>
 
                             <!-- Stat Card 2 -->
-                            <div class="p-3 rounded-2xl bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 flex items-center gap-3 shadow-2xs hover:border-emerald-500/40 transition-all group cursor-default">
-                                <div class="size-9 rounded-xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                                    <flux:icon name="queue-list" class="size-4 text-emerald-500" />
+                            <div class="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 flex flex-col sm:flex-row items-center text-center sm:text-left gap-1.5 sm:gap-3 shadow-2xs hover:border-emerald-500/40 transition-all group cursor-default">
+                                <div class="size-7 sm:size-9 rounded-lg sm:rounded-xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                                    <flux:icon name="queue-list" class="size-3.5 sm:size-4 text-emerald-500" />
                                 </div>
-                                <div class="min-w-0">
-                                    <div class="text-xs font-bold text-zinc-900 dark:text-white truncate">Kanban Studio</div>
-                                    <div class="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">4-Column Workflow</div>
+                                <div class="min-w-0 w-full">
+                                    <div class="text-[11px] sm:text-xs font-bold text-zinc-900 dark:text-white truncate">Kanban</div>
+                                    <div class="text-[9px] sm:text-[10px] text-zinc-500 dark:text-zinc-400 truncate">4-Column</div>
                                 </div>
                             </div>
 
                             <!-- Stat Card 3 -->
-                            <div class="p-3 rounded-2xl bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 flex items-center gap-3 shadow-2xs hover:border-sky-500/40 transition-all group cursor-default">
-                                <div class="size-9 rounded-xl bg-sky-500/10 text-sky-500 border border-sky-500/20 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                                    <flux:icon name="arrow-down-tray" class="size-4 text-sky-500" />
+                            <div class="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 flex flex-col sm:flex-row items-center text-center sm:text-left gap-1.5 sm:gap-3 shadow-2xs hover:border-sky-500/40 transition-all group cursor-default">
+                                <div class="size-7 sm:size-9 rounded-lg sm:rounded-xl bg-sky-500/10 text-sky-500 border border-sky-500/20 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                                    <flux:icon name="arrow-down-tray" class="size-3.5 sm:size-4 text-sky-500" />
                                 </div>
-                                <div class="min-w-0">
-                                    <div class="text-xs font-bold text-zinc-900 dark:text-white truncate">Backup JSON</div>
-                                    <div class="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">Merge & Replace</div>
+                                <div class="min-w-0 w-full">
+                                    <div class="text-[11px] sm:text-xs font-bold text-zinc-900 dark:text-white truncate">Backup</div>
+                                    <div class="text-[9px] sm:text-[10px] text-zinc-500 dark:text-zinc-400 truncate">JSON Safe</div>
                                 </div>
                             </div>
                         </div>
