@@ -4,6 +4,32 @@ Proyek ini menggunakan [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v5.0.0] - 2026-08-03 🚀
+
+Versi **v5.0.0** merupakan rilis mayor yang menghadirkan **Task Stream Command Center** yang interaktif & profesional di Halaman Dashboard, fitur pembuatan tugas kilat (*Quick Add*), meteran kemajuan visual (*Momentum Progress Meter*), pencarian *case-insensitive*, penataan ulang tata letak Kanban di halaman Manage Workspace, serta penambahan *test suite* komprehensif.
+
+### 🎯 Widget Task Dashboard Interaktif & Profesional (Dashboard Command Center)
+- **Fokus On-Progress Stream**: Menampilkan aliran tugas aktif yang sedang dikerjakan pengguna secara real-time.
+- **Pencarian Cepat Case-Insensitive**: Memungkinkan pencarian judul tugas maupun nama proyek tanpa terpengaruh huruf besar/kecil (`qris`, `QRIS`, `Qris`).
+- **Pencipta Tugas Kilat (Quick Add Task)**: Pembuatan tugas baru secara instan langsung dari dashboard lengkap dengan pilihan proyek tanpa harus berpindah ke halaman Manage Tasks.
+- **Tampilan Selebrasi Kosong (Celebratory Empty State)**: Desain visual khusus berbahasa Inggris yang menampilkan ucapan selamat (*"All On-Progress Tasks Completed! 🎉"*) dan badge animasi bercahaya ketika seluruh tugas *on progress* telah diselesaikan.
+- **Pemisahan State Empty Search**: Menampilkan informasi pencarian kontekstual (*"No tasks match 'xxx'"*) lengkap dengan tombol reset filter saat pencarian kata kunci tidak ditemukan.
+- **Pembalikan Status Tugas Selesai (Revert Done Task)**: Tombol penyelesaian (`✓`) pada tugas yang sudah selesai (*Done Today*) akan beralih menjadi tombol pengembalian (*revert to on-progress*) dengan icon animasi *reload* saat di-hover.
+- **Perhitungan Indikator Progres Presisi**: Meteran kemajuan (`X/Y done (%)`) secara presisi hanya mengukur item aliran *on-progress stream* (`on_progress` + `done_today`), secara otomatis mengabaikan status *new*, *on_hold*, dan *archived*.
+
+### 📋 Penataan Ulang Layot Kanban Workspace (Manage Page)
+- **Penataan Kolom Kanban Baru**: Menyesuaikan urutan kolom Kanban dan opsi filter status pada halaman Manage Workspace menjadi:
+  1. `On Hold 🟠`
+  2. `New 🔵`
+  3. `On Progress 🟡`
+  4. `Done 🟢`
+
+### 🧪 Keandalan & Pengujian Otomatis (*Testing & Quality*)
+- **Perluasan Pest Test Suite (55 Passing Tests)**: Penambahan pengujian unit & fitur lengkap di `DashboardTaskWidgetInteractiveTest.php` untuk memverifikasi penciptaan task kilat, pencarian *case-insensitive*, pengembalian status *done*, dan akurasi rumus progres. Seluruh 55 pengujian lulus 100% (137 *assertions*).
+- **Produksi Assets Build**: Kompilasi aset Vite produksi terbaru dengan sukses.
+
+---
+
 ## [v4.0.0] - 2026-07-30 🚀
 
 Versi **v4.0.0** merupakan pembaruan mayor yang memperkenalkan penamaan ulang resmi aplikasi menjadi **Klakoan**, pusat manajemen **Backup & Restore Data** tingkat lanjut di menu Settings, refactoring profesional basis kode (PHPStan Level 7), penyempurnaan UI/UX responsive, serta penyeragaman visual widget analitik.

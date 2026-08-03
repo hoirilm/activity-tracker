@@ -2,11 +2,17 @@
 
 use Livewire\Component;
 use App\Models\Activity;
+use App\Models\Task;
 use Carbon\Carbon;
 
 new class extends Component
 {
     public $chartPeriod = 'weekly';
+    public $taskFilter = 'on_progress';
+    public $taskSearch = '';
+    public $newTaskTitle = '';
+    public $newTaskProjectId = null;
+    public $showQuickTaskForm = false;
 
     public function getTodayDurationProperty()
     {
@@ -243,6 +249,154 @@ new class extends Component
         return "{$m}m";
     }
 
+    public function getTodayTasksProperty()
+    {
+        return auth()->user()->tasks()
+            ->with(['project', 'labels'])
+            ->where('status', Task::STATUS_ON_PROGRESS)
+            ->latest('updated_at')
+            ->get();
+    }
+
+    public function getTaskSummaryCountsProperty()
+    {
+        $userTasks = auth()->user()->tasks()->where('status', '!=', Task::STATUS_ARCHIVED)->get();
+
+        return [
+            'on_progress' => $userTasks->where('status', Task::STATUS_ON_PROGRESS)->count(),
+            'new' => $userTasks->where('status', Task::STATUS_NEW)->count(),
+            'on_hold' => $userTasks->where('status', Task::STATUS_ON_HOLD)->count(),
+            'done_today' => $userTasks->where('status', Task::STATUS_DONE)->filter(fn($t) => Carbon::parse($t->updated_at)->isToday())->count(),
+        ];
+    }
+
+    public function markTaskDone(int $taskId)
+    {
+        $this->updateTaskStatus($taskId, Task::STATUS_DONE);
+    }
+
+    public function toggleTaskStatus(int $taskId)
+    {
+        $task = auth()->user()->tasks()->find($taskId);
+        if (!$task) {
+            return;
+        }
+
+        if ($task->status === Task::STATUS_DONE) {
+            $this->updateTaskStatus($taskId, Task::STATUS_ON_PROGRESS);
+        } else {
+            $this->markTaskDone($taskId);
+        }
+    }
+
+    public function getProjectsProperty()
+    {
+        return auth()->user()->projects()->orderBy('name')->get();
+    }
+
+    public function createQuickTask()
+    {
+        $this->validate([
+            'newTaskTitle' => 'required|string|max:255',
+            'newTaskProjectId' => 'nullable|exists:projects,id',
+        ]);
+
+        $task = auth()->user()->tasks()->create([
+            'title' => trim($this->newTaskTitle),
+            'project_id' => $this->newTaskProjectId ?: null,
+            'status' => Task::STATUS_ON_PROGRESS,
+        ]);
+
+        $this->reset(['newTaskTitle', 'newTaskProjectId', 'showQuickTaskForm']);
+        $this->dispatch('task-created', title: $task->title);
+    }
+
+    public function updateTaskStatus(int $taskId, string $status)
+    {
+        $allowed = [Task::STATUS_NEW, Task::STATUS_ON_PROGRESS, Task::STATUS_ON_HOLD, Task::STATUS_DONE, Task::STATUS_ARCHIVED];
+        if (!in_array($status, $allowed)) {
+            return;
+        }
+
+        $task = auth()->user()->tasks()->find($taskId);
+        if ($task) {
+            $task->update([
+                'status' => $status,
+                'updated_at' => now(),
+            ]);
+
+            if ($status === Task::STATUS_DONE) {
+                $this->dispatch('task-completed', title: $task->title);
+                $this->js("window.dispatchEvent(new CustomEvent('task-completed', { detail: { title: " . json_encode($task->title) . " } }))");
+            }
+        }
+    }
+
+    public function getFilteredTasksProperty()
+    {
+        $query = auth()->user()->tasks()
+            ->with(['project', 'labels']);
+
+        match ($this->taskFilter) {
+            'new' => $query->where('status', Task::STATUS_NEW),
+            'on_progress' => $query->where('status', Task::STATUS_ON_PROGRESS),
+            'done_today' => $query->where('status', Task::STATUS_DONE)->whereDate('updated_at', Carbon::today()),
+            'all' => $query->where('status', '!=', Task::STATUS_ARCHIVED),
+            default => $query->where('status', Task::STATUS_ON_PROGRESS),
+        };
+
+        if (!empty(trim($this->taskSearch))) {
+            $search = '%' . mb_strtolower(trim($this->taskSearch)) . '%';
+            $query->where(function ($q) use ($search) {
+                $q->whereRaw('LOWER(title) LIKE ?', [$search])
+                  ->orWhereHas('project', fn($pq) => $pq->whereRaw('LOWER(name) LIKE ?', [$search]));
+            });
+        }
+
+        return $query->latest('updated_at')->get();
+    }
+
+    public function getTaskProgressStatsProperty()
+    {
+        $todayAll = auth()->user()->tasks()
+            ->where('status', '!=', Task::STATUS_ARCHIVED)
+            ->get();
+
+        $doneToday = $todayAll->where('status', Task::STATUS_DONE)
+            ->filter(fn($t) => Carbon::parse($t->updated_at)->isToday())
+            ->count();
+
+        $onProgress = $todayAll->where('status', Task::STATUS_ON_PROGRESS)->count();
+        $new = $todayAll->where('status', Task::STATUS_NEW)->count();
+        $onHold = $todayAll->where('status', Task::STATUS_ON_HOLD)->count();
+        
+        // Progress meter total strictly considers on-progress stream tasks (on_progress + done_today)
+        $totalProgressTarget = $onProgress + $doneToday;
+        $percentage = $totalProgressTarget > 0 ? (int) round(($doneToday / $totalProgressTarget) * 100) : 0;
+
+        return [
+            'done_today' => $doneToday,
+            'on_progress' => $onProgress,
+            'new' => $new,
+            'on_hold' => $onHold,
+            'total_active' => $totalProgressTarget,
+            'percentage' => $percentage,
+        ];
+    }
+
+    public function getLabelBgClass(string $color): string
+    {
+        return match ($color) {
+            'amber' => 'bg-amber-500/10 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300/90 border-amber-200/80 dark:border-amber-900/40',
+            'emerald' => 'bg-emerald-500/10 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300/90 border-emerald-200/80 dark:border-emerald-900/40',
+            'rose' => 'bg-rose-500/10 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300/90 border-rose-200/80 dark:border-rose-900/40',
+            'sky' => 'bg-sky-500/10 text-sky-800 dark:bg-sky-950/40 dark:text-sky-300/90 border-sky-200/80 dark:border-sky-900/40',
+            'purple' => 'bg-purple-500/10 text-purple-800 dark:bg-purple-950/40 dark:text-purple-300/90 border-purple-200/80 dark:border-purple-900/40',
+            'zinc' => 'bg-zinc-500/10 text-zinc-700 dark:bg-zinc-800/60 dark:text-zinc-300/90 border-zinc-200/80 dark:border-zinc-700/60',
+            default => 'bg-indigo-500/10 text-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-300/90 border-indigo-200/80 dark:border-indigo-900/40',
+        };
+    }
+
     public function stopActivity($id)
     {
         $activity = auth()->user()->activities()->find($id);
@@ -347,6 +501,226 @@ new class extends Component
                 </p>
             </div>
         </div>
+    </div>
+
+    <!-- TASK STREAM WIDGET (Interactive & Professional Command Center) -->
+    <div class="flex flex-col gap-3.5 mt-2 bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-4 shadow-sm transition-all duration-300">
+        <!-- Top Bar: Header, Momentum Progress & Main Actions -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-200/60 dark:border-zinc-800/60">
+            <div class="flex items-center gap-3">
+                <div class="size-8.5 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 shrink-0 shadow-xs">
+                    <flux:icon name="bolt" class="size-4 text-amber-500" />
+                </div>
+                <div>
+                    <h3 class="text-xs font-mono font-bold uppercase tracking-wider text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                        <span>ON PROGRESS STREAM</span>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/25 flex items-center gap-1">
+                            <span class="size-1.5 rounded-full bg-amber-500 animate-ping"></span>
+                            <span>{{ $this->todayTasks->count() }} active</span>
+                        </span>
+                    </h3>
+                    <div class="flex items-center gap-2 mt-1">
+                        <div class="w-28 sm:w-36 bg-zinc-200 dark:bg-zinc-800 h-1.5 rounded-full overflow-hidden">
+                            <div class="bg-gradient-to-r from-amber-500 to-emerald-500 h-full transition-all duration-500 rounded-full" style="width: {{ $this->taskProgressStats['percentage'] }}%"></div>
+                        </div>
+                        <span class="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 font-medium">
+                            {{ $this->taskProgressStats['done_today'] }}/{{ $this->taskProgressStats['total_active'] }} done ({{ $this->taskProgressStats['percentage'] }}%)
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 self-start sm:self-auto">
+                <button type="button" 
+                        wire:click="$toggle('showQuickTaskForm')" 
+                        class="px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/25 hover:bg-amber-500 hover:text-white transition-all flex items-center gap-1.5 cursor-pointer active:scale-95 shadow-2xs">
+                    <flux:icon name="plus" class="size-3.5" />
+                    <span>Quick Add</span>
+                </button>
+
+                <flux:button variant="subtle" size="xs" href="{{ route('manage') }}" wire:navigate class="cursor-pointer font-semibold text-xs text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 active:scale-95 transition-all flex items-center gap-1">
+                    <span>Manage Tasks</span>
+                    <flux:icon name="arrow-right" class="size-3" />
+                </flux:button>
+            </div>
+        </div>
+
+        <!-- Toolbar: Filter Tabs & Quick Search Input -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+            <!-- Tabs (On Progress & Done Today) -->
+            <div class="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-950/70 p-1 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 overflow-x-auto custom-scrollbar">
+                <button type="button" wire:click="$set('taskFilter', 'on_progress')"
+                        class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 {{ $taskFilter === 'on_progress' ? 'bg-white dark:bg-zinc-800 text-amber-600 dark:text-amber-400 shadow-2xs border border-zinc-200/60 dark:border-zinc-700/60' : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200' }}">
+                    <span class="size-1.5 rounded-full bg-amber-500"></span>
+                    <span>On Progress</span>
+                    <span class="px-1.5 py-0.2 rounded-md text-[10px] bg-amber-500/10 text-amber-600 dark:text-amber-400 font-mono">{{ $this->taskProgressStats['on_progress'] }}</span>
+                </button>
+
+                <button type="button" wire:click="$set('taskFilter', 'done_today')"
+                        class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 {{ $taskFilter === 'done_today' ? 'bg-white dark:bg-zinc-800 text-emerald-600 dark:text-emerald-400 shadow-2xs border border-zinc-200/60 dark:border-zinc-700/60' : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200' }}">
+                    <span class="size-1.5 rounded-full bg-emerald-500"></span>
+                    <span>Done Today</span>
+                    <span class="px-1.5 py-0.2 rounded-md text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono">{{ $this->taskProgressStats['done_today'] }}</span>
+                </button>
+            </div>
+
+            <!-- Instant Search Input -->
+            <div class="relative w-full sm:w-52">
+                <flux:icon name="magnifying-glass" class="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-zinc-400 pointer-events-none" />
+                <input type="text" 
+                       wire:model.live.debounce.150ms="taskSearch"
+                       placeholder="Search tasks..." 
+                       class="w-full h-8 pl-8 pr-7 rounded-xl text-xs bg-zinc-100 dark:bg-zinc-950/70 border border-zinc-200/80 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-amber-500/60 transition-all" />
+                @if($taskSearch)
+                    <button type="button" wire:click="$set('taskSearch', '')" class="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-xs cursor-pointer">✕</button>
+                @endif
+            </div>
+        </div>
+
+        <!-- Inline Quick Add Task Form Collapsible -->
+        @if($showQuickTaskForm)
+            <form wire:submit.prevent="createQuickTask" class="p-3 bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20 rounded-xl flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
+                <input type="text" 
+                       wire:model="newTaskTitle" 
+                       placeholder="What task are you working on today?..." 
+                       class="flex-1 h-9 px-3 text-xs bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-amber-500" 
+                       required 
+                       autofocus />
+
+                <div class="flex items-center gap-2">
+                    <select wire:model="newTaskProjectId" 
+                            class="h-9 px-2 text-xs bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-700 rounded-lg text-zinc-700 dark:text-zinc-300 focus:outline-none cursor-pointer">
+                        <option value="">No Project</option>
+                        @foreach($this->projects as $proj)
+                            <option value="{{ $proj->id }}">{{ $proj->name }}</option>
+                        @endforeach
+                    </select>
+
+                    <button type="submit" class="h-9 px-3.5 bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs rounded-lg transition-all active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer shrink-0">
+                        <flux:icon name="plus" class="size-3.5" />
+                        <span>Add Task</span>
+                    </button>
+
+                    <button type="button" wire:click="$set('showQuickTaskForm', false)" class="h-9 px-2.5 text-xs text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 font-medium cursor-pointer">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        @endif
+
+        <!-- Stream Row Items -->
+        @if($this->filteredTasks->count() > 0)
+            <div class="divide-y divide-zinc-200/50 dark:divide-zinc-800/50 border border-zinc-200/80 dark:border-zinc-800 rounded-xl overflow-hidden bg-white/40 dark:bg-zinc-900/40">
+                @foreach($this->filteredTasks as $task)
+                    <div wire:key="dashboard-stream-task-{{ $task->id }}" 
+                         x-data="{ isCompleting: false }"
+                         :class="{ 'opacity-40 scale-98 bg-emerald-500/5': isCompleting }"
+                         class="group px-3.5 py-3 hover:bg-zinc-100/60 dark:hover:bg-zinc-800/40 transition-all duration-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        
+                        <!-- Left Task Title & Project Tag & Labels -->
+                        <div class="min-w-0 flex-1 flex flex-col sm:flex-row sm:items-center gap-2">
+                            <!-- Task Status Toggle Checkbox Button -->
+                            @if($task->status === 'done')
+                                <button type="button" 
+                                        wire:click="updateTaskStatus({{ $task->id }}, 'on_progress')"
+                                        class="group/revert size-5 rounded-md bg-emerald-500 border border-emerald-500 text-white flex items-center justify-center shrink-0 transition-all cursor-pointer hover:bg-amber-500 hover:border-amber-500 active:scale-95 shadow-2xs"
+                                        title="Move back to On Progress">
+                                    <flux:icon name="check" class="size-3.5 stroke-[3] group-hover/revert:hidden" />
+                                    <flux:icon name="arrow-path" class="size-3 hidden group-hover/revert:block stroke-[2.5]" />
+                                </button>
+                            @else
+                                <button type="button" 
+                                        @click="isCompleting = true; $wire.markTaskDone({{ $task->id }})"
+                                        class="size-5 rounded-md border border-zinc-300 dark:border-zinc-600 hover:border-emerald-500 group-hover:border-amber-500 flex items-center justify-center shrink-0 transition-all cursor-pointer active:scale-95"
+                                        title="Mark as Done">
+                                    <span class="size-2 rounded-full bg-transparent group-hover:bg-amber-500/50 transition-all"></span>
+                                </button>
+                            @endif
+
+                            <div class="min-w-0 flex-1 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2.5">
+                                <h4 class="font-semibold text-sm text-zinc-900 dark:text-zinc-100 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors truncate {{ $task->status === 'done' ? 'line-through text-zinc-400 dark:text-zinc-500' : '' }}"
+                                    :class="{ 'line-through text-zinc-400': isCompleting }">
+                                    {{ $task->title }}
+                                </h4>
+
+                                <div class="flex items-center gap-1.5 shrink-0 flex-wrap">
+                                    @if($task->project)
+                                        <span class="inline-flex items-center gap-1 text-[10px] font-medium text-zinc-600 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800/80 px-2 py-0.5 rounded-md border border-zinc-200/60 dark:border-zinc-700/50 max-w-[150px] truncate">
+                                            <span class="size-1.5 rounded-full bg-amber-500 shrink-0"></span>
+                                            <span class="truncate">{{ $task->project->name }}</span>
+                                        </span>
+                                    @endif
+
+                                    @foreach($task->labels as $label)
+                                        <span class="inline-flex items-center text-[9px] font-semibold px-2 py-0.5 rounded-md border {{ $this->getLabelBgClass($label->color) }}">
+                                            {{ $label->name }}
+                                        </span>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Meta -->
+                        <div class="flex items-center justify-between sm:justify-end gap-2.5 shrink-0 pt-1.5 sm:pt-0 border-t sm:border-t-0 border-zinc-200/40 dark:border-zinc-800/40">
+                            <!-- Time ago badge -->
+                            <span class="text-[11px] font-mono text-zinc-400 dark:text-zinc-500">
+                                {{ $task->created_at->locale('en')->diffForHumans() }}
+                            </span>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        @elseif(!empty(trim($taskSearch)))
+            <!-- Search No Results Empty State -->
+            <div class="py-8 px-4 rounded-2xl text-center text-xs text-zinc-400 border border-dashed border-zinc-200 dark:border-zinc-800 flex flex-col items-center justify-center gap-2">
+                <div class="size-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-400 shrink-0">
+                    <flux:icon name="magnifying-glass" class="size-5" />
+                </div>
+                <div class="max-w-xs">
+                    <span class="font-medium text-zinc-700 dark:text-zinc-300 block">No tasks match "<span class="font-semibold text-amber-500">{{ $taskSearch }}</span>"</span>
+                    <span class="text-[11px] text-zinc-400 mt-0.5 block">Try searching with a different keyword or clear the search query.</span>
+                </div>
+                <button type="button" wire:click="$set('taskSearch', '')" class="mt-1 text-xs text-amber-600 dark:text-amber-400 hover:underline font-semibold flex items-center gap-1 cursor-pointer">
+                    <span>Clear search filter</span>
+                </button>
+            </div>
+        @elseif($taskFilter === 'on_progress')
+            <!-- Celebratory Empty State when 0 On-Progress tasks exist -->
+            <div class="py-10 px-6 rounded-2xl text-center border border-dashed border-amber-500/25 bg-gradient-to-b from-amber-500/5 via-transparent to-emerald-500/5 flex flex-col items-center justify-center gap-3">
+                <div class="relative flex items-center justify-center mb-1">
+                    <span class="absolute size-14 rounded-full bg-amber-500/15 animate-ping"></span>
+                    <div class="relative size-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500 shadow-sm">
+                        <flux:icon name="sparkles" class="size-6 text-amber-500" />
+                    </div>
+                </div>
+
+                <div class="max-w-md">
+                    <h4 class="text-sm font-extrabold text-zinc-900 dark:text-zinc-100 flex items-center justify-center gap-1.5">
+                        <span>All On-Progress Tasks Completed! 🎉</span>
+                    </h4>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                        Great job! You have no pending tasks in progress right now. Enjoy your accomplishment or create a new task for today.
+                    </p>
+                </div>
+
+                <button type="button" 
+                        wire:click="$set('showQuickTaskForm', true)" 
+                        class="mt-2 px-3.5 py-1.5 text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white rounded-xl shadow-xs transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer">
+                    <flux:icon name="plus" class="size-3.5" />
+                    <span>Add New Task</span>
+                </button>
+            </div>
+        @else
+            <!-- Done Today Empty State -->
+            <div class="py-8 px-4 rounded-2xl text-center text-xs text-zinc-400 border border-dashed border-zinc-200 dark:border-zinc-800 flex flex-col items-center justify-center gap-2">
+                <flux:icon name="sparkles" class="size-6 text-zinc-400/80" />
+                <span class="font-medium text-zinc-700 dark:text-zinc-300">No completed tasks recorded today yet.</span>
+                <button type="button" wire:click="$set('showQuickTaskForm', true)" class="mt-1 text-xs text-amber-600 dark:text-amber-400 hover:underline font-semibold flex items-center gap-1 cursor-pointer">
+                    <flux:icon name="plus" class="size-3" />
+                    <span>Add New Task</span>
+                </button>
+            </div>
+        @endif
     </div>
 
     <!-- Currently Active Tracking (Initial Layout with Modern Live Timer Motion Cues) -->
