@@ -503,6 +503,68 @@ new class extends Component
         </div>
     </div>
 
+    <!-- Currently Active Tracking (Initial Layout with Modern Live Timer Motion Cues) -->
+    @if($this->runningActivities->count() > 0)
+    <div class="mt-1">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-3 flex items-center gap-2 font-mono">
+            <span class="relative flex h-2.5 w-2.5">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+            </span>
+            <span>CURRENTLY ACTIVE TRACKING</span>
+        </h2>
+
+        <div class="grid gap-3">
+            @foreach($this->runningActivities as $running)
+                <div wire:key="running-{{ $running->id }}" 
+                     class="group relative overflow-hidden rounded-2xl border border-emerald-500/30 bg-emerald-500/5 dark:bg-emerald-950/20 backdrop-blur-xl p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 transition-all duration-300" 
+                     x-data="{ elapsed: '00:00:00', start: new Date('{{ $running->start_time->toISOString() }}').getTime() }"
+                     x-init="setInterval(() => { 
+                          let diff = Math.floor((new Date().getTime() - start) / 1000);
+                          let h = Math.floor(diff / 3600).toString().padStart(2, '0');
+                          let m = Math.floor((diff % 3600) / 60).toString().padStart(2, '0');
+                          let s = (diff % 60).toString().padStart(2, '0');
+                          elapsed = `${h}:${m}:${s}`;
+                      }, 1000)">
+                    
+                    <div class="min-w-0 flex-1">
+                        <div class="font-bold text-base sm:text-lg text-zinc-900 dark:text-zinc-100 truncate">{{ $running->detail }}</div>
+                        <div class="text-xs text-neutral-500 dark:text-neutral-400 mt-1 flex flex-wrap items-center gap-2">
+                            <span class="inline-flex items-center gap-1.5 font-medium text-neutral-700 dark:text-neutral-300">
+                                <flux:icon name="folder" class="size-3.5 text-emerald-500 shrink-0" />
+                                <span>{{ $running->project->name }}</span>
+                            </span>
+                            <span>&bull;</span>
+                            <span>{{ $running->category->name }}</span>
+                            @if($running->is_parallel) 
+                                <span class="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-md font-mono font-bold ml-1 border border-indigo-500/20">Parallel</span> 
+                            @endif
+                        </div>
+                    </div>
+
+                    <!-- Live Stopwatch Readout with Spinning Gear & Stop Button -->
+                    <div class="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto">
+                        <div class="flex items-center gap-2">
+                            <flux:icon name="clock" class="size-4 text-emerald-500 animate-spin" style="animation-duration: 3s;" />
+                            <span class="font-mono text-2xl sm:text-3xl text-emerald-600 dark:text-emerald-400 font-extrabold tracking-wider" x-text="elapsed"></span>
+                        </div>
+                        <button type="button" 
+                                wire:click="stopActivity({{ $running->id }})" 
+                                class="bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs sm:text-sm px-4 py-2 rounded-xl border border-rose-500/80 shadow-xs shadow-rose-600/20 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0" 
+                                title="Stop Activity">
+                            <flux:icon name="stop" class="size-4 fill-current" />
+                            <span>Stop</span>
+                        </button>
+                    </div>
+
+                    <!-- Bottom Live Pulse Line -->
+                    <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-emerald-500/60 to-transparent animate-pulse"></div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
     <!-- TASK STREAM WIDGET (Interactive & Professional Command Center) -->
     <div class="flex flex-col gap-3.5 mt-2 bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-4 shadow-sm transition-all duration-300">
         <!-- Top Bar: Header, Momentum Progress & Main Actions -->
@@ -722,68 +784,6 @@ new class extends Component
             </div>
         @endif
     </div>
-
-    <!-- Currently Active Tracking (Initial Layout with Modern Live Timer Motion Cues) -->
-    @if($this->runningActivities->count() > 0)
-    <div class="mt-1">
-        <h2 class="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-3 flex items-center gap-2 font-mono">
-            <span class="relative flex h-2.5 w-2.5">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-            </span>
-            <span>CURRENTLY ACTIVE TRACKING</span>
-        </h2>
-
-        <div class="grid gap-3">
-            @foreach($this->runningActivities as $running)
-                <div wire:key="running-{{ $running->id }}" 
-                     class="group relative overflow-hidden rounded-2xl border border-emerald-500/30 bg-emerald-500/5 dark:bg-emerald-950/20 backdrop-blur-xl p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 transition-all duration-300" 
-                     x-data="{ elapsed: '00:00:00', start: new Date('{{ $running->start_time->toISOString() }}').getTime() }"
-                     x-init="setInterval(() => { 
-                          let diff = Math.floor((new Date().getTime() - start) / 1000);
-                          let h = Math.floor(diff / 3600).toString().padStart(2, '0');
-                          let m = Math.floor((diff % 3600) / 60).toString().padStart(2, '0');
-                          let s = (diff % 60).toString().padStart(2, '0');
-                          elapsed = `${h}:${m}:${s}`;
-                      }, 1000)">
-                    
-                    <div class="min-w-0 flex-1">
-                        <div class="font-bold text-base sm:text-lg text-zinc-900 dark:text-zinc-100 truncate">{{ $running->detail }}</div>
-                        <div class="text-xs text-neutral-500 dark:text-neutral-400 mt-1 flex flex-wrap items-center gap-2">
-                            <span class="inline-flex items-center gap-1.5 font-medium text-neutral-700 dark:text-neutral-300">
-                                <flux:icon name="folder" class="size-3.5 text-emerald-500 shrink-0" />
-                                <span>{{ $running->project->name }}</span>
-                            </span>
-                            <span>&bull;</span>
-                            <span>{{ $running->category->name }}</span>
-                            @if($running->is_parallel) 
-                                <span class="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-md font-mono font-bold ml-1 border border-indigo-500/20">Parallel</span> 
-                            @endif
-                        </div>
-                    </div>
-
-                    <!-- Live Stopwatch Readout with Spinning Gear & Stop Button -->
-                    <div class="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto">
-                        <div class="flex items-center gap-2">
-                            <flux:icon name="clock" class="size-4 text-emerald-500 animate-spin" style="animation-duration: 3s;" />
-                            <span class="font-mono text-2xl sm:text-3xl text-emerald-600 dark:text-emerald-400 font-extrabold tracking-wider" x-text="elapsed"></span>
-                        </div>
-                        <button type="button" 
-                                wire:click="stopActivity({{ $running->id }})" 
-                                class="bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs sm:text-sm px-4 py-2 rounded-xl border border-rose-500/80 shadow-xs shadow-rose-600/20 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0" 
-                                title="Stop Activity">
-                            <flux:icon name="stop" class="size-4 fill-current" />
-                            <span>Stop</span>
-                        </button>
-                    </div>
-
-                    <!-- Bottom Live Pulse Line -->
-                    <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-emerald-500/60 to-transparent animate-pulse"></div>
-                </div>
-            @endforeach
-        </div>
-    </div>
-    @endif
 
     <!-- Insights Cards -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
