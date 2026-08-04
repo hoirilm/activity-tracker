@@ -153,10 +153,13 @@ new class extends Component
                  class="bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-4 sm:p-5 shadow-xs hover:border-zinc-400 dark:hover:border-zinc-700 transition-all group flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 
                 <div class="flex items-center gap-3.5 flex-1 min-w-0">
-                    <!-- Calm Dark Slate Avatar Initials Box -->
-                    <div class="size-11 rounded-2xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 text-zinc-800 dark:text-zinc-200 font-extrabold text-sm flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-xs">
-                        {{ $member->initials() }}
-                    </div>
+                    @if($member->avatar)
+                        <img src="{{ $member->avatar }}" alt="{{ $member->name }}" class="size-11 rounded-2xl object-cover border border-zinc-200 dark:border-zinc-700/60 shrink-0 group-hover:scale-105 transition-transform shadow-xs" />
+                    @else
+                        <div class="size-11 rounded-2xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 text-zinc-800 dark:text-zinc-200 font-extrabold text-sm flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-xs">
+                            {{ $member->initials() }}
+                        </div>
+                    @endif
 
                     <div class="min-w-0">
                         <div class="font-bold text-sm text-zinc-900 dark:text-zinc-100 truncate flex items-center gap-2 flex-wrap">
