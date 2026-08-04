@@ -101,6 +101,7 @@ new #[Title('Backup & Restore Settings')] class extends Component {
                     'description' => $t->description,
                     'project' => $t->project ? $t->project->name : null,
                     'status' => $t->status,
+                    'due_at' => $t->due_at ? $t->due_at->toIso8601String() : null,
                     'labels' => $t->labels->pluck('name')->all(),
                 ];
             })->values()->all(),
@@ -216,6 +217,7 @@ new #[Title('Backup & Restore Settings')] class extends Component {
                             'description' => $tData['description'] ?? null,
                             'project_id' => $projectId,
                             'status' => $tData['status'] ?? 'new',
+                            'due_at' => isset($tData['due_at']) && !empty($tData['due_at']) ? Carbon::parse($tData['due_at']) : null,
                         ]);
 
                         if (!empty($tData['labels'])) {

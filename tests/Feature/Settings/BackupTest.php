@@ -50,6 +50,15 @@ test('restore validates user email match and requires confirmation if emails mis
                 'end_time' => now()->subHour()->toDateTimeString(),
             ],
         ],
+        'tasks' => [
+            [
+                'title' => 'Sample Task With Deadline',
+                'description' => 'Test task description',
+                'project' => 'Demo Project',
+                'status' => 'new',
+                'due_at' => now()->addDays(3)->toIso8601String(),
+            ],
+        ],
     ];
 
     $file = UploadedFile::fake()->createWithContent('backup.json', json_encode($backupPayload));
@@ -70,4 +79,6 @@ test('restore validates user email match and requires confirmation if emails mis
 
     expect($user->activities()->count())->toBe(1);
     expect($user->activities()->first()->detail)->toBe('Sample imported activity');
+    expect($user->tasks()->count())->toBe(1);
+    expect($user->tasks()->first()->due_at)->not()->toBeNull();
 });
