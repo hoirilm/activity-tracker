@@ -354,14 +354,14 @@ new class extends Component
                     <flux:icon name="sparkles" class="size-6" />
                 </div>
                 <div>
-                    <h3 class="text-sm font-bold text-zinc-900 dark:text-white">Project & Kategori Belum Tersedia! ⚠️</h3>
+                    <h3 class="text-sm font-bold text-zinc-900 dark:text-white">Project & Category Not Available Yet! ⚠️</h3>
                     <p class="text-xs text-zinc-600 dark:text-zinc-400 mt-1 leading-relaxed">
-                        Anda belum bisa mencatat aktivitas karena Project dan Kategori belum dibuat. Gunakan <strong class="font-bold text-amber-600 dark:text-amber-400">Quick Setup</strong> untuk membuatnya dalam 1-klik!
+                        You cannot record activities yet because no Project and Category have been created. Use <strong class="font-bold text-amber-600 dark:text-amber-400">Quick Setup</strong> to create them in 1 click!
                     </p>
                 </div>
             </div>
             <button @click="$dispatch('open-quick-setup')" type="button" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold text-xs shadow-md active:scale-95 transition-all cursor-pointer whitespace-nowrap">
-                🚀 Buka Quick Setup
+                🚀 Open Quick Setup
             </button>
         </div>
     @endif

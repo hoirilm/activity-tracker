@@ -121,6 +121,7 @@
             </flux:toast.group>
         @endpersist
         
+        <livewire:quick-setup />
         <livewire:report-issue />
         <livewire:notifications />
         @include('partials.help-modals')

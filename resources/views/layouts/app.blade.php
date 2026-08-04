@@ -9,7 +9,6 @@
             </p>
         </footer>
     </flux:main>
-    <livewire:quick-setup />
     <livewire:onboarding-tour />
     <livewire:task-celebration />
 </x-layouts::app.sidebar>
