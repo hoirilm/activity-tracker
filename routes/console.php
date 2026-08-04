@@ -8,11 +8,12 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 use App\Console\Commands\SendMorningGreetings;
+use App\Console\Commands\CheckTaskDeadlines;
 use App\Models\Notification;
 use Illuminate\Support\Facades\Schedule;
 
 Schedule::command(SendMorningGreetings::class)->dailyAt('07:00');
-
+Schedule::command(CheckTaskDeadlines::class)->hourly();
 
 Schedule::call(function () {
     Notification::where('created_at', '<', now()->subDays(3))->delete();

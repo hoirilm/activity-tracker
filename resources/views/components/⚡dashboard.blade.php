@@ -713,6 +713,19 @@ new class extends Component
                                         </span>
                                     @endif
 
+                                    @if($task->due_badge)
+                                        @php $badge = $task->due_badge; @endphp
+                                        <span class="inline-flex items-center gap-1 text-[9px] font-semibold px-2 py-0.5 rounded-md border
+                                            {{ $badge['color'] === 'rose' ? 'bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-200/80 dark:border-rose-900/40 font-bold' : '' }}
+                                            {{ $badge['color'] === 'amber' ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-200/80 dark:border-amber-900/40 font-bold' : '' }}
+                                            {{ $badge['color'] === 'indigo' ? 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-200/80 dark:border-indigo-900/40' : '' }}
+                                            {{ $badge['color'] === 'sky' ? 'bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-200/80 dark:border-sky-900/40' : '' }}
+                                            {{ $badge['color'] === 'zinc' ? 'bg-zinc-100/60 dark:bg-zinc-800/40 text-zinc-500 dark:text-zinc-400 border-zinc-200/50 dark:border-zinc-800/80' : '' }}">
+                                            <flux:icon name="{{ $badge['icon'] }}" class="size-2.5 shrink-0" />
+                                            <span>{{ $badge['label'] }}</span>
+                                        </span>
+                                    @endif
+
                                     @foreach($task->labels as $label)
                                         <span class="inline-flex items-center text-[9px] font-semibold px-2 py-0.5 rounded-md border {{ $this->getLabelBgClass($label->color) }}">
                                             {{ $label->name }}

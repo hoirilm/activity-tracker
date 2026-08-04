@@ -15,6 +15,7 @@ new class extends Component
     public string $taskDescription = '';
     public ?int $taskProjectId = null;
     public string $taskStatus = Task::STATUS_NEW;
+    public ?string $taskDueAt = null;
     public array $taskLabelIds = [];
 
     // Task Editing Properties
@@ -23,11 +24,13 @@ new class extends Component
     public string $editingTaskDescription = '';
     public ?int $editingTaskProjectId = null;
     public string $editingTaskStatus = Task::STATUS_NEW;
+    public ?string $editingTaskDueAt = null;
     public array $editingTaskLabelIds = [];
 
     // Task Filters
     public string $filterProject = 'all'; // 'all', 'non_project', or project ID
     public string $filterStatus = 'all';  // 'all', 'new', 'on_progress', 'done', 'on_hold', 'archived'
+    public string $filterDeadline = 'all';// 'all', 'overdue', 'due_today', 'due_this_week', 'no_deadline'
     public string $searchTask = '';
     public string $viewMode = 'kanban';    // 'kanban' or 'list'
     public bool $showArchived = false;
@@ -117,6 +120,22 @@ new class extends Component
             $query->where('status', '!=', Task::STATUS_ARCHIVED);
         }
 
+        if ($this->filterDeadline === 'overdue') {
+            $query->whereNotNull('due_at')
+                  ->where('due_at', '<', now())
+                  ->where('status', '!=', Task::STATUS_DONE);
+        } elseif ($this->filterDeadline === 'due_today') {
+            $query->whereNotNull('due_at')
+                  ->whereDate('due_at', \Carbon\Carbon::today())
+                  ->where('status', '!=', Task::STATUS_DONE);
+        } elseif ($this->filterDeadline === 'due_this_week') {
+            $query->whereNotNull('due_at')
+                  ->whereBetween('due_at', [\Carbon\Carbon::now()->startOfWeek(), \Carbon\Carbon::now()->endOfWeek()])
+                  ->where('status', '!=', Task::STATUS_DONE);
+        } elseif ($this->filterDeadline === 'no_deadline') {
+            $query->whereNull('due_at');
+        }
+
         if (!empty($this->searchTask)) {
             $query->where(function ($q) {
                 $q->where('title', 'like', '%' . $this->searchTask . '%')
@@ -135,6 +154,22 @@ new class extends Component
         return $this->getTasksQueryProperty()->get();
     }
 
+    public function setTaskDuePreset(string $preset, bool $isEditing = false)
+    {
+        $date = match($preset) {
+            'today' => now()->endOfDay()->format('Y-m-d\TH:i'),
+            'tomorrow' => now()->addDay()->endOfDay()->format('Y-m-d\TH:i'),
+            'next_week' => now()->addWeek()->startOfDay()->format('Y-m-d\TH:i'),
+            default => null,
+        };
+
+        if ($isEditing) {
+            $this->editingTaskDueAt = $date;
+        } else {
+            $this->taskDueAt = $date;
+        }
+    }
+
     // --- Task Actions ---
 
     public function addTask()
@@ -144,6 +179,7 @@ new class extends Component
             'taskDescription' => 'nullable|string',
             'taskProjectId' => 'nullable|exists:projects,id',
             'taskStatus' => 'required|in:new,on_progress,done,on_hold,archived',
+            'taskDueAt' => 'nullable|date',
             'taskLabelIds' => 'array',
             'taskLabelIds.*' => 'exists:labels,id',
         ]);
@@ -162,6 +198,7 @@ new class extends Component
             'description' => $this->taskDescription ?: null,
             'project_id' => $projectId,
             'status' => $this->taskStatus,
+            'due_at' => $this->taskDueAt ?: null,
         ]);
 
         if (!empty($this->taskLabelIds)) {
@@ -169,12 +206,27 @@ new class extends Component
             $task->labels()->sync($userLabelIds);
         }
 
+        if ($task->isOverdue()) {
+            auth()->user()->notifications()->create([
+                'title' => "⚠️ Task Overdue: {$task->title}",
+                'body' => "Task '{$task->title}' was due on " . $task->due_at->format('d M Y H:i') . " and is currently overdue.",
+                'type' => 'danger',
+            ]);
+        } elseif ($task->isDueToday()) {
+            $timeStr = $task->due_at->format('H:i') !== '00:00' ? " at {$task->due_at->format('H:i')}" : '';
+            auth()->user()->notifications()->create([
+                'title' => "⏰ Task Due Today: {$task->title}",
+                'body' => "Task '{$task->title}' is due today{$timeStr}. Don't forget to complete it!",
+                'type' => 'warning',
+            ]);
+        }
+
         if ($task->status === Task::STATUS_DONE) {
             $this->dispatch('task-completed', title: $task->title);
             $this->js("window.dispatchEvent(new CustomEvent('task-completed', { detail: { title: " . json_encode($task->title) . " } }))");
         }
 
-        $this->reset(['taskTitle', 'taskDescription', 'taskProjectId', 'taskLabelIds']);
+        $this->reset(['taskTitle', 'taskDescription', 'taskProjectId', 'taskLabelIds', 'taskDueAt']);
         $this->taskStatus = Task::STATUS_NEW;
 
         $this->dispatch('close-modal', name: 'create-task-modal');
@@ -214,6 +266,7 @@ new class extends Component
             $this->editingTaskDescription = $task->description ?? '';
             $this->editingTaskProjectId = $task->project_id;
             $this->editingTaskStatus = $task->status;
+            $this->editingTaskDueAt = $task->due_at ? $task->due_at->format('Y-m-d\TH:i') : null;
             $this->editingTaskLabelIds = $task->labels->pluck('id')->toArray();
             
             $this->dispatch('open-modal', name: 'edit-task-modal');
@@ -227,6 +280,7 @@ new class extends Component
             'editingTaskDescription' => 'nullable|string',
             'editingTaskProjectId' => 'nullable|exists:projects,id',
             'editingTaskStatus' => 'required|in:new,on_progress,done,on_hold,archived',
+            'editingTaskDueAt' => 'nullable|date',
             'editingTaskLabelIds' => 'array',
             'editingTaskLabelIds.*' => 'exists:labels,id',
         ]);
@@ -248,7 +302,25 @@ new class extends Component
                 'description' => $this->editingTaskDescription ?: null,
                 'project_id' => $projectId,
                 'status' => $this->editingTaskStatus,
+                'due_at' => $this->editingTaskDueAt ?: null,
             ]);
+
+            $task->refresh();
+
+            if ($task->isOverdue()) {
+                auth()->user()->notifications()->create([
+                    'title' => "⚠️ Task Overdue: {$task->title}",
+                    'body' => "Task '{$task->title}' was due on " . $task->due_at->format('d M Y H:i') . " and is currently overdue.",
+                    'type' => 'danger',
+                ]);
+            } elseif ($task->isDueToday()) {
+                $timeStr = $task->due_at->format('H:i') !== '00:00' ? " at {$task->due_at->format('H:i')}" : '';
+                auth()->user()->notifications()->create([
+                    'title' => "⏰ Task Due Today: {$task->title}",
+                    'body' => "Task '{$task->title}' is due today{$timeStr}. Don't forget to complete it!",
+                    'type' => 'warning',
+                ]);
+            }
 
             if ($this->editingTaskStatus === Task::STATUS_DONE && $oldStatus !== Task::STATUS_DONE) {
                 $this->dispatch('task-completed', title: $task->title);
@@ -526,6 +598,17 @@ new class extends Component
                         <option value="archived">Archived 📦 ({{ $this->archivedCount }})</option>
                     </select>
                 </div>
+
+                <!-- Deadline Filter -->
+                <div class="w-full sm:w-auto">
+                    <select wire:model.live="filterDeadline" class="h-9 px-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500 cursor-pointer">
+                        <option value="all">All Deadlines 📅</option>
+                        <option value="overdue">Overdue ⚠️</option>
+                        <option value="due_today">Due Today ⏰</option>
+                        <option value="due_this_week">Due This Week 📆</option>
+                        <option value="no_deadline">No Deadline ♾️</option>
+                    </select>
+                </div>
             </div>
 
             <!-- Right Controls: View Switcher, Archive Toggle, & Create Task Button -->
@@ -646,6 +729,20 @@ new class extends Component
                                         @else
                                             <span class="inline-flex items-center text-[10px] font-medium bg-zinc-100/60 dark:bg-zinc-800/40 text-zinc-500 dark:text-zinc-400 px-1.5 py-0.5 rounded-md border border-zinc-200/50 dark:border-zinc-800/80">
                                                 Non-Project
+                                            </span>
+                                        @endif
+
+                                        <!-- Deadline Badge -->
+                                        @if($task->due_badge)
+                                            @php $badge = $task->due_badge; @endphp
+                                            <span class="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-md border
+                                                {{ $badge['color'] === 'rose' ? 'bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-200/80 dark:border-rose-900/40 font-bold' : '' }}
+                                                {{ $badge['color'] === 'amber' ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-200/80 dark:border-amber-900/40 font-bold' : '' }}
+                                                {{ $badge['color'] === 'indigo' ? 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-200/80 dark:border-indigo-900/40' : '' }}
+                                                {{ $badge['color'] === 'sky' ? 'bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-200/80 dark:border-sky-900/40' : '' }}
+                                                {{ $badge['color'] === 'zinc' ? 'bg-zinc-100/60 dark:bg-zinc-800/40 text-zinc-500 dark:text-zinc-400 border-zinc-200/50 dark:border-zinc-800/80' : '' }}">
+                                                <flux:icon name="{{ $badge['icon'] }}" class="size-2.5 shrink-0" />
+                                                <span>{{ $badge['label'] }}</span>
                                             </span>
                                         @endif
 
@@ -891,6 +988,20 @@ new class extends Component
                                         </span>
                                     @endif
 
+                                    <!-- Deadline Badge -->
+                                    @if($task->due_badge)
+                                        @php $badge = $task->due_badge; @endphp
+                                        <span class="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md border
+                                            {{ $badge['color'] === 'rose' ? 'bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-200/80 dark:border-rose-900/40 font-bold' : '' }}
+                                            {{ $badge['color'] === 'amber' ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-200/80 dark:border-amber-900/40 font-bold' : '' }}
+                                            {{ $badge['color'] === 'indigo' ? 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-200/80 dark:border-indigo-900/40' : '' }}
+                                            {{ $badge['color'] === 'sky' ? 'bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-200/80 dark:border-sky-900/40' : '' }}
+                                            {{ $badge['color'] === 'zinc' ? 'bg-zinc-100/60 dark:bg-zinc-800/40 text-zinc-500 dark:text-zinc-400 border-zinc-200/50 dark:border-zinc-800/80' : '' }}">
+                                            <flux:icon name="{{ $badge['icon'] }}" class="size-3 shrink-0" />
+                                            <span>{{ $badge['label'] }}</span>
+                                        </span>
+                                    @endif
+
                                     <!-- Labels -->
                                     @foreach($task->labels as $label)
                                         <span class="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-md border {{ $this->getLabelBgClass($label->color) }}">
@@ -1005,6 +1116,39 @@ new class extends Component
                     </div>
                 </div>
 
+                <!-- Deadline (Due Date) Input -->
+                <div class="space-y-1.5">
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs font-semibold text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
+                            <flux:icon name="calendar-days" class="size-3.5 text-indigo-500" />
+                            <span>Deadline (Due Date)</span>
+                        </label>
+                        <span class="text-[10px] text-zinc-400">Optional</span>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                        <input type="datetime-local" 
+                               wire:model="taskDueAt" 
+                               class="h-9 px-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500 flex-1">
+                        
+                        <div class="flex items-center gap-1 overflow-x-auto shrink-0">
+                            <button type="button" wire:click="setTaskDuePreset('today')" class="px-2 py-1.5 rounded-lg text-[10px] font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer whitespace-nowrap">
+                                Today
+                            </button>
+                            <button type="button" wire:click="setTaskDuePreset('tomorrow')" class="px-2 py-1.5 rounded-lg text-[10px] font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer whitespace-nowrap">
+                                Tomorrow
+                            </button>
+                            <button type="button" wire:click="setTaskDuePreset('next_week')" class="px-2 py-1.5 rounded-lg text-[10px] font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer whitespace-nowrap">
+                                Next Week
+                            </button>
+                            <button type="button" wire:click="$set('taskDueAt', null)" class="px-2 py-1.5 rounded-lg text-[10px] font-semibold bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors cursor-pointer whitespace-nowrap">
+                                Clear
+                            </button>
+                        </div>
+                    </div>
+                    @error('taskDueAt') <span class="text-[10px] text-red-500">{{ $message }}</span> @enderror
+                </div>
+
                 <!-- Labels Picker -->
                 <div class="space-y-1.5" x-data="{ selectedLabels: $wire.entangle('taskLabelIds') }">
                     <div class="flex items-center justify-between">
@@ -1103,6 +1247,39 @@ new class extends Component
                             <option value="archived">Archived 📦</option>
                         </select>
                     </div>
+                </div>
+
+                <!-- Deadline (Due Date) Input -->
+                <div class="space-y-1.5">
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs font-semibold text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
+                            <flux:icon name="calendar-days" class="size-3.5 text-indigo-500" />
+                            <span>Deadline (Due Date)</span>
+                        </label>
+                        <span class="text-[10px] text-zinc-400">Optional</span>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                        <input type="datetime-local" 
+                               wire:model="editingTaskDueAt" 
+                               class="h-9 px-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500 flex-1">
+                        
+                        <div class="flex items-center gap-1 overflow-x-auto shrink-0">
+                            <button type="button" wire:click="setTaskDuePreset('today', true)" class="px-2 py-1.5 rounded-lg text-[10px] font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer whitespace-nowrap">
+                                Today
+                            </button>
+                            <button type="button" wire:click="setTaskDuePreset('tomorrow', true)" class="px-2 py-1.5 rounded-lg text-[10px] font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer whitespace-nowrap">
+                                Tomorrow
+                            </button>
+                            <button type="button" wire:click="setTaskDuePreset('next_week', true)" class="px-2 py-1.5 rounded-lg text-[10px] font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer whitespace-nowrap">
+                                Next Week
+                            </button>
+                            <button type="button" wire:click="$set('editingTaskDueAt', null)" class="px-2 py-1.5 rounded-lg text-[10px] font-semibold bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors cursor-pointer whitespace-nowrap">
+                                Clear
+                            </button>
+                        </div>
+                    </div>
+                    @error('editingTaskDueAt') <span class="text-[10px] text-red-500">{{ $message }}</span> @enderror
                 </div>
 
                 <!-- Labels Picker -->

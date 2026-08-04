@@ -109,3 +109,39 @@ test('starting activity linked to task automatically updates task status to on_p
     expect($activity->task_id)->toBe($task->id);
     expect($task->fresh()->status)->toBe('on_progress');
 });
+
+test('user can set task deadline and filter by deadline', function () {
+    $user = User::factory()->create();
+
+    $dueAt = now()->addDays(2)->format('Y-m-d\TH:i');
+
+    Livewire::actingAs($user)
+        ->test('manage')
+        ->set('taskTitle', 'Task With Deadline')
+        ->set('taskDueAt', $dueAt)
+        ->call('addTask')
+        ->assertHasNoErrors();
+
+    $task = Task::where('title', 'Task With Deadline')->first();
+    expect($task->due_at)->not()->toBeNull();
+    expect($task->due_badge)->not()->toBeNull();
+
+    // Overdue task test
+    $overdueTask = Task::create([
+        'user_id' => $user->id,
+        'title' => 'Overdue Task',
+        'status' => 'new',
+        'due_at' => now()->subDay(),
+    ]);
+
+    expect($overdueTask->isOverdue())->toBeTrue();
+    expect($overdueTask->due_badge['type'])->toBe('overdue');
+
+    // Test deadline filtering
+    Livewire::actingAs($user)
+        ->test('manage')
+        ->set('filterDeadline', 'overdue')
+        ->assertSee('Overdue Task')
+        ->assertDontSee('Task With Deadline');
+});
+

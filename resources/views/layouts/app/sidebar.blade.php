@@ -70,10 +70,6 @@
                 <flux:sidebar.item icon="book-open-text" href="https://laravel.com/docs/starter-kits#livewire" target="_blank">
                     {{ __('Documentation') }}
                 </flux:sidebar.item>
-
-                <flux:sidebar.item icon="calendar-days" href="https://openproject.pactindo.com/weeklog/" target="_blank">
-                    {{ __('Weeklog Primavisi') }}
-                </flux:sidebar.item>
             </flux:sidebar.nav>
 
             <x-desktop-user-menu :name="auth()->user()->name" />
@@ -171,11 +167,6 @@
                     <a href="https://laravel.com/docs/starter-kits#livewire" target="_blank" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
                         <flux:icon name="book-open-text" class="size-5" />
                         <span>{{ __('Documentation') }}</span>
-                    </a>
-
-                    <a href="https://openproject.pactindo.com/weeklog/" target="_blank" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
-                        <flux:icon name="calendar-days" class="size-5" />
-                        <span>{{ __('Weeklog Primavisi') }}</span>
                     </a>
                 </nav>
             </div>
