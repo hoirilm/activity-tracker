@@ -7,8 +7,8 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-use App\Console\Commands\SendMorningGreetings;
 use App\Console\Commands\CheckTaskDeadlines;
+use App\Console\Commands\SendMorningGreetings;
 use App\Models\Notification;
 use Illuminate\Support\Facades\Schedule;
 

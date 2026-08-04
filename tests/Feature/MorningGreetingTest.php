@@ -16,7 +16,7 @@ test('morning greeting generator creates dynamic greeting with pending task summ
         'status' => Task::STATUS_ON_PROGRESS,
     ]);
 
-    $generator = new MorningGreetingGenerator();
+    $generator = new MorningGreetingGenerator;
     $greeting = $generator->generateForUser($user);
 
     expect($greeting['title'])->toContain('Budi');

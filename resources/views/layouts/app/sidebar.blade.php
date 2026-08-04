@@ -201,6 +201,12 @@
                 
                 <div class="px-3 py-1.5 text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Help & Support</div>
                 
+                <!-- Quick Setup -->
+                <button @click="open = false; $dispatch('open-quick-setup')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 transition-colors duration-150 text-left cursor-pointer">
+                    <flux:icon name="sparkles" class="size-4 text-indigo-500 dark:text-indigo-400 shrink-0" />
+                    <span>Quick Setup</span>
+                </button>
+
                 <!-- Help -->
                 <flux:modal.trigger name="help-modal">
                     <button @click="open = false" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 transition-colors duration-150 text-left cursor-pointer">
@@ -245,6 +251,7 @@
         </div>
         @endif
         
+        <livewire:quick-setup />
         <livewire:report-issue />
         <livewire:notifications />
         @include('partials.help-modals')

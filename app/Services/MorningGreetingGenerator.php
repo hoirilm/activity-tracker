@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\User;
-use App\Models\Task;
 use App\Models\Issue;
+use App\Models\Task;
+use App\Models\User;
 
 class MorningGreetingGenerator
 {
@@ -39,7 +39,6 @@ class MorningGreetingGenerator
     /**
      * Generate dynamic greeting content for a specific user.
      *
-     * @param User $user
      * @return array{title: string, body: string, type: string}
      */
     public function generateForUser(User $user): array
@@ -67,7 +66,7 @@ class MorningGreetingGenerator
                 $bodyParts[] = "📋 Info Hari Ini: Ada {$totalPendingCount} task baru yang siap dikerjakan.";
             }
         } else {
-            $bodyParts[] = "📋 Info Hari Ini: Tidak ada task pending. Waktu yang pas untuk merencanakan target baru!";
+            $bodyParts[] = '📋 Info Hari Ini: Tidak ada task pending. Waktu yang pas untuk merencanakan target baru!';
         }
 
         // Check open issues if Issue model exists
@@ -86,7 +85,7 @@ class MorningGreetingGenerator
         $bodyParts[] = "💡 Motivasi: \"{$quote}\"";
 
         // 3. Energetic closing note
-        $bodyParts[] = "Selamat beraktivitas dan semoga harimu produktif! 🔥";
+        $bodyParts[] = 'Selamat beraktivitas dan semoga harimu produktif! 🔥';
 
         return [
             'title' => $title,

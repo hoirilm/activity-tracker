@@ -39,7 +39,7 @@ class CheckTaskDeadlines extends Command
 
         foreach ($tasks as $task) {
             $user = $task->user;
-            if (!$user) {
+            if (! $user) {
                 continue;
             }
 
@@ -56,7 +56,7 @@ class CheckTaskDeadlines extends Command
             if ($task->isOverdue()) {
                 $user->notifications()->create([
                     'title' => "⚠️ Task Overdue: {$task->title}",
-                    'body' => "Task '{$task->title}' was due on " . $task->due_at->format('d M Y H:i') . " and is currently overdue.",
+                    'body' => "Task '{$task->title}' was due on ".$task->due_at->format('d M Y H:i').' and is currently overdue.',
                     'type' => 'danger',
                 ]);
                 $overdueCount++;

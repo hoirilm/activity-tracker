@@ -1,10 +1,10 @@
 <?php
 
-use App\Models\User;
-use App\Models\Task;
 use App\Models\Notification;
-use Livewire\Livewire;
+use App\Models\Task;
+use App\Models\User;
 use Illuminate\Support\Facades\Artisan;
+use Livewire\Livewire;
 
 test('artisan command check task deadlines creates notifications for due today and overdue tasks', function () {
     $user = User::factory()->create();
@@ -127,4 +127,3 @@ test('editing task deadline via Livewire triggers instant in-app notification wh
     expect($notif)->not()->toBeNull();
     expect($notif->type)->toBe('danger');
 });
-

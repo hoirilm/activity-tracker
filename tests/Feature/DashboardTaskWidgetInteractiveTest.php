@@ -1,10 +1,10 @@
 <?php
 
+use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
-use App\Models\Project;
-use Livewire\Livewire;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 

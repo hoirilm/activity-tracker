@@ -34,10 +34,26 @@ new class extends Component
     public $editEndTime;
     public $showEditModal = false;
 
+    protected $listeners = [
+        'quick-setup-updated' => 'refreshSetupData',
+        'project-created' => 'refreshSetupData',
+        'category-created' => 'refreshSetupData',
+    ];
+
     public function mount()
     {
         $this->project_id = Project::where('user_id', auth()->id())->first()->id ?? null;
         $this->category_id = Category::where('user_id', auth()->id())->first()->id ?? null;
+    }
+
+    public function refreshSetupData()
+    {
+        if (!$this->project_id) {
+            $this->project_id = Project::where('user_id', auth()->id())->first()->id ?? null;
+        }
+        if (!$this->category_id) {
+            $this->category_id = Category::where('user_id', auth()->id())->first()->id ?? null;
+        }
     }
 
     public function updatedProjectId($val)
@@ -330,6 +346,25 @@ new class extends Component
             </span>
         </div>
     </div>
+
+    @if(!$this->projects->count() || !$this->categories->count())
+        <div class="p-5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-indigo-500/10 border border-amber-500/30 dark:border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-pulse">
+            <div class="flex items-start gap-3">
+                <div class="p-2.5 rounded-xl bg-amber-500 text-white shrink-0 shadow-md">
+                    <flux:icon name="sparkles" class="size-6" />
+                </div>
+                <div>
+                    <h3 class="text-sm font-bold text-zinc-900 dark:text-white">Project & Kategori Belum Tersedia! ⚠️</h3>
+                    <p class="text-xs text-zinc-600 dark:text-zinc-400 mt-1 leading-relaxed">
+                        Anda belum bisa mencatat aktivitas karena Project dan Kategori belum dibuat. Gunakan <strong class="font-bold text-amber-600 dark:text-amber-400">Quick Setup</strong> untuk membuatnya dalam 1-klik!
+                    </p>
+                </div>
+            </div>
+            <button @click="$dispatch('open-quick-setup')" type="button" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold text-xs shadow-md active:scale-95 transition-all cursor-pointer whitespace-nowrap">
+                🚀 Buka Quick Setup
+            </button>
+        </div>
+    @endif
 
     <!-- Start Activity Form -->
     <div class="fixed bottom-3 left-3 right-3 z-20 md:sticky md:top-4 md:left-auto md:right-auto overflow-visible md:overflow-hidden rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 bg-zinc-50/95 dark:bg-zinc-900/95 backdrop-blur-xl p-3 md:p-5 shadow-[0_8px_32px_rgba(0,0,0,0.18)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)] mb-0 md:mb-6"

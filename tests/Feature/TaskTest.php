@@ -1,9 +1,11 @@
 <?php
 
-use App\Models\User;
+use App\Models\Activity;
+use App\Models\Category;
+use App\Models\Label;
 use App\Models\Project;
 use App\Models\Task;
-use App\Models\Label;
+use App\Models\User;
 use Livewire\Livewire;
 
 test('authenticated user can create project and non-project tasks via livewire', function () {
@@ -88,7 +90,7 @@ test('user can manage dynamic task labels', function () {
 test('starting activity linked to task automatically updates task status to on_progress', function () {
     $user = User::factory()->create();
     $project = Project::create(['user_id' => $user->id, 'name' => 'Project Demo']);
-    $category = \App\Models\Category::create(['user_id' => $user->id, 'name' => 'Dev']);
+    $category = Category::create(['user_id' => $user->id, 'name' => 'Dev']);
     $task = Task::create([
         'user_id' => $user->id,
         'title' => 'Fix Login Bug',
@@ -105,7 +107,7 @@ test('starting activity linked to task automatically updates task status to on_p
         ->call('startActivity')
         ->assertHasNoErrors();
 
-    $activity = \App\Models\Activity::where('detail', 'Working on Login Bug')->first();
+    $activity = Activity::where('detail', 'Working on Login Bug')->first();
     expect($activity->task_id)->toBe($task->id);
     expect($task->fresh()->status)->toBe('on_progress');
 });
@@ -144,4 +146,3 @@ test('user can set task deadline and filter by deadline', function () {
         ->assertSee('Overdue Task')
         ->assertDontSee('Task With Deadline');
 });
-
