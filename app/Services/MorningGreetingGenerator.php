@@ -52,18 +52,35 @@ class MorningGreetingGenerator
         $bodyParts = [];
 
         // 1. Contextual summary (tasks & issues)
-        $pendingTasks = Task::where('user_id', $user->id)
-            ->whereIn('status', [Task::STATUS_NEW, Task::STATUS_ON_PROGRESS])
+        $activeTasks = Task::where('user_id', $user->id)
+            ->whereIn('status', [Task::STATUS_NEW, Task::STATUS_ON_PROGRESS, Task::STATUS_ON_HOLD])
             ->get();
 
-        $onProgressCount = $pendingTasks->where('status', Task::STATUS_ON_PROGRESS)->count();
-        $totalPendingCount = $pendingTasks->count();
+        $onProgressCount = $activeTasks->where('status', Task::STATUS_ON_PROGRESS)->count();
+        $newCount = $activeTasks->where('status', Task::STATUS_NEW)->count();
+        $onHoldCount = $activeTasks->where('status', Task::STATUS_ON_HOLD)->count();
+        $totalActiveCount = $activeTasks->count();
 
-        if ($totalPendingCount > 0) {
+        if ($totalActiveCount > 0) {
             if ($onProgressCount > 0) {
-                $bodyParts[] = "📋 Info Hari Ini: Kamu punya {$totalPendingCount} task aktif ({$onProgressCount} sedang berjalan).";
+                $details = ["{$onProgressCount} sedang berjalan"];
+                if ($newCount > 0) {
+                    $details[] = "{$newCount} baru";
+                }
+                if ($onHoldCount > 0) {
+                    $details[] = "{$onHoldCount} on hold";
+                }
+                $detailsStr = implode(', ', $details);
+                $bodyParts[] = "📋 Info Hari Ini: Kamu punya {$totalActiveCount} task aktif ({$detailsStr}).";
+            } elseif ($newCount > 0) {
+                $details = ["{$newCount} task baru"];
+                if ($onHoldCount > 0) {
+                    $details[] = "{$onHoldCount} on hold";
+                }
+                $detailsStr = implode(', ', $details);
+                $bodyParts[] = "📋 Info Hari Ini: Kamu punya {$totalActiveCount} task aktif ({$detailsStr}).";
             } else {
-                $bodyParts[] = "📋 Info Hari Ini: Ada {$totalPendingCount} task baru yang siap dikerjakan.";
+                $bodyParts[] = "📋 Info Hari Ini: Kamu punya {$totalActiveCount} task aktif ({$onHoldCount} task on hold).";
             }
         } else {
             $bodyParts[] = '📋 Info Hari Ini: Tidak ada task pending. Waktu yang pas untuk merencanakan target baru!';

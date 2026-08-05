@@ -52,7 +52,7 @@ new class extends Component
     public function getRecentActivitiesProperty()
     {
         return auth()->user()->activities()
-            ->with(['project', 'category'])
+            ->with(['project', 'category', 'task'])
             ->whereNotNull('end_time')
             ->orderBy('end_time', 'desc')
             ->take(5)
@@ -1028,13 +1028,22 @@ new class extends Component
                         </div>
                         <div class="min-w-0">
                             <div class="font-bold text-sm text-zinc-900 dark:text-zinc-100 truncate group-hover/row:text-zinc-700 dark:group-hover/row:text-zinc-300 transition-colors">{{ $activity->detail }}</div>
-                            <div class="text-[11px] truncate flex items-center gap-1.5 mt-1">
-                                <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[10px] font-medium px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60">
+                            <div class="text-[11px] truncate flex items-center gap-1.5 mt-1 flex-wrap">
+                                @if($activity->task)
+                                    <span class="bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[10px] font-medium px-2 py-0.5 rounded-md border border-indigo-200 dark:border-indigo-500/20 flex items-center gap-1 shrink-0">
+                                        <flux:icon name="clipboard-document-list" class="size-3 shrink-0" />
+                                        <span class="truncate max-w-[140px]">{{ $activity->task->title }}</span>
+                                    </span>
+                                @endif
+                                <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[10px] font-medium px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60 shrink-0">
                                     {{ $activity->project->name }}
                                 </span>
-                                <span class="bg-zinc-100/80 dark:bg-zinc-800/60 text-zinc-600 dark:text-zinc-400 text-[10px] font-medium px-2 py-0.5 rounded-md border border-zinc-200/80 dark:border-zinc-800">
+                                <span class="bg-zinc-100/80 dark:bg-zinc-800/60 text-zinc-600 dark:text-zinc-400 text-[10px] font-medium px-2 py-0.5 rounded-md border border-zinc-200/80 dark:border-zinc-800 shrink-0">
                                     {{ $activity->category->name }}
                                 </span>
+                                @if($activity->is_parallel) 
+                                    <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[9px] font-mono font-medium uppercase tracking-wider px-1.5 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60 shrink-0">Parallel</span>
+                                @endif
                             </div>
                         </div>
                     </div>
