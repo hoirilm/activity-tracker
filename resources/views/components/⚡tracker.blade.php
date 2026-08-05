@@ -944,36 +944,24 @@ new class extends Component
     <flux:modal name="delete-activity-modal" class="w-[calc(100vw-2rem)] max-w-md backdrop:backdrop-blur-md z-[200]">
         <div x-data="{ id: null, detail: '' }" 
              x-on:open-delete-activity-modal.window="id = $event.detail.id; detail = $event.detail.detail; $dispatch('modal-show', { name: 'delete-activity-modal' })" 
-             class="space-y-5">
-            
-            <div class="flex items-start gap-3.5">
-                <div class="size-10 rounded-xl bg-red-500/10 dark:bg-red-500/15 border border-red-500/20 flex items-center justify-center text-red-500 shrink-0 mt-0.5">
-                    <flux:icon name="trash" class="size-5 text-red-500" />
+             class="space-y-4">
+            <div class="flex items-center gap-3">
+                <div class="size-10 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 flex items-center justify-center text-red-600 dark:text-red-500 shrink-0">
+                    <flux:icon name="trash" class="size-5" />
                 </div>
-                <div class="flex-1 min-w-0">
-                    <flux:heading size="lg" class="font-bold tracking-tight text-zinc-900 dark:text-zinc-100">Delete Activity?</flux:heading>
-                    <flux:text class="text-xs text-zinc-500 dark:text-zinc-400 mt-1 leading-relaxed">
-                        Are you sure you want to delete this activity record? This action cannot be undone.
+                <div>
+                    <flux:heading size="lg" class="font-bold">Delete Activity?</flux:heading>
+                    <flux:text class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+                        Are you sure you want to delete <strong class="text-zinc-900 dark:text-zinc-100" x-text="detail ? '&ldquo;' + detail + '&rdquo;' : 'this activity'"></strong>?
                     </flux:text>
                 </div>
             </div>
-
-            <template x-if="detail">
-                <div class="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-800 flex items-center gap-3">
-                    <span class="size-2 rounded-full bg-red-500 shrink-0"></span>
-                    <span class="text-xs font-semibold text-zinc-900 dark:text-zinc-100 truncate flex-1" x-text="detail"></span>
-                </div>
-            </template>
-
-            <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-zinc-200/80 dark:border-zinc-800">
+            <div class="flex justify-end gap-2 pt-2">
                 <flux:modal.close>
-                    <flux:button variant="ghost" size="sm" class="cursor-pointer font-medium">Cancel</flux:button>
+                    <flux:button variant="ghost" size="sm" class="cursor-pointer">Cancel</flux:button>
                 </flux:modal.close>
-                
                 <flux:modal.close>
-                    <flux:button variant="danger" size="sm" icon="trash" class="cursor-pointer font-semibold" @click="$wire.deleteActivity(id)">
-                        Delete Activity
-                    </flux:button>
+                    <flux:button variant="danger" size="sm" class="cursor-pointer" @click="$wire.deleteActivity(id)">Delete</flux:button>
                 </flux:modal.close>
             </div>
         </div>
