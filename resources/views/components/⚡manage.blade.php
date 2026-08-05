@@ -688,12 +688,12 @@ new class extends Component
                             @forelse($colTasks as $task)
                                 <div wire:key="task-kanban-{{ $task->id }}" 
                                      wire:loading.class="opacity-50 scale-[0.98] pointer-events-none ring-2 ring-indigo-500/40 transition-all duration-200"
-                                     wire:target="updateTaskStatus({{ $task->id }}, 'new'), updateTaskStatus({{ $task->id }}, 'on_progress'), updateTaskStatus({{ $task->id }}, 'on_hold'), updateTaskStatus({{ $task->id }}, 'done'), updateTaskStatus({{ $task->id }}, 'archived')"
+                                     wire:target="updateTaskStatus({{ $task->id }}, 'on_hold'), updateTaskStatus({{ $task->id }}, 'new'), updateTaskStatus({{ $task->id }}, 'on_progress'), updateTaskStatus({{ $task->id }}, 'done'), updateTaskStatus({{ $task->id }}, 'archived')"
                                      class="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-xl p-3 shadow-2xs hover:border-zinc-300 dark:hover:border-zinc-700 transition-all group flex flex-col gap-2 relative overflow-hidden">
                                     
                                     <!-- Processing Loading Progress Bar -->
                                     <div wire:loading 
-                                         wire:target="updateTaskStatus({{ $task->id }}, 'new'), updateTaskStatus({{ $task->id }}, 'on_progress'), updateTaskStatus({{ $task->id }}, 'on_hold'), updateTaskStatus({{ $task->id }}, 'done'), updateTaskStatus({{ $task->id }}, 'archived')" 
+                                         wire:target="updateTaskStatus({{ $task->id }}, 'on_hold'), updateTaskStatus({{ $task->id }}, 'new'), updateTaskStatus({{ $task->id }}, 'on_progress'), updateTaskStatus({{ $task->id }}, 'done'), updateTaskStatus({{ $task->id }}, 'archived')" 
                                          class="absolute top-0 left-0 right-0 h-1 bg-indigo-500 rounded-t-xl animate-pulse"></div>
                                     <!-- Title & Actions -->
                                     <div class="flex items-start justify-between gap-2">
@@ -759,6 +759,14 @@ new class extends Component
                                         <span class="text-[10px] text-zinc-400 font-mono">{{ $task->created_at->diffForHumans() }}</span>
 
                                         <div class="flex items-center gap-1">
+                                            @if($col['id'] !== 'on_hold')
+                                                <button wire:click="updateTaskStatus({{ $task->id }}, 'on_hold')" 
+                                                        wire:loading.attr="disabled"
+                                                        class="p-1 rounded hover:bg-rose-500/10 text-rose-500 hover:scale-110 active:scale-95 transition-all cursor-pointer disabled:opacity-50" 
+                                                        title="Move to On Hold">
+                                                    <flux:icon name="pause-circle" class="size-3" wire:loading.class="animate-spin" wire:target="updateTaskStatus({{ $task->id }}, 'on_hold')" />
+                                                </button>
+                                            @endif
                                             @if($col['id'] !== 'new')
                                                 <button wire:click="updateTaskStatus({{ $task->id }}, 'new')" 
                                                         wire:loading.attr="disabled"
@@ -773,14 +781,6 @@ new class extends Component
                                                         class="p-1 rounded hover:bg-amber-500/10 text-amber-500 hover:scale-110 active:scale-95 transition-all cursor-pointer disabled:opacity-50" 
                                                         title="Move to On Progress">
                                                     <flux:icon name="arrow-path" class="size-3" wire:loading.class="animate-spin" wire:target="updateTaskStatus({{ $task->id }}, 'on_progress')" />
-                                                </button>
-                                            @endif
-                                            @if($col['id'] !== 'on_hold')
-                                                <button wire:click="updateTaskStatus({{ $task->id }}, 'on_hold')" 
-                                                        wire:loading.attr="disabled"
-                                                        class="p-1 rounded hover:bg-rose-500/10 text-rose-500 hover:scale-110 active:scale-95 transition-all cursor-pointer disabled:opacity-50" 
-                                                        title="Move to On Hold">
-                                                    <flux:icon name="pause-circle" class="size-3" wire:loading.class="animate-spin" wire:target="updateTaskStatus({{ $task->id }}, 'on_hold')" />
                                                 </button>
                                             @endif
                                             @if($col['id'] !== 'done')
@@ -920,6 +920,12 @@ new class extends Component
                                     <span class="text-[10px] text-purple-600 dark:text-purple-400 font-mono font-medium">Archived</span>
                                     <div class="flex items-center gap-1.5">
                                         <span class="text-[10px] text-zinc-400">Restore to:</span>
+                                        <button wire:click="updateTaskStatus({{ $task->id }}, 'on_hold')" 
+                                                wire:loading.attr="disabled"
+                                                class="px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 transition-colors cursor-pointer flex items-center gap-1 disabled:opacity-50" 
+                                                title="Restore to On Hold">
+                                            <span>On Hold 🟠</span>
+                                        </button>
                                         <button wire:click="updateTaskStatus({{ $task->id }}, 'new')" 
                                                 wire:loading.attr="disabled"
                                                 class="px-2 py-0.5 rounded text-[10px] font-semibold bg-sky-500/10 text-sky-600 dark:text-sky-400 hover:bg-sky-500/20 transition-colors cursor-pointer flex items-center gap-1 disabled:opacity-50" 
@@ -965,9 +971,9 @@ new class extends Component
                                            {{ $task->status === 'on_hold' ? 'bg-rose-500/10 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300/90 border-rose-200/80 dark:border-rose-900/40' : '' }}
                                            {{ $task->status === 'done' ? 'bg-emerald-500/10 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300/90 border-emerald-200/80 dark:border-emerald-900/40' : '' }}
                                            {{ $task->status === 'archived' ? 'bg-purple-500/10 text-purple-800 dark:bg-purple-950/40 dark:text-purple-300/90 border-purple-200/80 dark:border-purple-900/40' : '' }}">
+                                <option value="on_hold" {{ $task->status === 'on_hold' ? 'selected' : '' }}>On Hold 🟠</option>
                                 <option value="new" {{ $task->status === 'new' ? 'selected' : '' }}>New 🔵</option>
                                 <option value="on_progress" {{ $task->status === 'on_progress' ? 'selected' : '' }}>On Progress 🟡</option>
-                                <option value="on_hold" {{ $task->status === 'on_hold' ? 'selected' : '' }}>On Hold 🟠</option>
                                 <option value="done" {{ $task->status === 'done' ? 'selected' : '' }}>Done 🟢</option>
                                 <option value="archived" {{ $task->status === 'archived' ? 'selected' : '' }}>Archived 📦</option>
                             </select>
