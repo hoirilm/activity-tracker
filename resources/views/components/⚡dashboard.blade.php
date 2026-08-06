@@ -349,7 +349,9 @@ new class extends Component
             $search = '%' . mb_strtolower(trim($this->taskSearch)) . '%';
             $query->where(function ($q) use ($search) {
                 $q->whereRaw('LOWER(title) LIKE ?', [$search])
-                  ->orWhereHas('project', fn($pq) => $pq->whereRaw('LOWER(name) LIKE ?', [$search]));
+                  ->orWhereRaw('LOWER(description) LIKE ?', [$search])
+                  ->orWhereHas('project', fn($pq) => $pq->whereRaw('LOWER(name) LIKE ?', [$search]))
+                  ->orWhereHas('labels', fn($lq) => $lq->whereRaw('LOWER(name) LIKE ?', [$search]));
             });
         }
 

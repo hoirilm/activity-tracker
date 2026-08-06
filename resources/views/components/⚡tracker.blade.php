@@ -126,8 +126,9 @@ new class extends Component
             $query->whereDate('start_time', '<=', $this->endDate);
         }
 
-        if (!empty($this->searchQuery)) {
-            $query->where('detail', 'ilike', '%' . $this->searchQuery . '%');
+        if (!empty(trim($this->searchQuery))) {
+            $term = '%' . mb_strtolower(trim($this->searchQuery)) . '%';
+            $query->whereRaw('LOWER(detail) LIKE ?', [$term]);
         }
 
         $dateQuery = clone $query;

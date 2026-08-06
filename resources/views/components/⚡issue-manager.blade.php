@@ -27,8 +27,8 @@ new class extends Component
             ->when($this->statusFilter !== 'all', function ($query) {
                 $query->where('status', $this->statusFilter);
             })
-            ->when($this->search, function ($query) {
-                $term = '%' . strtolower($this->search) . '%';
+            ->when(trim($this->search), function ($query) {
+                $term = '%' . mb_strtolower(trim($this->search)) . '%';
                 
                 // Extract digits if searching for something like TKT-0005, TKT-5, or 0005
                 $idSearch = null;
@@ -37,16 +37,16 @@ new class extends Component
                 }
 
                 $query->where(function ($q) use ($term, $idSearch) {
-                    $q->whereRaw('lower(title) like ?', [$term])
-                      ->orWhereRaw('lower(description) like ?', [$term]);
+                    $q->whereRaw('LOWER(title) LIKE ?', [$term])
+                      ->orWhereRaw('LOWER(description) LIKE ?', [$term]);
                     
                     if ($idSearch) {
                         $q->orWhere('id', $idSearch);
                     }
 
                     $q->orWhereHas('user', function ($uq) use ($term) {
-                        $uq->whereRaw('lower(name) like ?', [$term])
-                          ->orWhereRaw('lower(email) like ?', [$term]);
+                        $uq->whereRaw('LOWER(name) LIKE ?', [$term])
+                          ->orWhereRaw('LOWER(email) LIKE ?', [$term]);
                     });
                 });
             })

@@ -91,12 +91,16 @@ new class extends Component
             $query->where('project_id', $this->filterProject);
         }
 
-        if (!empty($this->searchTask)) {
-            $query->where(function ($q) {
-                $q->where('title', 'like', '%' . $this->searchTask . '%')
-                  ->orWhere('description', 'like', '%' . $this->searchTask . '%')
-                  ->orWhereHas('labels', function ($lq) {
-                      $lq->where('name', 'like', '%' . $this->searchTask . '%');
+        if (!empty(trim($this->searchTask))) {
+            $term = '%' . mb_strtolower(trim($this->searchTask)) . '%';
+            $query->where(function ($q) use ($term) {
+                $q->whereRaw('LOWER(title) LIKE ?', [$term])
+                  ->orWhereRaw('LOWER(description) LIKE ?', [$term])
+                  ->orWhereHas('labels', function ($lq) use ($term) {
+                      $lq->whereRaw('LOWER(name) LIKE ?', [$term]);
+                  })
+                  ->orWhereHas('project', function ($pq) use ($term) {
+                      $pq->whereRaw('LOWER(name) LIKE ?', [$term]);
                   });
             });
         }
@@ -136,12 +140,16 @@ new class extends Component
             $query->whereNull('due_at');
         }
 
-        if (!empty($this->searchTask)) {
-            $query->where(function ($q) {
-                $q->where('title', 'like', '%' . $this->searchTask . '%')
-                  ->orWhere('description', 'like', '%' . $this->searchTask . '%')
-                  ->orWhereHas('labels', function ($lq) {
-                      $lq->where('name', 'like', '%' . $this->searchTask . '%');
+        if (!empty(trim($this->searchTask))) {
+            $term = '%' . mb_strtolower(trim($this->searchTask)) . '%';
+            $query->where(function ($q) use ($term) {
+                $q->whereRaw('LOWER(title) LIKE ?', [$term])
+                  ->orWhereRaw('LOWER(description) LIKE ?', [$term])
+                  ->orWhereHas('labels', function ($lq) use ($term) {
+                      $lq->whereRaw('LOWER(name) LIKE ?', [$term]);
+                  })
+                  ->orWhereHas('project', function ($pq) use ($term) {
+                      $pq->whereRaw('LOWER(name) LIKE ?', [$term]);
                   });
             });
         }

@@ -146,3 +146,25 @@ test('user can set task deadline and filter by deadline', function () {
         ->assertSee('Overdue Task')
         ->assertDontSee('Task With Deadline');
 });
+
+test('task search in manage menu is case-insensitive', function () {
+    $user = User::factory()->create();
+
+    Task::create([
+        'user_id' => $user->id,
+        'title' => 'Develop QRIS Integration',
+        'description' => 'Implement QRIS API endpoints',
+        'status' => 'new',
+    ]);
+
+    Livewire::actingAs($user)
+        ->test('manage')
+        ->set('searchTask', 'qris')
+        ->assertSee('Develop QRIS Integration')
+        ->set('searchTask', 'QRIS')
+        ->assertSee('Develop QRIS Integration')
+        ->set('searchTask', 'Qris')
+        ->assertSee('Develop QRIS Integration')
+        ->set('searchTask', 'NONEXISTENT_KEYWORD')
+        ->assertDontSee('Develop QRIS Integration');
+});

@@ -27,11 +27,11 @@ new class extends Component
             ->when($this->roleFilter !== 'all', function ($query) {
                 $query->where('is_admin', $this->roleFilter === 'admin');
             })
-            ->when($this->search, function ($query) {
-                $term = '%' . strtolower($this->search) . '%';
+            ->when(trim($this->search), function ($query) {
+                $term = '%' . mb_strtolower(trim($this->search)) . '%';
                 $query->where(function ($q) use ($term) {
-                    $q->whereRaw('lower(name) like ?', [$term])
-                      ->orWhereRaw('lower(email) like ?', [$term]);
+                    $q->whereRaw('LOWER(name) LIKE ?', [$term])
+                      ->orWhereRaw('LOWER(email) LIKE ?', [$term]);
                 });
             })
             ->orderBy('name', 'asc')
