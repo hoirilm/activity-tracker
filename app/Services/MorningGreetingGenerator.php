@@ -9,31 +9,31 @@ use App\Models\User;
 class MorningGreetingGenerator
 {
     /**
-     * Curated motivational quotes and encouraging thoughts in Indonesian.
+     * Curated motivational quotes and encouraging thoughts in English.
      */
     protected static array $motivationalQuotes = [
-        'Fokus pada proses, hasil terbaik akan menyusul dengan sendirinya.',
-        'Langkah kecil hari ini adalah awal dari pencapaian besar besok.',
-        'Disiplin adalah jembatan antara tujuan dan pencapaian.',
-        'Selesaikan hal penting dulu, baru hal yang mendesak.',
-        'Setiap hari adalah kesempatan baru untuk menjadi lebih baik dari kemarin.',
-        'Jangan menunggu kesempatan datang, ciptakanlah kesempatan itu.',
-        'Konsistensi adalah kunci utama keberhasilan.',
-        'Kerja keras dan kerja cerdas membawa hasil terbaik.',
-        'Tantangan hari ini adalah peluang untuk tumbuh dan berkembang.',
-        'Tetap tenang, fokus pada solusi, dan selesaikan satu per satu.',
+        'Focus on the process, the best results will follow naturally.',
+        'Small steps today lead to big achievements tomorrow.',
+        'Discipline is the bridge between goals and accomplishment.',
+        'Focus on what is important first, then what is urgent.',
+        'Every day is a new opportunity to be better than yesterday.',
+        'Don\'t wait for opportunity to come, create it.',
+        'Consistency is the key to success.',
+        'Hard work and smart work bring the best results.',
+        'Today\'s challenges are opportunities to grow and develop.',
+        'Stay calm, focus on solutions, and accomplish one task at a time.',
     ];
 
     /**
-     * Varied greeting titles.
+     * Varied greeting titles in English.
      */
     protected static array $titleTemplates = [
-        '🌞 Semangat Pagi, :name!',
-        '🌅 Selamat Pagi & Have a Great Day, :name!',
-        '🚀 Siap Menaklukkan Hari Ini, :name?',
-        '✨ Awal Hari Yang Baru, :name!',
-        '☀️ Fajar Baru, Semangat Baru, :name!',
-        '💡 Inspirasi Pagi untuk :name',
+        '🌞 Good Morning, :name!',
+        '🌅 Good Morning & Have a Great Day, :name!',
+        '🚀 Ready to Conquer Today, :name?',
+        '✨ A New Day Begins, :name!',
+        '☀️ New Dawn, New Energy, :name!',
+        '💡 Morning Inspiration for :name',
     ];
 
     /**
@@ -43,7 +43,7 @@ class MorningGreetingGenerator
      */
     public function generateForUser(User $user): array
     {
-        $firstName = explode(' ', trim($user->name))[0] ?: 'Teman';
+        $firstName = explode(' ', trim($user->name))[0] ?: 'Friend';
 
         // Select a title template
         $titleTemplate = static::$titleTemplates[array_rand(static::$titleTemplates)];
@@ -51,7 +51,7 @@ class MorningGreetingGenerator
 
         $bodyParts = [];
 
-        // 1. Contextual summary (tasks & issues)
+        // 1. Contextual summary (tasks & issues) formatted as bullet points
         $activeTasks = Task::where('user_id', $user->id)
             ->whereIn('status', [Task::STATUS_NEW, Task::STATUS_ON_PROGRESS, Task::STATUS_ON_HOLD])
             ->get();
@@ -62,28 +62,21 @@ class MorningGreetingGenerator
         $totalActiveCount = $activeTasks->count();
 
         if ($totalActiveCount > 0) {
+            $taskBreakdown = [];
             if ($onProgressCount > 0) {
-                $details = ["{$onProgressCount} sedang berjalan"];
-                if ($newCount > 0) {
-                    $details[] = "{$newCount} baru";
-                }
-                if ($onHoldCount > 0) {
-                    $details[] = "{$onHoldCount} on hold";
-                }
-                $detailsStr = implode(', ', $details);
-                $bodyParts[] = "📋 Info Hari Ini: Kamu punya {$totalActiveCount} task aktif ({$detailsStr}).";
-            } elseif ($newCount > 0) {
-                $details = ["{$newCount} task baru"];
-                if ($onHoldCount > 0) {
-                    $details[] = "{$onHoldCount} on hold";
-                }
-                $detailsStr = implode(', ', $details);
-                $bodyParts[] = "📋 Info Hari Ini: Kamu punya {$totalActiveCount} task aktif ({$detailsStr}).";
-            } else {
-                $bodyParts[] = "📋 Info Hari Ini: Kamu punya {$totalActiveCount} task aktif ({$onHoldCount} task on hold).";
+                $taskBreakdown[] = "• {$onProgressCount} in progress";
             }
+            if ($newCount > 0) {
+                $taskBreakdown[] = "• {$newCount} new";
+            }
+            if ($onHoldCount > 0) {
+                $taskBreakdown[] = "• {$onHoldCount} on hold";
+            }
+
+            $taskLabel = $totalActiveCount === 1 ? 'active task' : 'active tasks';
+            $bodyParts[] = "📋 Today's Overview:\nYou have {$totalActiveCount} {$taskLabel}:\n" . implode("\n", $taskBreakdown);
         } else {
-            $bodyParts[] = '📋 Info Hari Ini: Tidak ada task pending. Waktu yang pas untuk merencanakan target baru!';
+            $bodyParts[] = "📋 Today's Overview:\nNo active tasks pending. Great time to plan new goals!";
         }
 
         // Check open issues if Issue model exists
@@ -93,16 +86,17 @@ class MorningGreetingGenerator
                 ->count();
 
             if ($openIssuesCount > 0) {
-                $bodyParts[] = "⚠️ Ada {$openIssuesCount} issue terbuka yang perlu dipantau.";
+                $issueLabel = $openIssuesCount === 1 ? 'issue' : 'issues';
+                $bodyParts[] = "⚠️ Open Issues:\n• {$openIssuesCount} {$issueLabel} requiring monitoring";
             }
         }
 
         // 2. Motivational quote
         $quote = static::$motivationalQuotes[array_rand(static::$motivationalQuotes)];
-        $bodyParts[] = "💡 Motivasi: \"{$quote}\"";
+        $bodyParts[] = "💡 Motivation:\n\"{$quote}\"";
 
         // 3. Energetic closing note
-        $bodyParts[] = 'Selamat beraktivitas dan semoga harimu produktif! 🔥';
+        $bodyParts[] = 'Have a great day and stay productive! 🔥';
 
         return [
             'title' => $title,
@@ -111,3 +105,4 @@ class MorningGreetingGenerator
         ];
     }
 }
+

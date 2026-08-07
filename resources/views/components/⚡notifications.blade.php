@@ -109,8 +109,8 @@ new class extends Component
                         </div>
 
                         <!-- Banner Title & Body -->
-                        <h4 class="text-xs font-semibold text-zinc-800 dark:text-zinc-200 mb-0.5">{{ $notif->title }}</h4>
-                        <p class="text-[11px] leading-snug text-zinc-500 dark:text-zinc-400">{{ $notif->body }}</p>
+                        <h4 class="text-xs font-semibold text-zinc-800 dark:text-zinc-200 mb-1">{{ $notif->title }}</h4>
+                        <div class="text-[11px] leading-relaxed text-zinc-500 dark:text-zinc-400 whitespace-pre-line">{{ $notif->body }}</div>
 
                         <!-- Action Button (Bottom) -->
                         @if(!$notif->read_at)

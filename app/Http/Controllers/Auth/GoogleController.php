@@ -42,8 +42,8 @@ class GoogleController extends Controller
                 ]);
 
                 $user->notifications()->create([
-                    'title' => '👋 Selamat Datang, '.$user->name.'!',
-                    'body' => 'Selamat datang di aplikasi kami! Kami senang Anda bergabung.',
+                    'title' => '👋 Welcome, '.$user->name.'!',
+                    'body' => 'Welcome to Activity Tracker! We are excited to have you on board.',
                     'type' => 'success',
                 ]);
             }

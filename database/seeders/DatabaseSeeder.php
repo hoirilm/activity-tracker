@@ -155,26 +155,26 @@ class DatabaseSeeder extends Seeder
         // 6. Seed Notifications
         $notificationsData = [
             [
-                'title' => '👋 Selamat Datang di Activity Tracker!',
-                'body' => 'Sistem pemantauan aktivitas Anda sudah siap digunakan. Mulai catat tugas harian Anda!',
+                'title' => '👋 Welcome to Activity Tracker!',
+                'body' => "Your activity tracking system is ready.\n• Start logging your daily tasks\n• Monitor your productivity metrics easily!",
                 'type' => 'success',
                 'read_at' => Carbon::now()->subDays(2),
             ],
             [
-                'title' => '📊 Laporan Mingguan Siap',
-                'body' => 'Anda telah menyelesaikan 24 jam aktivitas kerja minggu ini. Bagus sekali!',
+                'title' => '📊 Weekly Report Ready',
+                'body' => 'You have logged 24 hours of work activity this week. Great job!',
                 'type' => 'info',
                 'read_at' => null, // Unread
             ],
             [
-                'title' => '⚡ Pengingat Aktivitas Berjalan',
-                'body' => 'Aktivitas "Refactoring Livewire real-time tracking session" sedang berjalan lebih dari 30 menit.',
+                'title' => '⚡ Active Session Reminder',
+                'body' => 'Activity "Refactoring Livewire real-time tracking session" has been running for over 30 minutes.',
                 'type' => 'warning',
                 'read_at' => null, // Unread
             ],
             [
-                'title' => '🚀 Pembaruan Sistem V2.4 Released',
-                'body' => 'Fitur indeks database baru dan peningkatan kecepatan analisa telah diterapkan.',
+                'title' => '🚀 System Update V2.4 Released',
+                'body' => "New performance enhancements applied:\n• Database index optimizations\n• Faster analytics reporting",
                 'type' => 'success',
                 'read_at' => Carbon::now()->subHours(5),
             ],

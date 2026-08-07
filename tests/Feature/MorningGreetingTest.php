@@ -20,9 +20,10 @@ test('morning greeting generator creates dynamic greeting with pending task summ
     $greeting = $generator->generateForUser($user);
 
     expect($greeting['title'])->toContain('Budi');
-    expect($greeting['body'])->toContain('Info Hari Ini');
-    expect($greeting['body'])->toContain('Motivasi');
-    expect($greeting['body'])->toContain('1 task aktif');
+    expect($greeting['body'])->toContain("Today's Overview");
+    expect($greeting['body'])->toContain('Motivation');
+    expect($greeting['body'])->toContain('1 active task');
+    expect($greeting['body'])->toContain('• 1 in progress');
 });
 
 test('send morning greetings command creates notifications for all users', function () {
@@ -37,5 +38,5 @@ test('send morning greetings command creates notifications for all users', funct
 
     $notif = Notification::where('user_id', $user1->id)->first();
     expect($notif->title)->toContain('User');
-    expect($notif->body)->toContain('Motivasi');
+    expect($notif->body)->toContain('Motivation');
 });
