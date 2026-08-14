@@ -245,3 +245,35 @@ test('user can add and delete checklist items directly in detail modal', functio
     expect($task->checklists()->count())->toBe(0);
 });
 
+test('user can reorder checklist items in create task form and detail modal', function () {
+    $user = User::factory()->create();
+
+    // 1. Reorder in create task array
+    Livewire::actingAs($user)
+        ->test('manage')
+        ->set('newTaskChecklistInput', 'point A')
+        ->call('addChecklistItemToNewTask')
+        ->set('newTaskChecklistInput', 'point B')
+        ->call('addChecklistItemToNewTask')
+        ->call('reorderNewTaskChecklists', 0, 1)
+        ->assertSet('newTaskChecklists', ['point B', 'point A']);
+
+    // 2. Reorder in detail modal database positions
+    $task = Task::create([
+        'user_id' => $user->id,
+        'title' => 'Task for Reordering',
+        'status' => 'new',
+    ]);
+
+    $item1 = $task->checklists()->create(['title' => 'Item 1', 'position' => 0]);
+    $item2 = $task->checklists()->create(['title' => 'Item 2', 'position' => 1]);
+
+    Livewire::actingAs($user)
+        ->test('manage')
+        ->call('showTaskDetail', $task->id)
+        ->call('reorderDetailChecklistItems', $item1->id, $item2->id);
+
+    expect($item1->fresh()->position)->toBe(1);
+    expect($item2->fresh()->position)->toBe(0);
+});
+

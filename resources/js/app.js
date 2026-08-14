@@ -1,1 +1,3 @@
-// Entry point
+import Sortable from 'sortablejs';
+
+window.Sortable = Sortable;

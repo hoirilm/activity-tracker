@@ -115,6 +115,45 @@ new class extends Component
         }
     }
 
+    public function reorderNewTaskChecklists(int $fromIndex, int $toIndex)
+    {
+        if (! isset($this->newTaskChecklists[$fromIndex]) || ! isset($this->newTaskChecklists[$toIndex])) {
+            return;
+        }
+        $item = array_splice($this->newTaskChecklists, $fromIndex, 1);
+        array_splice($this->newTaskChecklists, $toIndex, 0, $item);
+    }
+
+    public function reorderDetailChecklistItems(int $fromId, int $toId)
+    {
+        if (! $this->viewingTaskId) return;
+
+        $items = \App\Models\TaskChecklist::where('task_id', $this->viewingTaskId)->orderBy('position')->orderBy('id')->get();
+        
+        $fromIndex = $items->search(fn($item) => $item->id == $fromId);
+        $toIndex = $items->search(fn($item) => $item->id == $toId);
+
+        if ($fromIndex === false || $toIndex === false || $fromIndex === $toIndex) return;
+
+        $movedItem = $items->splice($fromIndex, 1)->first();
+        $items->splice($toIndex, 0, [$movedItem]);
+
+        foreach ($items as $pos => $item) {
+            $item->update(['position' => $pos]);
+        }
+    }
+
+    public function saveChecklistOrder(array $orderedIds)
+    {
+        if (! $this->viewingTaskId) return;
+
+        foreach ($orderedIds as $position => $id) {
+            \App\Models\TaskChecklist::where('id', $id)
+                ->where('task_id', $this->viewingTaskId)
+                ->update(['position' => $position]);
+        }
+    }
+
     public function mount()
     {
         if (request()->query('tab')) {
@@ -1363,17 +1402,38 @@ new class extends Component
                     </div>
 
                     @if(!empty($newTaskChecklists))
-                        <div class="space-y-1 max-h-36 overflow-y-auto p-1">
+                        <div wire:key="new-task-checklist-container-{{ count($newTaskChecklists) }}"
+                             wire:ignore
+                             class="space-y-1.5 max-h-40 overflow-y-auto p-1 select-none"
+                             x-data="{ 
+                                 init() {
+                                     let el = $el;
+                                     if (window.Sortable && !el._sortable) {
+                                         el._sortable = new Sortable(el, {
+                                             animation: 150,
+                                             handle: '.drag-handle',
+                                             ghostClass: 'opacity-30',
+                                             chosenClass: 'border-indigo-500',
+                                             onEnd: (evt) => {
+                                                 if (evt.oldIndex !== undefined && evt.newIndex !== undefined && evt.oldIndex !== evt.newIndex) {
+                                                     $wire.reorderNewTaskChecklists(evt.oldIndex, evt.newIndex);
+                                                 }
+                                             }
+                                         });
+                                     }
+                                 }
+                             }">
                             @foreach($newTaskChecklists as $idx => $pointTitle)
-                                <div class="flex items-center justify-between gap-2 p-2 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200/60 dark:border-zinc-800/60 text-xs">
-                                    <div class="flex items-center gap-2 min-w-0">
-                                        <flux:icon name="list-bullet" class="size-3.5 text-zinc-400 shrink-0" />
-                                        <span class="text-zinc-800 dark:text-zinc-200 truncate">{{ $pointTitle }}</span>
+                                <div wire:key="new-checklist-point-{{ md5($pointTitle) }}"
+                                     class="group flex items-center justify-between gap-2 p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-800/80 text-xs transition-all hover:border-indigo-500/50">
+                                    <div class="flex items-center gap-2 min-w-0 flex-1">
+                                        <flux:icon name="bars-3" class="drag-handle size-3.5 text-zinc-400 opacity-60 group-hover:opacity-100 shrink-0 cursor-grab active:cursor-grabbing" />
+                                        <span class="text-zinc-800 dark:text-zinc-200 truncate font-medium select-none">{{ $pointTitle }}</span>
                                     </div>
                                     <button type="button" 
                                             wire:click="removeNewTaskChecklistItem({{ $idx }})"
-                                            class="text-zinc-400 hover:text-red-500 p-0.5 rounded transition-colors cursor-pointer shrink-0">
-                                        <flux:icon name="x-mark" class="size-3" />
+                                            class="text-zinc-400 hover:text-red-500 p-1 rounded-md hover:bg-red-500/10 transition-colors cursor-pointer shrink-0">
+                                        <flux:icon name="x-mark" class="size-3.5" />
                                     </button>
                                 </div>
                             @endforeach
@@ -1832,7 +1892,7 @@ new class extends Component
 
                     <!-- Trello-Style Checklist Section Card -->
                     @php
-                        $checklists = $task->checklists;
+                        $checklists = $task->checklists()->orderBy('position')->orderBy('id')->get();
                         $stats = $task->checklist_stats;
                     @endphp
                     <div class="p-3.5 sm:p-4 rounded-2xl bg-zinc-50/70 dark:bg-zinc-950/70 border border-zinc-200/80 dark:border-zinc-800/80 space-y-3 text-left">
@@ -1867,24 +1927,52 @@ new class extends Component
                         @endif
 
                         <!-- Checklist Items List -->
-                        <div class="space-y-1.5 pt-1">
+                        <div wire:key="detail-checklist-container-{{ $task->id }}-{{ $checklists->count() }}"
+                             wire:ignore
+                             class="space-y-1.5 pt-1 select-none"
+                             x-data="{
+                                 init() {
+                                     let el = $el;
+                                     if (window.Sortable && !el._sortable) {
+                                         el._sortable = new Sortable(el, {
+                                             animation: 150,
+                                             handle: '.drag-handle',
+                                             ghostClass: 'opacity-30',
+                                             chosenClass: 'border-indigo-500',
+                                             onEnd: (evt) => {
+                                                 if (evt.oldIndex !== undefined && evt.newIndex !== undefined && evt.oldIndex !== evt.newIndex) {
+                                                     let order = Array.from(el.querySelectorAll('[data-checklist-id]')).map(item => parseInt(item.getAttribute('data-checklist-id')));
+                                                     if (order.length > 0) {
+                                                         $wire.saveChecklistOrder(order);
+                                                     }
+                                                 }
+                                             }
+                                         });
+                                     }
+                                 }
+                             }">
                             @forelse($checklists as $item)
                                 @if(! $hideCheckedItems || ! $item->is_completed)
                                     <div wire:key="checklist-item-{{ $item->id }}"
-                                         class="group flex items-center justify-between gap-3 p-2.5 rounded-xl border transition-all duration-200 hover:border-zinc-300 dark:hover:border-zinc-700
+                                         data-checklist-id="{{ $item->id }}"
+                                         class="group flex items-center justify-between gap-3 p-2.5 rounded-xl border transition-all duration-200 hover:border-indigo-500/50
                                                 {{ $item->is_completed ? 'bg-zinc-100/60 dark:bg-zinc-900/40 border-zinc-200/60 dark:border-zinc-800/60' : 'bg-white dark:bg-zinc-950 border-zinc-200/80 dark:border-zinc-800/80' }}">
                                         
-                                        <label class="flex items-center gap-2.5 flex-1 min-w-0 cursor-pointer select-none">
-                                            <input type="checkbox"
-                                                   wire:click="toggleChecklistItem({{ $item->id }})"
-                                                   {{ $item->is_completed ? 'checked' : '' }}
-                                                   class="size-4 rounded border-zinc-300 dark:border-zinc-700 text-emerald-600 focus:ring-emerald-500 cursor-pointer transition-all">
+                                        <div class="flex items-center gap-2.5 flex-1 min-w-0">
+                                            <flux:icon name="bars-3" class="drag-handle size-3.5 text-zinc-400 opacity-40 group-hover:opacity-100 shrink-0 cursor-grab active:cursor-grabbing" />
                                             
-                                            <span class="text-xs transition-all duration-200 break-words flex-1
-                                                         {{ $item->is_completed ? 'line-through text-zinc-400 dark:text-zinc-500 font-normal' : 'text-zinc-800 dark:text-zinc-200 font-medium' }}">
-                                                {{ $item->title }}
-                                            </span>
-                                        </label>
+                                            <label class="flex items-center gap-2.5 flex-1 min-w-0 cursor-pointer select-none">
+                                                <input type="checkbox"
+                                                       wire:click="toggleChecklistItem({{ $item->id }})"
+                                                       {{ $item->is_completed ? 'checked' : '' }}
+                                                       class="size-4 rounded border-zinc-300 dark:border-zinc-700 text-emerald-600 focus:ring-emerald-500 cursor-pointer transition-all">
+                                                
+                                                <span class="text-xs transition-all duration-200 break-words flex-1
+                                                             {{ $item->is_completed ? 'line-through text-zinc-400 dark:text-zinc-500 font-normal' : 'text-zinc-800 dark:text-zinc-200 font-medium' }}">
+                                                    {{ $item->title }}
+                                                </span>
+                                            </label>
+                                        </div>
 
                                         <button type="button" 
                                                 wire:click="deleteChecklistItem({{ $item->id }})"
@@ -1903,14 +1991,14 @@ new class extends Component
                         <form wire:submit.prevent="addChecklistItemToDetail" class="flex items-center gap-2 pt-1">
                             <input type="text" 
                                    wire:model="newDetailChecklistInput" 
-                                   placeholder="Add an item..." 
+                                   placeholder="Add a checklist point (e.g. update db)..." 
                                    autocomplete="off"
                                    class="h-8 px-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500 flex-1">
                             
                             <button type="submit" 
                                     class="h-8 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold cursor-pointer active:scale-95 transition-all flex items-center gap-1 shrink-0">
                                 <flux:icon name="plus" class="size-3 text-white" />
-                                <span>Add an item</span>
+                                <span>Add Point</span>
                             </button>
                         </form>
                     </div>
