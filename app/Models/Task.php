@@ -107,6 +107,29 @@ class Task extends Model
         return $this->belongsToMany(Label::class);
     }
 
+    public function checklists(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(TaskChecklist::class)->orderBy('position')->orderBy('id');
+    }
+
+    public function getChecklistStatsAttribute(): ?array
+    {
+        $total = $this->checklists->count();
+        if ($total === 0) {
+            return null;
+        }
+
+        $completed = $this->checklists->where('is_completed', true)->count();
+        $percent = (int) round(($completed / $total) * 100);
+
+        return [
+            'total' => $total,
+            'completed' => $completed,
+            'percent' => $percent,
+            'is_all_completed' => $completed === $total,
+        ];
+    }
+
     public function activities()
     {
         return $this->hasMany(Activity::class);

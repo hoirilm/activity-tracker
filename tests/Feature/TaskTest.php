@@ -189,3 +189,59 @@ test('user can open task detail modal and switch to edit task', function () {
         ->assertDispatched('close-modal', name: 'detail-task-modal');
 });
 
+test('user can create task with checklist items and toggle completion', function () {
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('manage')
+        ->set('taskTitle', 'Task with Checklist')
+        ->set('newTaskChecklistInput', 'update db')
+        ->call('addChecklistItemToNewTask')
+        ->set('newTaskChecklistInput', 'update processor core')
+        ->call('addChecklistItemToNewTask')
+        ->call('addTask')
+        ->assertHasNoErrors();
+
+    $task = $user->tasks()->first();
+    expect($task->checklists)->toHaveCount(2);
+    expect($task->checklist_stats['total'])->toBe(2);
+    expect($task->checklist_stats['completed'])->toBe(0);
+    expect($task->checklist_stats['percent'])->toBe(0);
+
+    $checklist1 = $task->checklists->first();
+
+    Livewire::actingAs($user)
+        ->test('manage')
+        ->call('toggleChecklistItem', $checklist1->id);
+
+    $task->refresh();
+    expect($task->checklist_stats['completed'])->toBe(1);
+    expect($task->checklist_stats['percent'])->toBe(50);
+});
+
+test('user can add and delete checklist items directly in detail modal', function () {
+    $user = User::factory()->create();
+    $task = Task::create([
+        'user_id' => $user->id,
+        'title' => 'Task for Detail Checklist',
+        'status' => 'new',
+    ]);
+
+    Livewire::actingAs($user)
+        ->test('manage')
+        ->call('showTaskDetail', $task->id)
+        ->set('newDetailChecklistInput', 'sub-item 1')
+        ->call('addChecklistItemToDetail')
+        ->assertSee('sub-item 1');
+
+    $item = $task->checklists()->first();
+    expect($item->title)->toBe('sub-item 1');
+
+    Livewire::actingAs($user)
+        ->test('manage')
+        ->call('showTaskDetail', $task->id)
+        ->call('deleteChecklistItem', $item->id);
+
+    expect($task->checklists()->count())->toBe(0);
+});
+
