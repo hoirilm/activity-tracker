@@ -168,3 +168,24 @@ test('task search in manage menu is case-insensitive', function () {
         ->set('searchTask', 'NONEXISTENT_KEYWORD')
         ->assertDontSee('Develop QRIS Integration');
 });
+
+test('user can open task detail modal and switch to edit task', function () {
+    $user = User::factory()->create();
+
+    $task = Task::create([
+        'user_id' => $user->id,
+        'title' => 'Detailed Task Test',
+        'description' => 'Important details about this task.',
+        'status' => 'new',
+    ]);
+
+    Livewire::actingAs($user)
+        ->test('manage')
+        ->call('showTaskDetail', $task->id)
+        ->assertSet('viewingTaskId', $task->id)
+        ->assertSee('Detailed Task Test')
+        ->assertSee('Important details about this task.')
+        ->call('editTaskFromDetail')
+        ->assertDispatched('close-modal', name: 'detail-task-modal');
+});
+
