@@ -110,7 +110,9 @@ new class extends Component
 
                         <!-- Banner Title & Body -->
                         <h4 class="text-xs font-semibold text-zinc-800 dark:text-zinc-200 mb-1">{{ $notif->title }}</h4>
-                        <div class="text-[11px] leading-relaxed text-zinc-500 dark:text-zinc-400 whitespace-pre-line">{{ $notif->body }}</div>
+                        <div class="text-[11px] leading-relaxed text-zinc-600 dark:text-zinc-300 space-y-1 overflow-hidden [&_p]:mb-1 [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_code]:bg-zinc-200 dark:[&_code]:bg-zinc-800 [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-[10px] [&_a]:text-indigo-500 [&_a]:underline">
+                            {!! \Illuminate\Support\Str::markdown($notif->body) !!}
+                        </div>
 
                         <!-- Action Button (Bottom) -->
                         @if(!$notif->read_at)
