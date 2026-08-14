@@ -32,6 +32,7 @@ new class extends Component
     public string $filterStatus = 'all';  // 'all', 'new', 'on_progress', 'done', 'on_hold', 'archived'
     public string $filterDeadline = 'all';// 'all', 'overdue', 'due_today', 'due_this_week', 'no_deadline'
     public string $searchTask = '';
+    public string $archiveSearchQuery = '';
     public string $viewMode = 'kanban';    // 'kanban' or 'list'
     public bool $showArchived = false;
 
@@ -194,8 +195,8 @@ new class extends Component
             $query->where('project_id', $this->filterProject);
         }
 
-        if (!empty(trim($this->searchTask))) {
-            $term = '%' . mb_strtolower(trim($this->searchTask)) . '%';
+        if (!empty(trim($this->archiveSearchQuery))) {
+            $term = '%' . mb_strtolower(trim($this->archiveSearchQuery)) . '%';
             $query->where(function ($q) use ($term) {
                 $q->whereRaw('LOWER(title) LIKE ?', [$term])
                   ->orWhereRaw('LOWER(description) LIKE ?', [$term])
@@ -774,23 +775,8 @@ new class extends Component
                 </div>
             </div>
 
-            <!-- Right Controls: View Switcher, Archive Toggle, & Create Task Button -->
+            <!-- Right Controls: View Switcher, Archive Repository, & Add Task Button -->
             <div class="flex items-center gap-2 shrink-0">
-                <!-- Toggle Archive Button (Pure 60 FPS Client-Side Alpine Toggle) -->
-                <button type="button" 
-                        @click="showArchived = !showArchived" 
-                        class="h-9 px-3 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs active:scale-95"
-                        :class="(showArchived || $wire.filterStatus === 'archived') 
-                            ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30 ring-1 ring-purple-500/30' 
-                            : 'bg-zinc-50 dark:bg-zinc-950 text-zinc-600 dark:text-zinc-400 border-zinc-200/80 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-900'"
-                        title="Toggle Archived Tasks Section">
-                    <flux:icon name="archive-box" class="size-3.5" :class="(showArchived || $wire.filterStatus === 'archived') ? 'text-purple-500' : 'text-zinc-400'" />
-                    <span>Archived</span>
-                    <span class="px-1.5 py-0.2 rounded-md text-[10px] font-mono font-bold" :class="(showArchived || $wire.filterStatus === 'archived') ? 'bg-purple-500/20 text-purple-700 dark:text-purple-300' : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400'">
-                        {{ $this->archivedCount }}
-                    </span>
-                </button>
-
                 <!-- View Mode Switcher -->
                 <div class="flex items-center p-0.5 bg-zinc-100 dark:bg-zinc-800/80 rounded-xl border border-zinc-200 dark:border-zinc-700/60">
                     <button wire:click="$set('viewMode', 'kanban')" 
@@ -804,6 +790,20 @@ new class extends Component
                         <flux:icon name="bars-3-bottom-left" class="size-4" />
                     </button>
                 </div>
+
+                <!-- Archive Repository Modal Trigger -->
+                @php $archivedCount = $this->archivedCount; @endphp
+                <flux:modal.trigger name="archived-tasks-modal">
+                    <button type="button" class="cursor-pointer bg-purple-500/10 hover:bg-purple-500/20 text-purple-700 dark:text-purple-300 font-semibold rounded-xl px-3 py-2 text-xs border border-purple-200/80 dark:border-purple-900/40 active:scale-95 transition-all flex items-center gap-1.5 shrink-0">
+                        <flux:icon name="archive-box" class="size-3.5 text-purple-600 dark:text-purple-400" />
+                        <span>Archived</span>
+                        @if($archivedCount > 0)
+                            <span class="px-1.5 py-0.2 text-[10px] font-mono font-bold rounded-full bg-purple-500/20 text-purple-800 dark:text-purple-200">
+                                {{ $archivedCount }}
+                            </span>
+                        @endif
+                    </button>
+                </flux:modal.trigger>
 
                 <!-- Add Task Button Modal Trigger -->
                 <flux:modal.trigger name="create-task-modal">
@@ -1032,130 +1032,7 @@ new class extends Component
                 @endforeach
             </div>
 
-            <!-- Standalone Dedicated Archived Section (Native CSS GPU Grid 60 FPS Transition) -->
-            <div class="grid transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
-                 :class="(showArchived || $wire.filterStatus === 'archived') ? 'grid-rows-[1fr] opacity-100 mt-6' : 'grid-rows-[0fr] opacity-0 mt-0 pointer-events-none'">
-                <div class="overflow-hidden">
-                    @php
-                        $archivedTasks = $this->archivedTasks;
-                    @endphp
-                    <div class="rounded-2xl border border-purple-200/80 dark:border-purple-900/30 bg-purple-50/50 dark:bg-purple-950/15 backdrop-blur-xl p-4 sm:p-5 space-y-4 shadow-sm">
-                        <!-- Header -->
-                        <div class="flex items-center justify-between pb-3 border-b border-purple-200/60 dark:border-purple-900/30">
-                            <div class="flex items-center gap-2.5">
-                                <div class="size-8 rounded-xl bg-purple-500/10 border border-purple-200/60 dark:border-purple-900/40 flex items-center justify-center text-purple-700 dark:text-purple-300/90 shrink-0">
-                                    <flux:icon name="archive-box" class="size-4.5" />
-                                </div>
-                                <div>
-                                    <h3 class="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                                        <span>Archived Tasks Repository</span>
-                                        <span class="text-[11px] font-mono font-semibold px-2.5 py-0.5 rounded-full bg-purple-500/10 text-purple-800 dark:bg-purple-950/40 dark:text-purple-300/90 border border-purple-200/80 dark:border-purple-900/40">
-                                            {{ $archivedTasks->count() }} Tasks
-                                        </span>
-                                    </h3>
-                                    <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Repository for inactive tasks. You can restore them to active status anytime.</p>
-                                </div>
-                            </div>
 
-                            <button type="button" @click="showArchived = false" class="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 p-1.5 rounded-lg transition-colors cursor-pointer" title="Close Archive Section">
-                                <flux:icon name="x-mark" class="size-4" />
-                            </button>
-                        </div>
-
-                    <!-- Archived Tasks Grid -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                        @forelse($archivedTasks as $task)
-                            <flux:modal.trigger name="detail-task-modal">
-                                <div wire:key="archived-card-{{ $task->id }}" 
-                                     wire:loading.class="opacity-50 scale-[0.98] pointer-events-none ring-2 ring-purple-500/40 transition-all duration-200"
-                                     wire:target="updateTaskStatus({{ $task->id }}, 'new'), updateTaskStatus({{ $task->id }}, 'on_progress'), updateTaskStatus({{ $task->id }}, 'done')"
-                                     wire:click="showTaskDetail({{ $task->id }})"
-                                     class="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-xl p-3.5 shadow-2xs flex flex-col justify-between gap-3 group relative overflow-hidden cursor-pointer">
-                                
-                                <!-- Processing Loading Progress Bar -->
-                                <div wire:loading 
-                                     wire:target="updateTaskStatus({{ $task->id }}, 'new'), updateTaskStatus({{ $task->id }}, 'on_progress'), updateTaskStatus({{ $task->id }}, 'done')" 
-                                     class="absolute top-0 left-0 right-0 h-1 bg-purple-500 rounded-t-xl animate-pulse"></div>
-                                <div class="space-y-2">
-                                    <div class="flex items-start justify-between gap-2">
-                                        <h4 class="text-xs font-bold text-zinc-900 dark:text-zinc-100 leading-snug line-clamp-2">{{ $task->title }}</h4>
-                                        
-                                        <div class="flex items-center gap-0.5 shrink-0 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity" @click.stop>
-                                            <flux:modal.trigger name="edit-task-modal">
-                                                <button wire:click="editTask({{ $task->id }})" class="p-1 rounded text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer">
-                                                    <flux:icon name="pencil" class="size-3" />
-                                                </button>
-                                            </flux:modal.trigger>
-                                            <flux:modal.trigger name="delete-task-{{ $task->id }}">
-                                                <button class="p-1 rounded text-red-400 hover:text-red-600 cursor-pointer">
-                                                    <flux:icon name="trash" class="size-3" />
-                                                </button>
-                                            </flux:modal.trigger>
-                                        </div>
-                                    </div>
-
-                                    @if($task->description)
-                                        <p class="text-[11px] text-zinc-500 dark:text-zinc-400 line-clamp-2 leading-tight">{{ $task->description }}</p>
-                                    @endif
-
-                                    <div class="flex flex-wrap items-center gap-1.5 pt-1">
-                                        @if($task->project)
-                                            <span class="inline-flex items-center gap-1 text-[10px] font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-1.5 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60 max-w-[140px] truncate">
-                                                <flux:icon name="folder" class="size-2.5 text-zinc-500 shrink-0" />
-                                                <span class="truncate">{{ $task->project->name }}</span>
-                                            </span>
-                                        @endif
-
-                                        @foreach($task->labels as $label)
-                                            <span class="inline-flex items-center text-[10px] font-semibold px-1.5 py-0.5 rounded-md border {{ $this->getLabelBgClass($label->color) }}">
-                                                {{ $label->name }}
-                                            </span>
-                                        @endforeach
-                                    </div>
-                                </div>
-
-                                <!-- Restore Controls -->
-                                <div class="flex items-center justify-between pt-2.5 border-t border-zinc-100 dark:border-zinc-800/60 mt-1">
-                                    <span class="text-[10px] text-purple-600 dark:text-purple-400 font-mono font-medium">Archived</span>
-                                    <div class="flex items-center gap-1.5" @click.stop>
-                                        <span class="text-[10px] text-zinc-400">Restore to:</span>
-                                        <button wire:click="updateTaskStatus({{ $task->id }}, 'on_hold')" 
-                                                wire:loading.attr="disabled"
-                                                class="px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 transition-colors cursor-pointer flex items-center gap-1 disabled:opacity-50" 
-                                                title="Restore to On Hold">
-                                            <span>On Hold 🟠</span>
-                                        </button>
-                                        <button wire:click="updateTaskStatus({{ $task->id }}, 'new')" 
-                                                wire:loading.attr="disabled"
-                                                class="px-2 py-0.5 rounded text-[10px] font-semibold bg-sky-500/10 text-sky-600 dark:text-sky-400 hover:bg-sky-500/20 transition-colors cursor-pointer flex items-center gap-1 disabled:opacity-50" 
-                                                title="Restore to New">
-                                            <span>New 🔵</span>
-                                        </button>
-                                        <button wire:click="updateTaskStatus({{ $task->id }}, 'on_progress')" 
-                                                wire:loading.attr="disabled"
-                                                class="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-colors cursor-pointer flex items-center gap-1 disabled:opacity-50" 
-                                                title="Restore to On Progress">
-                                            <span>Progress 🟡</span>
-                                        </button>
-                                        <button wire:click="updateTaskStatus({{ $task->id }}, 'done')" 
-                                                wire:loading.attr="disabled"
-                                                class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 transition-colors cursor-pointer flex items-center gap-1 disabled:opacity-50" 
-                                                title="Restore to Done">
-                                            <span>Done 🟢</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            </flux:modal.trigger>
-                        @empty
-                            <div class="col-span-full py-8 text-center text-xs text-zinc-400 border border-dashed border-purple-500/20 rounded-xl">
-                                No archived tasks found.
-                            </div>
-                        @endforelse
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <!-- LIST VIEW -->
         @else
@@ -1545,13 +1422,19 @@ new class extends Component
                 </div>
 
                 <!-- Form Footer -->
-                <div class="flex justify-end gap-2 pt-3 border-t border-zinc-200 dark:border-zinc-800">
+                <div class="flex items-center justify-end gap-2.5 pt-4 border-t border-zinc-200/80 dark:border-zinc-800/80">
                     <flux:modal.close>
-                        <flux:button variant="ghost" size="sm">Cancel</flux:button>
+                        <button type="button" 
+                                class="h-9 px-4 rounded-xl text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 bg-zinc-100 dark:bg-zinc-800/60 hover:bg-zinc-200 dark:hover:bg-zinc-700/80 border border-zinc-200/80 dark:border-zinc-700/60 transition-all cursor-pointer active:scale-95">
+                            Cancel
+                        </button>
                     </flux:modal.close>
-                    <flux:button type="submit" size="sm" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold cursor-pointer px-4">
-                        Save Task
-                    </flux:button>
+                    
+                    <button type="submit" 
+                            class="h-9 px-5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-600 hover:from-indigo-500 hover:to-indigo-400 shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/35 transition-all duration-200 cursor-pointer flex items-center gap-1.5 active:scale-95">
+                        <flux:icon name="plus-circle" class="size-4 text-white/90" />
+                        <span>Save Task</span>
+                    </button>
                 </div>
             </form>
         </flux:modal>
@@ -1745,13 +1628,19 @@ new class extends Component
                 </div>
 
                 <!-- Form Footer -->
-                <div class="flex justify-end gap-2 pt-3 border-t border-zinc-200 dark:border-zinc-800">
+                <div class="flex items-center justify-end gap-2.5 pt-4 border-t border-zinc-200/80 dark:border-zinc-800/80">
                     <flux:modal.close>
-                        <flux:button variant="ghost" size="sm">Cancel</flux:button>
+                        <button type="button" 
+                                class="h-9 px-4 rounded-xl text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 bg-zinc-100 dark:bg-zinc-800/60 hover:bg-zinc-200 dark:hover:bg-zinc-700/80 border border-zinc-200/80 dark:border-zinc-700/60 transition-all cursor-pointer active:scale-95">
+                            Cancel
+                        </button>
                     </flux:modal.close>
-                    <flux:button type="submit" size="sm" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold cursor-pointer px-4">
-                        Update Task
-                    </flux:button>
+                    
+                    <button type="submit" 
+                            class="h-9 px-5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-600 hover:from-indigo-500 hover:to-indigo-400 shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/35 transition-all duration-200 cursor-pointer flex items-center gap-1.5 active:scale-95">
+                        <flux:icon name="check-circle" class="size-4 text-white/90" />
+                        <span>Update Task</span>
+                    </button>
                 </div>
             </form>
         </flux:modal>
@@ -2004,16 +1893,23 @@ new class extends Component
                     </div>
 
                     <!-- Footer Actions -->
-                    <div class="flex items-center justify-between pt-3 border-t border-zinc-200 dark:border-zinc-800">
+                    <div class="flex items-center justify-between pt-4 border-t border-zinc-200/80 dark:border-zinc-800/80">
                         <span class="text-[10px] text-zinc-400 font-mono">Created {{ $task->created_at->format('d M Y H:i') }}</span>
 
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-2.5">
                             <flux:modal.close>
-                                <flux:button variant="ghost" size="sm">Close</flux:button>
+                                <button type="button" 
+                                        class="h-9 px-4 rounded-xl text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 bg-zinc-100 dark:bg-zinc-800/60 hover:bg-zinc-200 dark:hover:bg-zinc-700/80 border border-zinc-200/80 dark:border-zinc-700/60 transition-all cursor-pointer active:scale-95">
+                                    Close
+                                </button>
                             </flux:modal.close>
-                            <flux:button wire:click="editTaskFromDetail" size="sm" icon="pencil" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold cursor-pointer">
-                                Edit Task
-                            </flux:button>
+                            
+                            <button type="button"
+                                    wire:click="editTaskFromDetail"
+                                    class="h-9 px-5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-600 hover:from-indigo-500 hover:to-indigo-400 shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/35 transition-all duration-200 cursor-pointer flex items-center gap-1.5 active:scale-95">
+                                <flux:icon name="pencil-square" class="size-4 text-white/90" />
+                                <span>Edit Task</span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -2023,6 +1919,153 @@ new class extends Component
                     <span class="text-xs font-semibold text-zinc-600 dark:text-zinc-300">Loading task details...</span>
                 </div>
             @endif
+        </flux:modal>
+
+        <!-- ARCHIVED TASKS MODAL -->
+        <flux:modal name="archived-tasks-modal" class="w-[calc(100vw-2rem)] max-w-4xl backdrop:backdrop-blur-md z-[200]" x-on:close="$wire.set('archiveSearchQuery', '')">
+            <div class="space-y-4 text-left">
+                <!-- Modal Header -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-purple-200/60 dark:border-purple-900/30 pr-6">
+                    <div class="flex items-center gap-3">
+                        <div class="size-9 rounded-xl bg-purple-500/10 border border-purple-200/60 dark:border-purple-900/40 flex items-center justify-center text-purple-600 dark:text-purple-400 shrink-0">
+                            <flux:icon name="archive-box" class="size-5" />
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <flux:heading size="lg" class="font-bold">Archived Tasks Repository</flux:heading>
+                                <span class="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-200/80 dark:border-purple-900/40">
+                                    {{ $this->archivedTasks->count() }} Tasks
+                                </span>
+                            </div>
+                            <flux:subheading size="sm" class="text-zinc-500 dark:text-zinc-400">
+                                Repository for inactive tasks. You can restore them to active status anytime.
+                            </flux:subheading>
+                        </div>
+                    </div>
+
+                    <!-- Dedicated Archive Search Input (With spacing from modal close button) -->
+                    <div class="relative min-w-[220px] sm:mr-4">
+                        <flux:icon name="magnifying-glass" class="size-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+                        <input type="text" 
+                               wire:model.live.debounce.200ms="archiveSearchQuery" 
+                               placeholder="Search archived tasks..." 
+                               class="h-8 pl-8 pr-7 w-full rounded-xl bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-purple-500 transition-all">
+                        @if(!empty($archiveSearchQuery))
+                            <button type="button" 
+                                    wire:click="$set('archiveSearchQuery', '')" 
+                                    class="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 p-0.5 cursor-pointer"
+                                    title="Clear search">
+                                <flux:icon name="x-mark" class="size-3" />
+                            </button>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Archived Grid -->
+                <div class="max-h-[60vh] overflow-y-auto pr-1">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                        @forelse($this->archivedTasks as $task)
+                            <div wire:key="archived-modal-card-{{ $task->id }}" 
+                                 class="bg-zinc-50/80 dark:bg-zinc-950/80 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-4 flex flex-col justify-between gap-3 group relative overflow-hidden">
+                                
+                                <div class="space-y-2.5">
+                                    <div class="flex items-start justify-between gap-2">
+                                        <h4 class="text-xs font-bold text-zinc-900 dark:text-zinc-100 leading-snug line-clamp-2">{{ $task->title }}</h4>
+                                        
+                                        <div class="flex items-center gap-1 shrink-0 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
+                                            <flux:modal.trigger name="edit-task-modal">
+                                                <button wire:click="editTask({{ $task->id }})" class="p-1 rounded-md text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-800 transition-colors cursor-pointer" title="Edit Task">
+                                                    <flux:icon name="pencil" class="size-3.5" />
+                                                </button>
+                                            </flux:modal.trigger>
+                                            <flux:modal.trigger name="delete-task-{{ $task->id }}">
+                                                <button class="p-1 rounded-md text-red-400 hover:text-red-600 hover:bg-red-500/10 transition-colors cursor-pointer" title="Delete Task">
+                                                    <flux:icon name="trash" class="size-3.5" />
+                                                </button>
+                                            </flux:modal.trigger>
+                                        </div>
+                                    </div>
+
+                                    @if($task->description)
+                                        <p class="text-[11px] text-zinc-500 dark:text-zinc-400 line-clamp-2 leading-relaxed">{{ $task->description }}</p>
+                                    @endif
+
+                                    <div class="flex flex-wrap items-center gap-1.5 pt-0.5">
+                                        @if($task->project)
+                                            <span class="inline-flex items-center gap-1 text-[10px] font-medium bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-800 max-w-[140px] truncate">
+                                                <flux:icon name="folder" class="size-2.5 text-zinc-400 shrink-0" />
+                                                <span class="truncate">{{ $task->project->name }}</span>
+                                            </span>
+                                        @endif
+
+                                        @foreach($task->labels as $label)
+                                            <span class="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-md border {{ $this->getLabelBgClass($label->color) }}">
+                                                {{ $label->name }}
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                </div>
+
+                                <!-- Restore Controls -->
+                                <div class="flex flex-col gap-1.5 pt-3 border-t border-zinc-200/60 dark:border-zinc-800/60 mt-1">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-[10px] text-purple-600 dark:text-purple-400 font-mono font-bold">Restore to:</span>
+                                        <flux:modal.trigger name="detail-task-modal">
+                                            <button wire:click="showTaskDetail({{ $task->id }})" 
+                                                    class="text-[10px] text-indigo-500 hover:underline cursor-pointer">
+                                                View Details
+                                            </button>
+                                        </flux:modal.trigger>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-1.5">
+                                        <button wire:click="updateTaskStatus({{ $task->id }}, 'on_hold')" 
+                                                wire:loading.attr="disabled"
+                                                class="px-2 py-1 rounded-lg text-[10px] font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 border border-rose-500/20 transition-all cursor-pointer flex items-center justify-center gap-1 active:scale-95 disabled:opacity-50" 
+                                                title="Restore to On Hold">
+                                            <span>On Hold 🟠</span>
+                                        </button>
+                                        <button wire:click="updateTaskStatus({{ $task->id }}, 'new')" 
+                                                wire:loading.attr="disabled"
+                                                class="px-2 py-1 rounded-lg text-[10px] font-bold bg-sky-500/10 text-sky-600 dark:text-sky-400 hover:bg-sky-500/20 border border-sky-500/20 transition-all cursor-pointer flex items-center justify-center gap-1 active:scale-95 disabled:opacity-50" 
+                                                title="Restore to New">
+                                            <span>New 🔵</span>
+                                        </button>
+                                        <button wire:click="updateTaskStatus({{ $task->id }}, 'on_progress')" 
+                                                wire:loading.attr="disabled"
+                                                class="px-2 py-1 rounded-lg text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 border border-amber-500/20 transition-all cursor-pointer flex items-center justify-center gap-1 active:scale-95 disabled:opacity-50" 
+                                                title="Restore to On Progress">
+                                            <span>Progress 🟡</span>
+                                        </button>
+                                        <button wire:click="updateTaskStatus({{ $task->id }}, 'done')" 
+                                                wire:loading.attr="disabled"
+                                                class="px-2 py-1 rounded-lg text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20 transition-all cursor-pointer flex items-center justify-center gap-1 active:scale-95 disabled:opacity-50" 
+                                                title="Restore to Done">
+                                            <span>Done 🟢</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="col-span-full py-12 text-center text-xs text-zinc-400 dark:text-zinc-500 border border-dashed border-purple-500/20 rounded-2xl flex flex-col items-center justify-center gap-2">
+                                <flux:icon name="archive-box" class="size-8 opacity-40 text-purple-500" />
+                                <p class="font-medium">No archived tasks found in repository.</p>
+                                <p class="text-[11px] text-zinc-400">Tasks you archive will be safely stored here.</p>
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="flex items-center justify-end pt-4 border-t border-zinc-200/80 dark:border-zinc-800/80">
+                    <flux:modal.close>
+                        <button type="button" 
+                                wire:click="$set('archiveSearchQuery', '')"
+                                class="h-9 px-4 rounded-xl text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 bg-zinc-100 dark:bg-zinc-800/60 hover:bg-zinc-200 dark:hover:bg-zinc-700/80 border border-zinc-200/80 dark:border-zinc-700/60 transition-all cursor-pointer active:scale-95">
+                            Close Repository
+                        </button>
+                    </flux:modal.close>
+                </div>
+            </div>
         </flux:modal>
 
     </div>
