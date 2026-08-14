@@ -68,7 +68,7 @@ new #[Title('Backup & Restore Settings')] class extends Component {
         $projects = $user->projects()->get(['id', 'name', 'created_at']);
         $categories = $user->categories()->get(['id', 'name', 'created_at']);
         $labels = $user->labels()->get(['id', 'name', 'color', 'created_at']);
-        $tasks = $user->tasks()->with(['project', 'labels'])->latest()->get();
+        $tasks = $user->tasks()->with(['project', 'labels', 'checklists'])->latest()->get();
         $activities = $user->activities()
             ->with(['project', 'category'])
             ->orderBy('start_time', 'asc')
@@ -103,6 +103,11 @@ new #[Title('Backup & Restore Settings')] class extends Component {
                     'status' => $t->status,
                     'due_at' => $t->due_at ? $t->due_at->toIso8601String() : null,
                     'labels' => $t->labels->pluck('name')->all(),
+                    'checklists' => $t->checklists->map(fn ($c) => [
+                        'title' => $c->title,
+                        'is_completed' => (bool) $c->is_completed,
+                        'position' => (int) $c->position,
+                    ])->values()->all(),
                 ];
             })->values()->all(),
             'activities' => $activities->map(function ($act) {
@@ -112,6 +117,7 @@ new #[Title('Backup & Restore Settings')] class extends Component {
                     'detail' => $act->detail,
                     'start_time' => $act->start_time->toDateTimeString(),
                     'end_time' => $act->end_time ? $act->end_time->toDateTimeString() : null,
+                    'paused_seconds' => (int) ($act->paused_seconds ?? 0),
                     'is_parallel' => (bool) $act->is_parallel,
                 ];
             })->values()->all(),
@@ -232,6 +238,18 @@ new #[Title('Backup & Restore Settings')] class extends Component {
                             }
                         }
 
+                        if (!empty($tData['checklists'])) {
+                            foreach ($tData['checklists'] as $cItem) {
+                                if (!empty($cItem['title'])) {
+                                    $task->checklists()->create([
+                                        'title' => $cItem['title'],
+                                        'is_completed' => (bool) ($cItem['is_completed'] ?? false),
+                                        'position' => (int) ($cItem['position'] ?? 0),
+                                    ]);
+                                }
+                            }
+                        }
+
                         $importedTaskCount++;
                     }
                 }
@@ -273,6 +291,7 @@ new #[Title('Backup & Restore Settings')] class extends Component {
                         'detail' => $act['detail'] ?? 'Restored Activity',
                         'start_time' => $startTime,
                         'end_time' => $endTime,
+                        'paused_seconds' => (int) ($act['paused_seconds'] ?? 0),
                         'is_parallel' => (bool) ($act['is_parallel'] ?? false),
                     ]);
 

@@ -27,6 +27,7 @@ class ActivitiesImport implements ToModel, WithHeadingRow
             'detail' => $row['detail'],
             'start_time' => is_numeric($row['start_time']) ? Carbon::instance(Date::excelToDateTimeObject($row['start_time'])) : Carbon::parse($row['start_time']),
             'end_time' => $row['end_time'] ? (is_numeric($row['end_time']) ? Carbon::instance(Date::excelToDateTimeObject($row['end_time'])) : Carbon::parse($row['end_time'])) : null,
+            'paused_seconds' => isset($row['paused_seconds']) ? (int) $row['paused_seconds'] : (isset($row['pause_duration']) ? (int) $row['pause_duration'] : 0),
             'is_parallel' => strtolower($row['is_parallel'] ?? '') === 'yes',
         ]);
     }

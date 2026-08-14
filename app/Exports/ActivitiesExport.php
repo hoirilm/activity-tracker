@@ -46,7 +46,8 @@ class ActivitiesExport implements FromCollection, WithHeadings, WithMapping
             'Detail',
             'Start Time',
             'End Time',
-            'Duration',
+            'Pause Duration',
+            'Net Duration',
             'Is Parallel',
         ];
     }
@@ -58,8 +59,9 @@ class ActivitiesExport implements FromCollection, WithHeadings, WithMapping
             $activity->project->name ?? 'Unknown',
             $activity->category->name ?? 'Unknown',
             $activity->detail,
-            $activity->start_time,
-            $activity->end_time,
+            $activity->start_time ? $activity->start_time->format('Y-m-d H:i:s') : '',
+            $activity->end_time ? $activity->end_time->format('Y-m-d H:i:s') : '',
+            $activity->formatted_pause_duration ?? '0s',
             $activity->duration,
             $activity->is_parallel ? 'Yes' : 'No',
         ];

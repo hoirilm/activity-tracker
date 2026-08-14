@@ -57,6 +57,10 @@ test('restore validates user email match and requires confirmation if emails mis
                 'project' => 'Demo Project',
                 'status' => 'new',
                 'due_at' => now()->addDays(3)->toIso8601String(),
+                'checklists' => [
+                    ['title' => 'Subtask Step 1', 'is_completed' => true, 'position' => 1],
+                    ['title' => 'Subtask Step 2', 'is_completed' => false, 'position' => 2],
+                ],
             ],
         ],
     ];
@@ -80,5 +84,8 @@ test('restore validates user email match and requires confirmation if emails mis
     expect($user->activities()->count())->toBe(1);
     expect($user->activities()->first()->detail)->toBe('Sample imported activity');
     expect($user->tasks()->count())->toBe(1);
-    expect($user->tasks()->first()->due_at)->not()->toBeNull();
+    $restoredTask = $user->tasks()->first();
+    expect($restoredTask->due_at)->not()->toBeNull();
+    expect($restoredTask->checklists()->count())->toBe(2);
+    expect($restoredTask->checklists()->first()->title)->toBe('Subtask Step 1');
 });

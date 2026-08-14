@@ -399,11 +399,42 @@ new class extends Component
         };
     }
 
+    public function pauseActivity($id)
+    {
+        $activity = auth()->user()->activities()->find($id);
+        if ($activity && ! $activity->end_time && ! $activity->paused_at) {
+            $activity->update([
+                'paused_at' => now(),
+            ]);
+        }
+    }
+
+    public function resumeActivity($id)
+    {
+        $activity = auth()->user()->activities()->find($id);
+        if ($activity && ! $activity->end_time && $activity->paused_at) {
+            $pauseDuration = (int) $activity->paused_at->diffInSeconds(now());
+            $activity->update([
+                'paused_seconds' => ($activity->paused_seconds ?? 0) + $pauseDuration,
+                'paused_at' => null,
+            ]);
+        }
+    }
+
     public function stopActivity($id)
     {
         $activity = auth()->user()->activities()->find($id);
-        if ($activity && !$activity->end_time) {
-            $activity->update(['end_time' => now()]);
+        if ($activity && ! $activity->end_time) {
+            if ($activity->paused_at) {
+                $pauseDuration = (int) $activity->paused_at->diffInSeconds(now());
+                $activity->update([
+                    'paused_seconds' => ($activity->paused_seconds ?? 0) + $pauseDuration,
+                    'paused_at' => null,
+                    'end_time' => now(),
+                ]);
+            } else {
+                $activity->update(['end_time' => now()]);
+            }
         }
     }
 };
@@ -505,7 +536,7 @@ new class extends Component
         </div>
     </div>
 
-    <!-- Currently Active Tracking (Initial Layout with Modern Live Timer Motion Cues) -->
+    <!-- Currently Active / Paused Tracking -->
     @if($this->runningActivities->count() > 0)
     <div class="mt-1">
         <h2 class="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-3 flex items-center gap-2 font-mono">
@@ -513,27 +544,53 @@ new class extends Component
               <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
             </span>
-            <span>CURRENTLY ACTIVE TRACKING</span>
+            <span>ACTIVE TRACKING SESSIONS</span>
         </h2>
 
         <div class="grid gap-3">
             @foreach($this->runningActivities as $running)
+                @php $isPaused = $running->isPaused(); @endphp
                 <div wire:key="running-{{ $running->id }}" 
-                     class="group relative overflow-hidden rounded-2xl border border-emerald-500/30 bg-emerald-500/5 dark:bg-emerald-950/20 backdrop-blur-xl p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 transition-all duration-300" 
-                     x-data="{ elapsed: '00:00:00', start: new Date('{{ $running->start_time->toISOString() }}').getTime() }"
-                     x-init="setInterval(() => { 
-                          let diff = Math.floor((new Date().getTime() - start) / 1000);
-                          let h = Math.floor(diff / 3600).toString().padStart(2, '0');
-                          let m = Math.floor((diff % 3600) / 60).toString().padStart(2, '0');
-                          let s = (diff % 60).toString().padStart(2, '0');
-                          elapsed = `${h}:${m}:${s}`;
-                      }, 1000)">
+                     class="group relative overflow-hidden rounded-2xl border transition-all duration-300 p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3
+                            {{ $isPaused 
+                                ? 'border-amber-500/40 bg-amber-500/10 dark:bg-amber-950/30' 
+                                : 'border-emerald-500/30 bg-emerald-500/5 dark:bg-emerald-950/20' }}" 
+                     x-data="{ 
+                         seconds: {{ $running->elapsed_seconds }}, 
+                         paused: {{ $isPaused ? 'true' : 'false' }},
+                         formatTime(sec) {
+                             let h = Math.floor(sec / 3600).toString().padStart(2, '0');
+                             let m = Math.floor((sec % 3600) / 60).toString().padStart(2, '0');
+                             let s = (sec % 60).toString().padStart(2, '0');
+                             return `${h}:${m}:${s}`;
+                         }
+                     }"
+                     x-init="
+                         if (!paused) {
+                             let timer = setInterval(() => { seconds++; }, 1000);
+                             $cleanup(() => clearInterval(timer));
+                         }
+                     ">
                     
                     <div class="min-w-0 flex-1">
-                        <div class="font-bold text-base sm:text-lg text-zinc-900 dark:text-zinc-100 truncate">{{ $running->detail }}</div>
+                        <div class="flex items-center gap-2">
+                            <div class="font-bold text-base sm:text-lg text-zinc-900 dark:text-zinc-100 truncate">{{ $running->detail }}</div>
+                            @if($isPaused)
+                                <span class="bg-amber-500/20 text-amber-700 dark:text-amber-300 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-md font-mono font-bold border border-amber-500/40 flex items-center gap-1 animate-pulse">
+                                    <span class="size-1.5 rounded-full bg-amber-500"></span>
+                                    <span>PAUSED</span>
+                                </span>
+                            @else
+                                <span class="bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-md font-mono font-bold border border-emerald-500/40 flex items-center gap-1">
+                                    <span class="size-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                                    <span>LIVE</span>
+                                </span>
+                            @endif
+                        </div>
+
                         <div class="text-xs text-neutral-500 dark:text-neutral-400 mt-1 flex flex-wrap items-center gap-2">
                             <span class="inline-flex items-center gap-1.5 font-medium text-neutral-700 dark:text-neutral-300">
-                                <flux:icon name="folder" class="size-3.5 text-emerald-500 shrink-0" />
+                                <flux:icon name="folder" class="size-3.5 {{ $isPaused ? 'text-amber-500' : 'text-emerald-500' }} shrink-0" />
                                 <span>{{ $running->project->name }}</span>
                             </span>
                             <span>&bull;</span>
@@ -544,23 +601,48 @@ new class extends Component
                         </div>
                     </div>
 
-                    <!-- Live Stopwatch Readout with Spinning Gear & Stop Button -->
-                    <div class="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto">
+                    <!-- Live Stopwatch Readout & Actions (Pause / Resume / Stop) -->
+                    <div class="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
                         <div class="flex items-center gap-2">
-                            <flux:icon name="clock" class="size-4 text-emerald-500 animate-spin" style="animation-duration: 3s;" />
-                            <span class="font-mono text-2xl sm:text-3xl text-emerald-600 dark:text-emerald-400 font-extrabold tracking-wider" x-text="elapsed"></span>
+                            <flux:icon name="clock" class="size-4 {{ $isPaused ? 'text-amber-500' : 'text-emerald-500 animate-spin' }}" style="animation-duration: 3s;" />
+                            <span class="font-mono text-2xl sm:text-3xl font-extrabold tracking-wider {{ $isPaused ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400' }}" 
+                                  x-text="formatTime(seconds)"></span>
                         </div>
-                        <button type="button" 
-                                wire:click="stopActivity({{ $running->id }})" 
-                                class="bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs sm:text-sm px-4 py-2 rounded-xl border border-rose-500/80 shadow-xs shadow-rose-600/20 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0" 
-                                title="Stop Activity">
-                            <flux:icon name="stop" class="size-4 fill-current" />
-                            <span>Stop</span>
-                        </button>
+
+                        <div class="flex items-center gap-1.5 shrink-0">
+                            @if($isPaused)
+                                <!-- Resume Button -->
+                                <button type="button" 
+                                        wire:click="resumeActivity({{ $running->id }})" 
+                                        class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs sm:text-sm px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border border-emerald-500/80 shadow-xs shadow-emerald-600/20 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0" 
+                                        title="Resume Activity">
+                                    <flux:icon name="play" class="size-3.5 sm:size-4 fill-current" />
+                                    <span>Resume</span>
+                                </button>
+                            @else
+                                <!-- Pause Button -->
+                                <button type="button" 
+                                        wire:click="pauseActivity({{ $running->id }})" 
+                                        class="bg-amber-500 hover:bg-amber-400 text-white font-semibold text-xs sm:text-sm px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border border-amber-400/80 shadow-xs shadow-amber-500/20 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0" 
+                                        title="Pause Activity">
+                                    <flux:icon name="pause" class="size-3.5 sm:size-4 fill-current" />
+                                    <span>Pause</span>
+                                </button>
+                            @endif
+
+                            <!-- Stop Button -->
+                            <button type="button" 
+                                    wire:click="stopActivity({{ $running->id }})" 
+                                    class="bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs sm:text-sm px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border border-rose-500/80 shadow-xs shadow-rose-600/20 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0" 
+                                    title="Stop Activity">
+                                <flux:icon name="stop" class="size-3.5 sm:size-4 fill-current" />
+                                <span>Stop</span>
+                            </button>
+                        </div>
                     </div>
 
-                    <!-- Bottom Live Pulse Line -->
-                    <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-emerald-500/60 to-transparent animate-pulse"></div>
+                    <!-- Bottom Pulse Bar -->
+                    <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent {{ $isPaused ? 'via-amber-500/60' : 'via-emerald-500/60' }} to-transparent animate-pulse"></div>
                 </div>
             @endforeach
         </div>
@@ -1051,8 +1133,19 @@ new class extends Component
                     </div>
                     <div class="shrink-0 text-right">
                         <div class="font-mono text-sm font-extrabold text-zinc-900 dark:text-zinc-100 tracking-tight">{{ $activity->duration }}</div>
-                        <div class="text-[10px] font-medium text-zinc-400 dark:text-zinc-500 mt-0.5">
-                            {{ Carbon::parse($activity->start_time)->isToday() ? 'Today' : Carbon::parse($activity->start_time)->format('M d') }}, {{ $activity->start_time->format('H:i') }}
+                        <div class="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 mt-0.5 flex items-center justify-end gap-1 font-mono">
+                            <span>{{ Carbon::parse($activity->start_time)->isToday() ? 'Today' : Carbon::parse($activity->start_time)->format('M d') }},</span>
+                            <span title="Start Time">{{ $activity->formatted_start_time }}</span>
+                            @if($activity->formatted_pause_duration)
+                                <span class="text-zinc-400 dark:text-zinc-500 font-mono text-[9px] flex items-center gap-0.5"
+                                      title="Paused for {{ $activity->formatted_pause_duration }}">
+                                    <flux:icon name="pause" class="size-2 text-zinc-400 dark:text-zinc-500 fill-current shrink-0" />
+                                    <span>{{ $activity->formatted_pause_duration }}</span>
+                                </span>
+                            @else
+                                <span class="text-zinc-400 dark:text-zinc-600">&ndash;</span>
+                            @endif
+                            <span title="End Time">{{ $activity->formatted_end_time }}</span>
                         </div>
                     </div>
                 </div>
