@@ -4,6 +4,41 @@ Proyek ini menggunakan [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v5.5.0] - 2026-08-14 🚀
+
+Versi **v5.5.0** menghadirkan pembaruan signifikan yang mencakup **Sistem Pause & Resume Activity Tracking** waktu nyata (*real-time*), **Presisi Detik (H:i:s)** pada seluruh log aktivitas, **Antarmuka Minimalis Layout Jam**, **Modal Repository Terdedikasi untuk Archived Tasks**, serta **Penyelarasan Ekspor Excel & Backup JSON System (termasuk dukungan Subtask/Checklist)**.
+
+### ⏸️ Sistem Pause & Resume Activity Tracking (Real-Time Timer)
+- **Kontrol Pause & Resume**: Tombol **Pause** (amber ⏸️) dan **Resume** (emerald ▶️) pada sesi pelacakan waktu aktif di menu Tracking dan Dashboard Command Center.
+- **Visual State Interaktif**: 
+  - Sesi **RUNNING**: Tema card emerald glowing dengan pulsa hijau (`LIVE` 🟢).
+  - Sesi **PAUSED**: Tema card amber glassmorphic dengan pulsa kuning (`PAUSED` 🟡).
+- **Akumulasi Presisi Rest Time**: Menghitung dan menyimpan `paused_seconds` serta `paused_at`, secara otomatis mengurangkan durasi pause dari total waktu kerja bersih (*net working duration*).
+- **Alpine.js Ticker Management**: Timer detik membeku (*freeze*) saat di-pause dan melanjutkan hitungan secara mulus saat di-resume tanpa *memory leak*.
+
+### 🕒 Presisi Waktu & Penataan Layout Minimalis
+- **Format Detik General (`H:i:s`)**: Tampilan jam mulai (*start time*) dan selesai (*end time*) selalu menggunakan presisi hingga detik (contoh: `13:25:15` – `13:25:33`).
+- **Penyisipan Durasi Pause**: Durasi pause disisipkan langsung di antara waktu mulai dan selesai (contoh: `13:25:15 ⏸️ 6s 13:25:33`).
+- **Posisi Layout Kanan**: Indikator jam dipindahkan ke sisi kanan, bertumpuk di bawah total durasi aktivitas.
+- **Desain Monokrom Minimalis**: Teks menggunakan warna abu-abu netral polos (`text-zinc-500 dark:text-zinc-400 font-mono text-[10px]`) tanpa kotak background untuk antarmuka yang bersih dan tidak mencolok.
+
+### 📦 Modal Terdedikasi Archived Tasks & Pencarian Khusus
+- **Dedicated Archive Repository Modal**: Penampung task ter-archive dipindahkan dari bagian bawah halaman ke modal khusus (`archived-tasks-modal`).
+- **4 Action Buttons Restore**: Tombol restore langsung ke status target (`On Hold 🟠`, `New 🔵`, `Progress 🟡`, `Done 🟢`).
+- **Pencarian Khusus Data Archive**: Input pencarian independen (`$archiveSearchQuery`) di dalam modal yang otomatis di-reset saat modal ditutup.
+
+### 📊 Alignment Export Excel & Backup JSON System (Subtask Support)
+- **Ekspor Excel (`.xlsx`)**: Menambahkan kolom `Pause Duration` & `Net Duration` serta memformat kolom waktu dengan detik (`YYYY-MM-DD HH:MM:SS`).
+- **Import Excel (`.xlsx` / `.csv`)**: Mendukung impor data dengan kolom `paused_seconds`.
+- **Backup & Restore System (JSON)**: Memperbarui fitur backup & restore JSON pada menu *Settings* untuk mengikutsertakan data `paused_seconds` serta relasi **Subtasks / Checklists** pada task secara utuh.
+
+### 🐛 Visual & Bug Fixes
+- **Perbaikan Checklist Drag & Drop**: Mengatasi bug duplikasi dan hilangnya checklist saat reorder dengan mengisolasi node SortableJS menggunakan `wire:key` dinamis berbasis jumlah item.
+- **Redesain Tombol Aksi Modal**: Pembaruan gaya visual tombol modal Task (*Create*, *Edit*, *Detail*) dengan gradien warna indigo modern dan animasi mikro.
+- **Keandalan Testing**: Menambahkan `tests/Feature/ActivityTest.php` dan memperbarui `BackupTest.php`. Seluruh 69 unit test di aplikasi lulus 100% (198 assertions).
+
+---
+
 ## [v5.0.0] - 2026-08-03 🚀
 
 Versi **v5.0.0** merupakan rilis mayor yang menghadirkan **Task Stream Command Center** yang interaktif & profesional di Halaman Dashboard, fitur pembuatan tugas kilat (*Quick Add*), meteran kemajuan visual (*Momentum Progress Meter*), pencarian *case-insensitive*, penataan ulang tata letak Kanban di halaman Manage Workspace, serta penambahan *test suite* komprehensif.
