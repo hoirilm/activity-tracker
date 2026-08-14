@@ -707,7 +707,7 @@ new class extends Component
                                     <div class="flex items-start justify-between gap-2">
                                         <h4 class="text-xs font-bold text-zinc-900 dark:text-zinc-100 leading-snug line-clamp-2">{{ $task->title }}</h4>
                                         
-                                        <div class="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5 shrink-0">
+                                        <div class="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity flex items-center gap-0.5 shrink-0">
                                             <flux:modal.trigger name="edit-task-modal">
                                                 <button wire:click="editTask({{ $task->id }})" class="p-1 rounded text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer">
                                                     <flux:icon name="pencil" class="size-3" />
@@ -889,7 +889,7 @@ new class extends Component
                                     <div class="flex items-start justify-between gap-2">
                                         <h4 class="text-xs font-bold text-zinc-900 dark:text-zinc-100 leading-snug line-clamp-2">{{ $task->title }}</h4>
                                         
-                                        <div class="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <div class="flex items-center gap-0.5 shrink-0 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                                             <flux:modal.trigger name="edit-task-modal">
                                                 <button wire:click="editTask({{ $task->id }})" class="p-1 rounded text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer">
                                                     <flux:icon name="pencil" class="size-3" />
@@ -1434,7 +1434,7 @@ new class extends Component
                                 </div>
                             </div>
                             
-                            <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 flex items-center gap-1 shrink-0">
+                            <div class="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 flex items-center gap-1 shrink-0">
                                 <flux:button wire:click="editProject({{ $project->id }})" variant="ghost" size="xs" icon="pencil" square class="cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200 active:scale-95" />
                                 <flux:modal.trigger name="delete-project-{{ $project->id }}">
                                     <flux:button variant="ghost" size="xs" icon="trash" square class="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/20 cursor-pointer active:scale-95" />
@@ -1550,7 +1550,7 @@ new class extends Component
                                     </div>
                                 </div>
                                 
-                                <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 flex items-center gap-1 shrink-0">
+                                <div class="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 flex items-center gap-1 shrink-0">
                                     <flux:button wire:click="editCategory({{ $category->id }})" variant="ghost" size="xs" icon="pencil" square class="cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200" />
                                     <flux:modal.trigger name="delete-category-{{ $category->id }}">
                                         <flux:button variant="ghost" size="xs" icon="trash" square class="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/20 cursor-pointer" />
@@ -1656,7 +1656,7 @@ new class extends Component
                         <div wire:key="label-tag-{{ $label->id }}" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all group {{ $this->getLabelBgClass($label->color) }}">
                             <span>{{ $label->name }}</span>
                             <span class="text-[10px] font-mono opacity-80">({{ $label->tasks_count }})</span>
-                            <button wire:click="deleteLabel({{ $label->id }})" class="opacity-60 group-hover:opacity-100 hover:text-red-600 transition-opacity ml-1 cursor-pointer" title="Delete label">
+                            <button wire:click="deleteLabel({{ $label->id }})" class="opacity-100 lg:opacity-60 lg:group-hover:opacity-100 hover:text-red-600 transition-opacity ml-1 cursor-pointer" title="Delete label">
                                 <flux:icon name="x-mark" class="size-3.5" />
                             </button>
                         </div>
