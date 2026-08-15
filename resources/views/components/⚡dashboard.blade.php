@@ -550,7 +550,7 @@ new class extends Component
         <div class="grid gap-3">
             @foreach($this->runningActivities as $running)
                 @php $isPaused = $running->isPaused(); @endphp
-                <div wire:key="running-{{ $running->id }}" 
+                <div wire:key="running-{{ $running->id }}-{{ $isPaused ? 'paused-' . ($running->paused_at ? $running->paused_at->timestamp : '1') : 'active' }}" 
                      class="group relative overflow-hidden rounded-2xl border transition-all duration-300 p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3
                             {{ $isPaused 
                                 ? 'border-amber-500/40 bg-amber-500/10 dark:bg-amber-950/30' 
@@ -558,6 +558,7 @@ new class extends Component
                      x-data="{ 
                          seconds: {{ $running->elapsed_seconds }}, 
                          paused: {{ $isPaused ? 'true' : 'false' }},
+                         timer: null,
                          formatTime(sec) {
                              let h = Math.floor(sec / 3600).toString().padStart(2, '0');
                              let m = Math.floor((sec % 3600) / 60).toString().padStart(2, '0');
@@ -567,9 +568,11 @@ new class extends Component
                      }"
                      x-init="
                          if (!paused) {
-                             let timer = setInterval(() => { seconds++; }, 1000);
-                             $cleanup(() => clearInterval(timer));
+                             timer = setInterval(() => { seconds++; }, 1000);
                          }
+                         $cleanup(() => {
+                             if (timer) clearInterval(timer);
+                         });
                      ">
                     
                     <div class="min-w-0 flex-1">
