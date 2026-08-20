@@ -1470,12 +1470,12 @@ new class extends Component
                     <div x-show="tab === 'write'">
                         <textarea wire:model.live="taskDescription"
                                   placeholder="Write task details using GitHub Flavored Markdown (e.g. ## Title, **bold**, - list, | table |)..." 
-                                  rows="10"
-                                  class="w-full p-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all leading-relaxed font-mono resize-y min-h-[220px]"></textarea>
+                                  rows="6"
+                                  class="w-full p-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all leading-relaxed font-mono resize-y min-h-[130px]"></textarea>
                     </div>
 
                     <!-- PREVIEW TAB CONTENT -->
-                    <div x-show="tab === 'preview'" class="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-800 min-h-[220px] max-h-[420px] overflow-y-auto">
+                    <div x-show="tab === 'preview'" class="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-800 min-h-[130px] max-h-[260px] overflow-y-auto">
                         @if(trim($taskDescription))
                             <div class="rich-editor-content text-xs text-zinc-800 dark:text-zinc-200 leading-relaxed font-mono">
                                 {!! $this->renderFormattedDescription($taskDescription) !!}
@@ -1793,12 +1793,12 @@ new class extends Component
                     <div x-show="tab === 'write'">
                         <textarea wire:model.live="editingTaskDescription"
                                   placeholder="Write task details using GitHub Flavored Markdown (e.g. ## Title, **bold**, - list, | table |)..." 
-                                  rows="10"
-                                  class="w-full p-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all leading-relaxed font-mono resize-y min-h-[220px]"></textarea>
+                                  rows="6"
+                                  class="w-full p-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all leading-relaxed font-mono resize-y min-h-[130px]"></textarea>
                     </div>
 
                     <!-- PREVIEW TAB CONTENT -->
-                    <div x-show="tab === 'preview'" class="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-800 min-h-[220px] max-h-[420px] overflow-y-auto">
+                    <div x-show="tab === 'preview'" class="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-800 min-h-[130px] max-h-[260px] overflow-y-auto">
                         @if(trim($editingTaskDescription))
                             <div class="rich-editor-content text-xs text-zinc-800 dark:text-zinc-200 leading-relaxed font-mono">
                                 {!! $this->renderFormattedDescription($editingTaskDescription) !!}
@@ -1986,12 +1986,12 @@ new class extends Component
         </flux:modal>
 
         <!-- DETAIL TASK MODAL -->
-        <flux:modal name="detail-task-modal" class="w-[calc(100vw-2rem)] max-w-xl backdrop:backdrop-blur-md z-[200]" x-on:close="$wire.set('viewingTaskId', null)">
+        <flux:modal name="detail-task-modal" class="w-[calc(100vw-2rem)] max-w-xl max-h-[90vh] overflow-y-auto backdrop:backdrop-blur-md z-[200]" x-on:close="$wire.set('viewingTaskId', null)">
             @if($this->viewingTask)
                 @php
                     $task = $this->viewingTask;
                 @endphp
-                <div class="space-y-5 text-left">
+                <div class="space-y-3.5 text-left">
                     <!-- Modal Header -->
                     <div class="flex items-start justify-between gap-4 pb-3 border-b border-zinc-200 dark:border-zinc-800 pr-6">
                         <div class="space-y-1.5 flex-1 min-w-0 text-left">
@@ -2096,7 +2096,7 @@ new class extends Component
                     <div class="p-3.5 sm:p-4 rounded-2xl bg-zinc-50/70 dark:bg-zinc-950/70 border border-zinc-200/80 dark:border-zinc-800/80 space-y-2 !text-left text-left min-w-0" style="text-align: left !important;">
                         <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block !text-left text-left" style="text-align: left !important;">Description</span>
                         @if(trim($task->description))
-                            <div class="rich-editor-content text-xs text-zinc-800 dark:text-zinc-200 leading-relaxed !text-left text-left w-full max-h-60 overflow-y-auto break-words overflow-hidden" style="text-align: left !important;">
+                            <div class="rich-editor-content text-xs text-zinc-800 dark:text-zinc-200 leading-relaxed !text-left text-left w-full max-h-36 overflow-y-auto break-words" style="text-align: left !important;">
                                 {!! $this->renderFormattedDescription($task->description) !!}
                             </div>
                         @else
