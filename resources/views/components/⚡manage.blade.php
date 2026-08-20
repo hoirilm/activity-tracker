@@ -5,6 +5,8 @@ use App\Models\Project;
 use App\Models\Category;
 use App\Models\Task;
 use App\Models\Label;
+use Illuminate\Support\Str;
+use League\CommonMark\GithubFlavoredMarkdownConverter;
 
 new class extends Component
 {
@@ -268,12 +270,14 @@ new class extends Component
 
     public function setTaskDuePreset(string $preset, bool $isEditing = false)
     {
-        $date = match($preset) {
-            'today' => now()->endOfDay()->format('Y-m-d\TH:i'),
-            'tomorrow' => now()->addDay()->endOfDay()->format('Y-m-d\TH:i'),
-            'next_week' => now()->addWeek()->startOfDay()->format('Y-m-d\TH:i'),
-            default => null,
-        };
+        $date = null;
+        if ($preset === 'today') {
+            $date = now()->endOfDay()->format('Y-m-d\TH:i');
+        } elseif ($preset === 'tomorrow') {
+            $date = now()->addDay()->endOfDay()->format('Y-m-d\TH:i');
+        } elseif ($preset === 'next_week') {
+            $date = now()->addWeek()->startOfDay()->format('Y-m-d\TH:i');
+        }
 
         if ($isEditing) {
             $this->editingTaskDueAt = $date;
@@ -649,18 +653,242 @@ new class extends Component
     // --- Helper color mappings ---
     public function getLabelBgClass(string $color): string
     {
-        return match ($color) {
+        $classes = [
             'amber' => 'bg-amber-500/10 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300/90 border-amber-200/80 dark:border-amber-900/40',
             'emerald' => 'bg-emerald-500/10 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300/90 border-emerald-200/80 dark:border-emerald-900/40',
             'rose' => 'bg-rose-500/10 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300/90 border-rose-200/80 dark:border-rose-900/40',
             'sky' => 'bg-sky-500/10 text-sky-800 dark:bg-sky-950/40 dark:text-sky-300/90 border-sky-200/80 dark:border-sky-900/40',
             'purple' => 'bg-purple-500/10 text-purple-800 dark:bg-purple-950/40 dark:text-purple-300/90 border-purple-200/80 dark:border-purple-900/40',
             'zinc' => 'bg-zinc-500/10 text-zinc-700 dark:bg-zinc-800/60 dark:text-zinc-300/90 border-zinc-200/80 dark:border-zinc-700/60',
-            default => 'bg-indigo-500/10 text-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-300/90 border-indigo-200/80 dark:border-indigo-900/40',
-        };
+        ];
+
+        return $classes[$color] ?? 'bg-indigo-500/10 text-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-300/90 border-indigo-200/80 dark:border-indigo-900/40';
+    }
+
+    public function renderFormattedDescription(?string $text): string
+    {
+        if (!$text) {
+            return '';
+        }
+
+        return Str::markdown($text);
+    }
+
+    public function getCleanDescription(?string $text): string
+    {
+        if (!$text) return '';
+        $clean = strip_tags($text);
+        $clean = preg_replace('/[#\*\_~`>]/', '', $clean);
+        return trim(html_entity_decode($clean));
     }
 };
 ?>
+
+<script>
+    window.renderTaskMarkdown = function(text) {
+        if (!text) return '';
+        let html = text
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+
+        // Multiline Code Blocks: ``` ... ```
+        html = html.replace(/```(?:[a-zA-Z0-9_\-]*\n)?([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+
+        // Inline Code: `code`
+        html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+        // Parse Markdown Tables: | Header | ... | \n | --- | ... | \n | Cell | ... |
+        html = html.replace(/((?:^\|.*?\|\s*\n)+)/gm, function(match) {
+            let lines = match.trim().split('\n').map(l => l.trim()).filter(l => l);
+            if (lines.length >= 2 && /^\|[\s:\-|\+]+\|$/.test(lines[1])) {
+                let tableHtml = '<table>';
+                let headers = lines[0].split('|').slice(1, -1).map(h => h.trim());
+                tableHtml += '<thead><tr>' + headers.map(h => '<th>' + h + '</th>').join('') + '</tr></thead>';
+                tableHtml += '<tbody>';
+                for (let i = 2; i < lines.length; i++) {
+                    let cells = lines[i].split('|').slice(1, -1).map(c => c.trim());
+                    tableHtml += '<tr>' + cells.map(c => '<td>' + c + '</td>').join('') + '</tr>';
+                }
+                tableHtml += '</tbody></table>';
+                return tableHtml;
+            }
+            return match;
+        });
+
+        // Horizontal Rule / Divider: ---, ***, ___
+        html = html.replace(/^(---|[*]{3,}|_{3,})$/gm, '<hr>');
+
+        // Headings (Must run BEFORE lists)
+        html = html.replace(/^### (.*)$/gm, '<h3>$1</h3>');
+        html = html.replace(/^## (.*)$/gm, '<h2>$1</h2>');
+        html = html.replace(/^# (.*)$/gm, '<h1>$1</h1>');
+        
+        // Blockquote: > text
+        html = html.replace(/^&gt;\s?(.*)$/gm, '<blockquote>$1</blockquote>');
+        
+        // Task List Checkboxes: - [x] or - [ ]
+        html = html.replace(/^\s*[\-\*]\s+\[[xX]\]\s+(.*)$/gm, '<li><input type="checkbox" checked disabled> <del>$1</del></li>');
+        html = html.replace(/^\s*[\-\*]\s+\[\s\]\s+(.*)$/gm, '<li><input type="checkbox" disabled> $1</li>');
+
+        // Nested & Root Lists (Must run AFTER headings)
+        html = html.replace(/^\s{2,}[\-\*]\s+(.*)$/gm, '<li style="margin-left: 1rem;">$1</li>');
+        html = html.replace(/^[\-\*]\s+(.*)$/gm, '<li>$1</li>');
+        html = html.replace(/^\s{2,}\d+\.\s+(.*)$/gm, '<li style="margin-left: 1rem;">$1</li>');
+        html = html.replace(/^\d+\.\s+(.*)$/gm, '<li>$1</li>');
+        
+        // Bold & Italic
+        html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        html = html.replace(/__(.*?)__/g, '<strong>$1</strong>');
+        html = html.replace(/(?<!\*)\*(?!\*)(.*?)(?<!\*)\*(?!\*)/g, '<em>$1</em>');
+        html = html.replace(/&lt;u&gt;(.*?)&lt;\/u&gt;/gi, '<u>$1</u>');
+        html = html.replace(/~~(.*?)~~/g, '<del>$1</del>');
+
+        // Wrap consecutive <li> items in <ul>
+        html = html.replace(/(<li>.*?<\/li>\s*)+/gs, '<ul>$&</ul>');
+
+        html = html.replace(/\n/g, '<br>');
+        
+        // Strip ALL <br> tags surrounding <hr>, <table>, and block elements
+        html = html.replace(/(<br\s*\/?>\s*)+<hr>/gi, '<hr>');
+        html = html.replace(/<hr>(\s*<br\s*\/?>)+/gi, '<hr>');
+        html = html.replace(/(<\/h[1-3]>|<\/blockquote>|<\/ul>|<\/ol>|<\/li>|<hr>|<\/pre>|<\/table>)\s*<br\s*\/?>/gi, '$1');
+
+        return html;
+    };
+</script>
+
+<style>
+    .rich-editor-content {
+        line-height: 1.6;
+        font-size: 0.875rem;
+    }
+    .rich-editor-content p {
+        margin-top: 0;
+        margin-bottom: 0.5rem;
+    }
+    .rich-editor-content h1 {
+        font-size: 1.25rem !important;
+        font-weight: 700 !important;
+        padding-bottom: 0.25rem !important;
+        border-bottom: 1px solid rgba(161, 161, 170, 0.25) !important;
+        margin-top: 1rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+    .rich-editor-content h2 {
+        font-size: 1.1rem !important;
+        font-weight: 700 !important;
+        padding-bottom: 0.2rem !important;
+        border-bottom: 1px solid rgba(161, 161, 170, 0.2) !important;
+        margin-top: 0.85rem !important;
+        margin-bottom: 0.4rem !important;
+    }
+    .rich-editor-content h3 {
+        font-size: 0.95rem !important;
+        font-weight: 700 !important;
+        margin-top: 0.75rem !important;
+        margin-bottom: 0.35rem !important;
+    }
+    .rich-editor-content ul {
+        list-style-type: disc !important;
+        padding-left: 1.5rem !important;
+        margin-top: 0 !important;
+        margin-bottom: 0.5rem !important;
+    }
+    .rich-editor-content ul ul {
+        list-style-type: circle !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+    }
+    .rich-editor-content ol {
+        list-style-type: decimal !important;
+        padding-left: 1.5rem !important;
+        margin-top: 0 !important;
+        margin-bottom: 0.5rem !important;
+    }
+    .rich-editor-content ol ol {
+        list-style-type: lower-alpha !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+    }
+    .rich-editor-content li {
+        display: list-item !important;
+        line-height: 1.6;
+    }
+    .rich-editor-content li input[type="checkbox"] {
+        margin-right: 0.35rem;
+        accent-color: #6366f1;
+    }
+    .rich-editor-content hr {
+        border: 0 !important;
+        border-top: 1px solid rgba(161, 161, 170, 0.25) !important;
+        margin-top: 0.75rem !important;
+        margin-bottom: 0.75rem !important;
+    }
+    .rich-editor-content blockquote {
+        border-left: 3px solid #6366f1 !important;
+        padding-left: 0.75rem !important;
+        margin-top: 0.5rem !important;
+        margin-bottom: 0.5rem !important;
+        font-style: italic !important;
+        opacity: 0.95;
+        background-color: rgba(99, 102, 241, 0.08) !important;
+        border-radius: 0 6px 6px 0 !important;
+    }
+    .rich-editor-content code {
+        background-color: rgba(99, 102, 241, 0.18) !important;
+        color: #6366f1 !important;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+        padding: 2px 6px !important;
+        border-radius: 4px !important;
+        font-size: 11px !important;
+        border: 1px solid rgba(99, 102, 241, 0.3) !important;
+    }
+    .dark .rich-editor-content code {
+        color: #a5b4fc !important;
+        background-color: rgba(99, 102, 241, 0.25) !important;
+    }
+    .rich-editor-content pre {
+        background-color: #18181b !important;
+        padding: 0.75rem !important;
+        border-radius: 0.5rem !important;
+        overflow-x: auto !important;
+        margin-bottom: 0.5rem !important;
+    }
+    .rich-editor-content pre code {
+        background-color: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        color: #f4f4f5 !important;
+    }
+    .rich-editor-content table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        margin-bottom: 0.75rem !important;
+    }
+    .rich-editor-content th, .rich-editor-content td {
+        border: 1px solid rgba(161, 161, 170, 0.25) !important;
+        padding: 0.4rem 0.6rem !important;
+        font-size: 0.8rem !important;
+    }
+    .rich-editor-content th {
+        background-color: rgba(161, 161, 170, 0.1) !important;
+        font-weight: 600 !important;
+    }
+    .rich-editor-content a {
+        color: #6366f1 !important;
+        text-decoration: underline !important;
+        font-weight: 500 !important;
+    }
+    .rich-editor-content img {
+        max-height: 200px !important;
+        max-width: 100% !important;
+        border-radius: 10px !important;
+        margin: 8px 0 !important;
+        display: block !important;
+        object-fit: cover !important;
+    }
+</style>
 
 <div class="flex h-full w-full flex-col gap-5 sm:gap-6 px-3 sm:px-4 py-2 text-neutral-900 dark:text-neutral-100 max-w-7xl mx-auto mt-1 sm:mt-4 pb-20"
      x-data="{ activeTab: @entangle('activeTab') }">
@@ -900,7 +1128,7 @@ new class extends Component
 
                                     <!-- Description preview if exists -->
                                     @if($task->description)
-                                        <p class="text-[11px] text-zinc-500 dark:text-zinc-400 line-clamp-2 leading-tight">{{ $task->description }}</p>
+                                        <p class="text-[11px] text-zinc-500 dark:text-zinc-400 line-clamp-2 leading-tight">{{ $this->getCleanDescription($task->description) }}</p>
                                     @endif
 
                                     <!-- Project & Labels row -->
@@ -1098,7 +1326,7 @@ new class extends Component
                                     @endforeach
                                 </div>
                                 @if($task->description)
-                                    <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 truncate">{{ $task->description }}</p>
+                                    <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 truncate">{{ $this->getCleanDescription($task->description) }}</p>
                                 @endif
                             </div>
                         </div>
@@ -1122,7 +1350,7 @@ new class extends Component
                                         <flux:icon name="trash" class="size-4.5" />
                                     </div>
                                     <div>
-                                        <flux:heading size="lg" class="font-bold text-sm">Delete Task?</flux:heading>
+                                        <flux:heading size="lg" class="font-bold">Delete Task?</flux:heading>
                                         <flux:text class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
                                             Are you sure you want to delete <strong>{{ $task->title }}</strong>?
                                         </flux:text>
@@ -1172,17 +1400,54 @@ new class extends Component
                     </label>
                     <input type="text" wire:model="taskTitle" placeholder="What needs to be done?" required autocomplete="off"
                            class="w-full h-9 px-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500">
-                    @error('taskTitle') <span class="text-[10px] text-red-500">{{ $message }}</span> @enderror
+                    @error('taskTitle') <span class="text-[10px] text-red-500"></span> @enderror
                 </div>
 
-                <!-- Task Description -->
-                <div class="space-y-1">
-                    <label class="text-xs font-semibold text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
-                        <flux:icon name="document-text" class="size-3.5 text-indigo-500" />
-                        <span>Description (Optional)</span>
-                    </label>
-                    <textarea wire:model="taskDescription" placeholder="Add additional task context or specs..." rows="3"
-                              class="w-full p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500"></textarea>
+                <!-- Task Description with Write / Preview Tabs (Create Modal) -->
+                <div x-data="{ tab: 'write' }" class="space-y-1.5">
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs font-semibold text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
+                            <flux:icon name="document-text" class="size-3.5 text-indigo-500" />
+                            <span>Description (Optional)</span>
+                        </label>
+                        
+                        <!-- Write / Preview Tab Switcher -->
+                        <div class="flex items-center p-0.5 rounded-lg bg-zinc-200/60 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/60 text-[11px] font-medium">
+                            <button type="button" 
+                                    @click="tab = 'write'" 
+                                    :class="tab === 'write' ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 font-bold shadow-2xs' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200'"
+                                    class="px-2.5 py-0.5 rounded-md transition-all cursor-pointer">
+                                Write
+                            </button>
+                            <button type="button" 
+                                    @click="tab = 'preview'" 
+                                    :class="tab === 'preview' ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 font-bold shadow-2xs' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200'"
+                                    class="px-2.5 py-0.5 rounded-md transition-all cursor-pointer">
+                                Preview
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- WRITE TAB CONTENT -->
+                    <div x-show="tab === 'write'">
+                        <textarea wire:model.live="taskDescription"
+                                  placeholder="Write task details using GitHub Flavored Markdown (e.g. ## Title, **bold**, - list, | table |)..." 
+                                  rows="10"
+                                  class="w-full p-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all leading-relaxed font-mono resize-y min-h-[220px]"></textarea>
+                    </div>
+
+                    <!-- PREVIEW TAB CONTENT -->
+                    <div x-show="tab === 'preview'" class="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-800 min-h-[220px] max-h-[420px] overflow-y-auto">
+                        @if(trim($taskDescription))
+                            <div class="rich-editor-content text-xs text-zinc-800 dark:text-zinc-200 leading-relaxed font-mono">
+                                {!! $this->renderFormattedDescription($taskDescription) !!}
+                            </div>
+                        @else
+                            <div class="text-zinc-400 text-xs italic font-mono">
+                                <span>Nothing to preview yet. Write some Markdown content in the Write tab first!</span>
+                            </div>
+                        @endif
+                    </div>
                 </div>
 
                 <!-- Grid Row: Project & Initial Status -->
@@ -1461,14 +1726,51 @@ new class extends Component
                            class="w-full h-9 px-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500">
                 </div>
 
-                <!-- Task Description -->
-                <div class="space-y-1">
-                    <label class="text-xs font-semibold text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
-                        <flux:icon name="document-text" class="size-3.5 text-indigo-500" />
-                        <span>Description (Optional)</span>
-                    </label>
-                    <textarea wire:model="editingTaskDescription" placeholder="Add details..." rows="3"
-                              class="w-full p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500"></textarea>
+                <!-- Task Description with Write / Preview Tabs (Edit Modal) -->
+                <div x-data="{ tab: 'write' }" class="space-y-1.5">
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs font-semibold text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
+                            <flux:icon name="document-text" class="size-3.5 text-indigo-500" />
+                            <span>Description (Optional)</span>
+                        </label>
+                        
+                        <!-- Write / Preview Tab Switcher -->
+                        <div class="flex items-center p-0.5 rounded-lg bg-zinc-200/60 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/60 text-[11px] font-medium">
+                            <button type="button" 
+                                    @click="tab = 'write'" 
+                                    :class="tab === 'write' ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 font-bold shadow-2xs' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200'"
+                                    class="px-2.5 py-0.5 rounded-md transition-all cursor-pointer">
+                                Write
+                            </button>
+                            <button type="button" 
+                                    @click="tab = 'preview'" 
+                                    :class="tab === 'preview' ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 font-bold shadow-2xs' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200'"
+                                    class="px-2.5 py-0.5 rounded-md transition-all cursor-pointer">
+                                Preview
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- WRITE TAB CONTENT -->
+                    <div x-show="tab === 'write'">
+                        <textarea wire:model.live="editingTaskDescription"
+                                  placeholder="Write task details using GitHub Flavored Markdown (e.g. ## Title, **bold**, - list, | table |)..." 
+                                  rows="10"
+                                  class="w-full p-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all leading-relaxed font-mono resize-y min-h-[220px]"></textarea>
+                    </div>
+
+                    <!-- PREVIEW TAB CONTENT -->
+                    <div x-show="tab === 'preview'" class="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-800 min-h-[220px] max-h-[420px] overflow-y-auto">
+                        @if(trim($editingTaskDescription))
+                            <div class="rich-editor-content text-xs text-zinc-800 dark:text-zinc-200 leading-relaxed font-mono">
+                                {!! $this->renderFormattedDescription($editingTaskDescription) !!}
+                            </div>
+                        @else
+                            <div class="text-zinc-400 text-xs italic font-mono">
+                                <span>Nothing to preview yet. Write some Markdown content in the Write tab first!</span>
+                            </div>
+                        @endif
+                    </div>
                 </div>
 
                 <!-- Grid Row: Project & Status -->
@@ -1756,7 +2058,9 @@ new class extends Component
                     <div class="p-3.5 sm:p-4 rounded-2xl bg-zinc-50/70 dark:bg-zinc-950/70 border border-zinc-200/80 dark:border-zinc-800/80 space-y-2 !text-left text-left" style="text-align: left !important;">
                         <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block !text-left text-left" style="text-align: left !important;">Description</span>
                         @if(trim($task->description))
-                            <div class="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed !text-left text-left w-full max-h-60 overflow-y-auto whitespace-pre-wrap" style="text-align: left !important;">{!! nl2br(e($task->description)) !!}</div>
+                            <div class="rich-editor-content text-xs text-zinc-800 dark:text-zinc-200 leading-relaxed !text-left text-left w-full max-h-60 overflow-y-auto" style="text-align: left !important;">
+                                {!! $this->renderFormattedDescription($task->description) !!}
+                            </div>
                         @else
                             <p class="text-xs text-zinc-400 italic !text-left text-left" style="text-align: left !important;">No description provided for this task.</p>
                         @endif
@@ -1987,7 +2291,7 @@ new class extends Component
                                     </div>
 
                                     @if($task->description)
-                                        <p class="text-[11px] text-zinc-500 dark:text-zinc-400 line-clamp-2 leading-relaxed">{{ $task->description }}</p>
+                                        <p class="text-[11px] text-zinc-500 dark:text-zinc-400 line-clamp-2 leading-relaxed">{{ $this->getCleanDescription($task->description) }}</p>
                                     @endif
 
                                     <div class="flex flex-wrap items-center gap-1.5 pt-0.5">
