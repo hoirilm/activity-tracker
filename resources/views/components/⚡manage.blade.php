@@ -762,6 +762,25 @@ new class extends Component
     .rich-editor-content {
         line-height: 1.6;
         font-size: 0.875rem;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        word-break: break-word !important;
+        white-space: normal !important;
+    }
+    .rich-editor-content p,
+    .rich-editor-content div,
+    .rich-editor-content li,
+    .rich-editor-content blockquote,
+    .rich-editor-content h1,
+    .rich-editor-content h2,
+    .rich-editor-content h3,
+    .rich-editor-content td,
+    .rich-editor-content th,
+    .rich-editor-content span,
+    .rich-editor-content a {
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        word-break: break-word !important;
     }
     .rich-editor-content p {
         margin-top: 0;
@@ -843,6 +862,10 @@ new class extends Component
         border-radius: 4px !important;
         font-size: 11px !important;
         border: 1px solid rgba(99, 102, 241, 0.3) !important;
+        white-space: pre-wrap !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        word-break: break-word !important;
     }
     .dark .rich-editor-content code {
         color: #a5b4fc !important;
@@ -854,22 +877,37 @@ new class extends Component
         border-radius: 0.5rem !important;
         overflow-x: auto !important;
         margin-bottom: 0.5rem !important;
+        white-space: pre-wrap !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        word-break: break-word !important;
     }
     .rich-editor-content pre code {
         background-color: transparent !important;
         border: none !important;
         padding: 0 !important;
         color: #f4f4f5 !important;
+        white-space: pre-wrap !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        word-break: break-word !important;
     }
     .rich-editor-content table {
         width: 100% !important;
         border-collapse: collapse !important;
         margin-bottom: 0.75rem !important;
+        display: block !important;
+        overflow-x: auto !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
     }
     .rich-editor-content th, .rich-editor-content td {
         border: 1px solid rgba(161, 161, 170, 0.25) !important;
         padding: 0.4rem 0.6rem !important;
         font-size: 0.8rem !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        word-break: break-word !important;
     }
     .rich-editor-content th {
         background-color: rgba(161, 161, 170, 0.1) !important;
@@ -2055,10 +2093,10 @@ new class extends Component
                     </div>
 
                     <!-- Description Section Card -->
-                    <div class="p-3.5 sm:p-4 rounded-2xl bg-zinc-50/70 dark:bg-zinc-950/70 border border-zinc-200/80 dark:border-zinc-800/80 space-y-2 !text-left text-left" style="text-align: left !important;">
+                    <div class="p-3.5 sm:p-4 rounded-2xl bg-zinc-50/70 dark:bg-zinc-950/70 border border-zinc-200/80 dark:border-zinc-800/80 space-y-2 !text-left text-left min-w-0" style="text-align: left !important;">
                         <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block !text-left text-left" style="text-align: left !important;">Description</span>
                         @if(trim($task->description))
-                            <div class="rich-editor-content text-xs text-zinc-800 dark:text-zinc-200 leading-relaxed !text-left text-left w-full max-h-60 overflow-y-auto" style="text-align: left !important;">
+                            <div class="rich-editor-content text-xs text-zinc-800 dark:text-zinc-200 leading-relaxed !text-left text-left w-full max-h-60 overflow-y-auto break-words overflow-hidden" style="text-align: left !important;">
                                 {!! $this->renderFormattedDescription($task->description) !!}
                             </div>
                         @else
