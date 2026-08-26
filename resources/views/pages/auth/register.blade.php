@@ -2,37 +2,37 @@
     <div class="w-full max-w-5xl overflow-hidden rounded-3xl border border-zinc-800/80 bg-zinc-900/60 backdrop-blur-2xl shadow-2xl grid grid-cols-1 lg:grid-cols-12 min-h-[660px]">
         
         <!-- Left Hero Section (Brand & Value Proposition) -->
-        <div class="lg:col-span-6 p-8 sm:p-12 flex flex-col justify-between relative bg-gradient-to-br from-zinc-900/90 via-zinc-900/60 to-indigo-950/40 border-b lg:border-b-0 lg:border-r border-zinc-800/60 overflow-hidden">
+        <div class="lg:col-span-6 p-8 sm:p-12 flex flex-col justify-between relative bg-gradient-to-br from-zinc-900/90 via-zinc-900/60 to-amber-950/20 border-b lg:border-b-0 lg:border-r border-zinc-800/60 overflow-hidden">
             <!-- Background Glow Orbs -->
-            <div class="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-indigo-500/15 blur-3xl pointer-events-none"></div>
-            <div class="absolute -bottom-24 -right-24 w-72 h-72 rounded-full bg-emerald-500/15 blur-3xl pointer-events-none"></div>
+            <div class="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-amber-500/15 blur-3xl pointer-events-none"></div>
+            <div class="absolute -bottom-24 -right-24 w-72 h-72 rounded-full bg-orange-500/15 blur-3xl pointer-events-none"></div>
 
             <div class="relative z-10">
                 <!-- Brand Logo & Title -->
                 <a href="{{ route('home') }}" class="inline-flex items-center gap-3 group" wire:navigate>
-                    <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 to-emerald-400 p-0.5 shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform duration-300">
+                    <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-tr from-amber-500 to-orange-400 p-0.5 shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform duration-300">
                         <div class="flex h-full w-full items-center justify-center rounded-[10px] bg-zinc-950">
-                            <x-app-logo-icon class="h-6 w-6 text-emerald-400" />
+                            <x-app-logo-icon class="h-6 w-6 text-amber-400" />
                         </div>
                     </div>
                     <div class="flex flex-col">
-                        <span class="text-lg font-bold tracking-tight text-white group-hover:text-emerald-400 transition-colors">Klakoan</span>
+                        <span class="text-lg font-bold tracking-tight text-white group-hover:text-amber-400 transition-colors">Klakoan</span>
                         <span class="text-xs text-zinc-400 font-medium">Developer Activity Tracker</span>
                     </div>
                 </a>
 
                 <!-- Hero Content -->
                 <div class="mt-10 space-y-4">
-                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
                         <span class="relative flex h-2 w-2">
-                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                            <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
                         </span>
                         Developer Onboarding
                     </div>
 
                     <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
-                        Start tracking with <span class="bg-gradient-to-r from-emerald-400 via-teal-300 to-indigo-400 bg-clip-text text-transparent">zero friction</span>.
+                        Start tracking with <span class="bg-gradient-to-r from-amber-400 via-amber-300 to-orange-400 bg-clip-text text-transparent">zero friction</span>.
                     </h1>
 
                     <p class="text-zinc-400 text-sm leading-relaxed">
@@ -94,7 +94,7 @@
                                 :aria-label="'Feature ' + i"
                             >
                                 <div 
-                                    class="h-full bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full transition-all duration-75"
+                                    class="h-full bg-gradient-to-r from-amber-400 to-orange-400 rounded-full transition-all duration-75"
                                     :style="active === (i - 1) ? `width: ${progress}%` : (active > (i - 1) ? 'width: 100%' : 'width: 0%')"
                                 ></div>
                             </button>
@@ -108,7 +108,7 @@
                         <div x-show="active === 0" x-transition:enter="transition ease-out duration-300 transform opacity-0 translate-y-1.5" x-transition:enter-end="opacity-100 translate-y-0" class="space-y-2.5">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-2">
-                                    <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">KEYBOARD-FIRST</span>
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">KEYBOARD-FIRST</span>
                                     <span class="text-xs font-semibold text-white">Instant Hotkey Flow</span>
                                 </div>
                                 <span class="text-[11px] font-mono text-zinc-500">01 / 04</span>
@@ -116,11 +116,11 @@
 
                             <div class="rounded-xl border border-zinc-800/90 bg-zinc-900/80 p-3 flex items-center justify-between text-xs font-mono text-zinc-300">
                                 <div class="flex items-center gap-2">
-                                    <kbd class="px-1.5 py-0.5 rounded bg-zinc-950 border border-zinc-700 text-[11px] text-emerald-400 font-semibold shadow-xs">⌘ /</kbd>
+                                    <kbd class="px-1.5 py-0.5 rounded bg-zinc-950 border border-zinc-700 text-[11px] text-amber-400 font-semibold shadow-xs">⌘ /</kbd>
                                     <span class="text-zinc-400">Focus task bar</span>
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    <kbd class="px-1.5 py-0.5 rounded bg-zinc-950 border border-zinc-700 text-[11px] text-emerald-400 font-semibold shadow-xs">⌘ ↵</kbd>
+                                    <kbd class="px-1.5 py-0.5 rounded bg-zinc-950 border border-zinc-700 text-[11px] text-amber-400 font-semibold shadow-xs">⌘ ↵</kbd>
                                     <span class="text-zinc-400">Log & start tracking</span>
                                 </div>
                             </div>
@@ -134,7 +134,7 @@
                         <div x-show="active === 1" x-cloak x-transition:enter="transition ease-out duration-300 transform opacity-0 translate-y-1.5" x-transition:enter-end="opacity-100 translate-y-0" class="space-y-2.5">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-2">
-                                    <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-teal-500/10 text-teal-400 border border-teal-500/20">TIME TRACKING</span>
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">TIME TRACKING</span>
                                     <span class="text-xs font-semibold text-white">Sequential & Parallel Modes</span>
                                 </div>
                                 <span class="text-[11px] font-mono text-zinc-500">02 / 04</span>
@@ -142,10 +142,10 @@
 
                             <div class="rounded-xl border border-zinc-800/90 bg-zinc-900/80 p-3 flex items-center justify-between">
                                 <div class="flex items-center gap-2">
-                                    <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                                    <span class="h-2 w-2 rounded-full bg-amber-400 animate-pulse"></span>
                                     <span class="text-xs font-mono text-zinc-300">Live Duration Counter</span>
                                 </div>
-                                <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-medium bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-medium bg-amber-500/15 text-amber-300 border border-amber-500/30">
                                     Parallel Supported
                                 </span>
                             </div>
@@ -159,7 +159,7 @@
                         <div x-show="active === 2" x-cloak x-transition:enter="transition ease-out duration-300 transform opacity-0 translate-y-1.5" x-transition:enter-end="opacity-100 translate-y-0" class="space-y-2.5">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-2">
-                                    <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">PORTABILITY</span>
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-orange-500/10 text-orange-400 border border-orange-500/20">PORTABILITY</span>
                                     <span class="text-xs font-semibold text-white">Full Export & Import</span>
                                 </div>
                                 <span class="text-[11px] font-mono text-zinc-500">03 / 04</span>
@@ -167,10 +167,10 @@
 
                             <div class="rounded-xl border border-zinc-800/90 bg-zinc-900/80 p-3 flex items-center justify-between text-xs">
                                 <div class="flex items-center gap-2 text-zinc-300 font-mono">
-                                    <svg class="w-4 h-4 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                    <svg class="w-4 h-4 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                     <span>.XLSX & .CSV Formats</span>
                                 </div>
-                                <span class="text-[11px] font-mono text-indigo-300">Auto Duration Calculations</span>
+                                <span class="text-[11px] font-mono text-orange-300">Auto Duration Calculations</span>
                             </div>
 
                             <p class="text-[11px] text-zinc-400 leading-relaxed">
@@ -182,7 +182,7 @@
                         <div x-show="active === 3" x-cloak x-transition:enter="transition ease-out duration-300 transform opacity-0 translate-y-1.5" x-transition:enter-end="opacity-100 translate-y-0" class="space-y-2.5">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-2">
-                                    <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-purple-500/10 text-purple-400 border border-purple-500/20">SECURITY</span>
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">SECURITY</span>
                                     <span class="text-xs font-semibold text-white">Passkey & Whitelist Access</span>
                                 </div>
                                 <span class="text-[11px] font-mono text-zinc-500">04 / 04</span>
@@ -190,10 +190,10 @@
 
                             <div class="rounded-xl border border-zinc-800/90 bg-zinc-900/80 p-3 flex items-center justify-between text-xs">
                                 <div class="flex items-center gap-2 text-zinc-300">
-                                    <svg class="w-4 h-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                                    <svg class="w-4 h-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                                     <span class="font-mono">FIDO2 Touch ID / Passkeys</span>
                                 </div>
-                                <span class="text-[11px] font-mono text-emerald-400">12-Factor Whitelist</span>
+                                <span class="text-[11px] font-mono text-amber-400">12-Factor Whitelist</span>
                             </div>
 
                             <p class="text-[11px] text-zinc-400 leading-relaxed">
@@ -213,7 +213,7 @@
                 <!-- Auth Header -->
                 <div class="space-y-1 text-left">
                     <h2 class="text-2xl font-bold tracking-tight text-white">{{ __('Create an account') }}</h2>
-                    <p class="text-sm text-zinc-400">{{ __('Enter your details below to get started with Dev Track') }}</p>
+                    <p class="text-sm text-zinc-400">{{ __('Enter your details below to get started with Klakoan') }}</p>
                 </div>
 
                 <!-- Session Status -->
@@ -280,7 +280,7 @@
 
                     <!-- Submit Button -->
                     <div class="pt-2">
-                        <button type="submit" data-test="register-user-button" class="w-full py-3 px-4 rounded-xl font-semibold text-sm text-zinc-950 bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 active:scale-[0.99] shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all duration-200 flex items-center justify-center gap-2 group cursor-pointer">
+                        <button type="submit" data-test="register-user-button" class="w-full py-3 px-4 rounded-xl font-semibold text-sm text-zinc-950 bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:from-amber-300 hover:to-orange-400 active:scale-[0.99] shadow-lg shadow-amber-500/20 hover:shadow-amber-500/30 transition-all duration-200 flex items-center justify-center gap-2 group cursor-pointer">
                             <span>{{ __('Create Account') }}</span>
                             <svg class="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
@@ -312,7 +312,7 @@
                 <!-- Footer Sign In Link -->
                 <div class="text-center text-xs text-zinc-400 pt-1">
                     <span>{{ __('Already have an account?') }}</span>
-                    <flux:link :href="route('login')" wire:navigate class="text-indigo-400 hover:text-indigo-300 font-medium ml-1">{{ __('Log in') }}</flux:link>
+                    <flux:link :href="route('login')" wire:navigate class="text-amber-400 hover:text-amber-300 font-medium ml-1">{{ __('Log in') }}</flux:link>
                 </div>
             </div>
         </div>

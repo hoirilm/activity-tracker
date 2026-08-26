@@ -143,8 +143,23 @@ return [
     */
 
     'passkeys' => [
-        'relying_party_id' => parse_url(config('app.url'), PHP_URL_HOST),
-        'allowed_origins' => [config('app.url')],
+        'relying_party_id' => env('PASSKEYS_RELYING_PARTY_ID') ?: (
+            (! app()->runningInConsole() && request()->getHost())
+                ? request()->getHost()
+                : (parse_url(config('app.url'), PHP_URL_HOST) ?: 'localhost')
+        ),
+        'allowed_origins' => array_values(array_unique(array_filter([
+            config('app.url'),
+            'https://activity-tracker.test',
+            'http://activity-tracker.test',
+            'http://localhost:8000',
+            'http://127.0.0.1:8000',
+            'http://localhost',
+            'http://127.0.0.1',
+            'https://klakoan.up.railway.app',
+            env('APP_URL'),
+            (! app()->runningInConsole() && request()->getSchemeAndHttpHost()) ? request()->getSchemeAndHttpHost() : null,
+        ]))),
         'user_handle_secret' => env('PASSKEYS_USER_HANDLE_SECRET', config('app.key')),
         'timeout' => 60000,
     ],

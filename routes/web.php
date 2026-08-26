@@ -9,7 +9,7 @@ Route::get('/lang/{locale}', [LanguageController::class, 'switch'])->name('langu
 Route::view('/', 'welcome')->name('home');
 
 Route::get('/auth/google', [GoogleController::class, 'redirect'])->name('auth.google');
-Route::get('/auth/google/callback', [GoogleController::class, 'callback']);
+Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('auth.google.callback');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('dashboard', 'dashboard')->name('dashboard');

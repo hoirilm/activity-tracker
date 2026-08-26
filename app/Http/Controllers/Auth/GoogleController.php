@@ -13,14 +13,26 @@ class GoogleController extends Controller
 {
     public function redirect()
     {
-        return Socialite::driver('google')->redirect();
+        $driver = Socialite::driver('google');
+
+        if ($redirectUrl = config('services.google.redirect')) {
+            $driver->redirectUrl($redirectUrl);
+        }
+
+        return $driver->redirect();
     }
 
     public function callback()
     {
         try {
+            $driver = Socialite::driver('google');
+
+            if ($redirectUrl = config('services.google.redirect')) {
+                $driver->redirectUrl($redirectUrl);
+            }
+
             /** @var \Laravel\Socialite\Two\User $googleUser */
-            $googleUser = Socialite::driver('google')->user();
+            $googleUser = $driver->user();
 
             $user = User::where('google_id', $googleUser->id)->orWhere('email', $googleUser->email)->first();
 
@@ -43,7 +55,7 @@ class GoogleController extends Controller
 
                 $user->notifications()->create([
                     'title' => '👋 Welcome, '.$user->name.'!',
-                    'body' => 'Welcome to Activity Tracker! We are excited to have you on board.',
+                    'body' => 'Welcome to Klakoan! We are excited to have you on board.',
                     'type' => 'success',
                 ]);
             }
@@ -52,7 +64,7 @@ class GoogleController extends Controller
 
             return redirect()->intended(route('dashboard', absolute: false));
         } catch (\Exception $e) {
-            return redirect()->route('login')->with('status', 'Failed to authenticate with Google. Please try again.');
+            return redirect()->route('login')->with('status', 'Failed to authenticate with Google: '.$e->getMessage());
         }
     }
 }

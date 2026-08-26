@@ -16,12 +16,12 @@
             }
         </style>
     </head>
-    <body class="min-h-screen bg-zinc-950 text-zinc-100 antialiased selection:bg-indigo-500 selection:text-white dark:bg-zinc-950 dark:text-zinc-100 relative overflow-x-hidden">
+    <body class="min-h-screen bg-zinc-950 text-zinc-100 antialiased selection:bg-amber-500 selection:text-white dark:bg-zinc-950 dark:text-zinc-100 relative overflow-x-hidden">
         <!-- Ambient Glow Elements -->
         <div class="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-            <div class="absolute -top-32 -left-32 h-[500px] w-[500px] rounded-full bg-indigo-600/20 blur-[130px]"></div>
-            <div class="absolute top-1/2 -right-32 h-[450px] w-[450px] rounded-full bg-emerald-500/15 blur-[120px]"></div>
-            <div class="absolute -bottom-32 left-1/3 h-[400px] w-[400px] rounded-full bg-purple-600/15 blur-[120px]"></div>
+            <div class="absolute -top-32 -left-32 h-[500px] w-[500px] rounded-full bg-amber-500/15 blur-[130px]"></div>
+            <div class="absolute top-1/2 -right-32 h-[450px] w-[450px] rounded-full bg-orange-500/10 blur-[120px]"></div>
+            <div class="absolute -bottom-32 left-1/3 h-[400px] w-[400px] rounded-full bg-amber-600/10 blur-[120px]"></div>
             <div class="absolute inset-0 bg-auth-grid"></div>
         </div>
 
