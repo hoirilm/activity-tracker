@@ -108,6 +108,28 @@ new class extends Component
         return $query->latest()->get();
     }
 
+    public function getEditModalTasksProperty()
+    {
+        $query = auth()->user()->tasks()->with('project');
+
+        if ($this->editingActivityId) {
+            $activity = auth()->user()->activities()->find($this->editingActivityId);
+            if ($activity) {
+                return $query->where(function ($q) use ($activity) {
+                    if ($activity->project_id) {
+                        $q->where('project_id', $activity->project_id)
+                          ->orWhereNull('project_id');
+                    }
+                    if ($activity->task_id) {
+                        $q->orWhere('id', $activity->task_id);
+                    }
+                })->latest()->get();
+            }
+        }
+
+        return $query->latest()->get();
+    }
+
     public function loadMore()
     {
         $this->daysLimit += 7;
@@ -346,6 +368,57 @@ new class extends Component
     {
         $this->showEditModal = false;
         $this->editingActivityId = null;
+    }
+
+    public function calculateMergedDuration($activities): string
+    {
+        if ($activities->isEmpty()) {
+            return '00:00:00';
+        }
+
+        $intervals = $activities->filter(fn($act) => !is_null($act->end_time) && !is_null($act->start_time))
+            ->map(function ($activity) {
+                return [
+                    'start' => $activity->start_time->getTimestamp(),
+                    'end' => $activity->end_time->getTimestamp(),
+                ];
+            })
+            ->filter(fn($interval) => $interval['end'] >= $interval['start'])
+            ->sortBy('start')
+            ->values();
+
+        if ($intervals->isEmpty()) {
+            return '00:00:00';
+        }
+
+        $merged = [];
+        $currentStart = $intervals[0]['start'];
+        $currentEnd = $intervals[0]['end'];
+
+        for ($i = 1; $i < $intervals->count(); $i++) {
+            $start = $intervals[$i]['start'];
+            $end = $intervals[$i]['end'];
+
+            if ($start <= $currentEnd) {
+                $currentEnd = max($currentEnd, $end);
+            } else {
+                $merged[] = ['start' => $currentStart, 'end' => $currentEnd];
+                $currentStart = $start;
+                $currentEnd = $end;
+            }
+        }
+        $merged[] = ['start' => $currentStart, 'end' => $currentEnd];
+
+        $totalSeconds = 0;
+        foreach ($merged as $interval) {
+            $totalSeconds += ($interval['end'] - $interval['start']);
+        }
+
+        $h = floor($totalSeconds / 3600);
+        $m = floor(($totalSeconds % 3600) / 60);
+        $s = $totalSeconds % 60;
+
+        return sprintf('%02d:%02d:%02d', $h, $m, $s);
     }
 
     public function deleteActivity($id)
@@ -828,13 +901,7 @@ new class extends Component
         <div class="space-y-4">
             @forelse($this->activitiesData['activities'] as $date => $dayActivities)
                 @php
-                    $dayTotalSeconds = $dayActivities->sum(function($act) {
-                        return $act->end_time ? $act->start_time->diffInSeconds($act->end_time) : 0;
-                    });
-                    $dayH = floor($dayTotalSeconds / 3600);
-                    $dayM = floor(($dayTotalSeconds % 3600) / 60);
-                    $dayS = $dayTotalSeconds % 60;
-                    $dayFormatted = sprintf('%02d:%02d:%02d', $dayH, $dayM, $dayS);
+                    $dayFormatted = $this->calculateMergedDuration($dayActivities);
                 @endphp
                 <div wire:key="day-{{ $date }}" class="rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl shadow-xs overflow-hidden">
                     <!-- Day Header -->
@@ -962,26 +1029,26 @@ new class extends Component
                     <div class="space-y-4">
                         <div>
                             <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Activity Name</label>
-                            <input type="text" wire:model="editDetail" class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:ring-indigo-500 focus:border-indigo-500 shadow-xs text-xs py-2 px-3 transition-colors">
+                            <input type="text" wire:model="editDetail" class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 shadow-xs text-xs py-2 px-3 transition-colors">
                             @error('editDetail') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Associated Task</label>
-                            <select wire:model="editTaskId" class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:ring-indigo-500 focus:border-indigo-500 shadow-xs text-xs py-2 px-3 transition-colors">
+                            <select wire:model="editTaskId" class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 shadow-xs text-xs py-2 px-3 transition-colors">
                                 <option value="">-- Non-Task Activity --</option>
-                                @foreach($this->tasks as $t)
-                                    <option value="{{ $t->id }}">{{ $t->title }}</option>
+                                @foreach($this->editModalTasks as $t)
+                                    <option value="{{ $t->id }}">{{ $t->title }}{{ $t->project ? ' ('.$t->project->name.')' : '' }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Start Time</label>
-                            <input type="datetime-local" wire:model="editStartTime" class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:ring-indigo-500 focus:border-indigo-500 shadow-xs text-xs cursor-pointer py-2 px-3 transition-colors">
+                            <input type="datetime-local" wire:model="editStartTime" class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 shadow-xs text-xs cursor-pointer py-2 px-3 transition-colors">
                             @error('editStartTime') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">End Time</label>
-                            <input type="datetime-local" wire:model="editEndTime" class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:ring-indigo-500 focus:border-indigo-500 shadow-xs text-xs cursor-pointer py-2 px-3 transition-colors">
+                            <input type="datetime-local" wire:model="editEndTime" class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 shadow-xs text-xs cursor-pointer py-2 px-3 transition-colors">
                             @error('editEndTime') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
                         </div>
                     </div>
