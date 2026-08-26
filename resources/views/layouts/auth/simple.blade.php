@@ -4,32 +4,31 @@
         @include('partials.head')
         <style>
             @keyframes authSlideUp {
-                from { opacity: 0; transform: translateY(20px); }
-                to { opacity: 1; transform: translateY(0); }
+                from { opacity: 0; transform: translateY(20px) scale(0.99); }
+                to { opacity: 1; transform: translateY(0) scale(1); }
             }
             .animate-auth-entrance {
                 animation: authSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             }
-            .auth-logo-hover {
-                transition: transform 0.3s ease;
-            }
-            .auth-logo-hover:hover {
-                transform: scale(1.05) rotate(-2deg);
+            .bg-auth-grid {
+                background-size: 32px 32px;
+                background-image: radial-gradient(circle, rgba(120, 119, 198, 0.15) 1px, transparent 1px);
             }
         </style>
     </head>
-    <body class="min-h-screen bg-white antialiased dark:bg-linear-to-b dark:from-neutral-950 dark:to-neutral-900">
-        <div class="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
-            <div class="flex w-full max-w-sm flex-col gap-2 animate-auth-entrance">
-                <a href="{{ route('home') }}" class="flex flex-col items-center gap-2 font-medium group" wire:navigate>
-                    <span class="flex h-9 w-9 mb-1 items-center justify-center rounded-md auth-logo-hover">
-                        <x-app-logo-icon class="size-9 fill-current text-black dark:text-white" />
-                    </span>
-                    <span class="sr-only">{{ config('app.name', 'Laravel') }}</span>
-                </a>
-                <div class="flex flex-col gap-6">
-                    {{ $slot }}
-                </div>
+    <body class="min-h-screen bg-zinc-950 text-zinc-100 antialiased selection:bg-indigo-500 selection:text-white dark:bg-zinc-950 dark:text-zinc-100 relative overflow-x-hidden">
+        <!-- Ambient Glow Elements -->
+        <div class="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+            <div class="absolute -top-32 -left-32 h-[500px] w-[500px] rounded-full bg-indigo-600/20 blur-[130px]"></div>
+            <div class="absolute top-1/2 -right-32 h-[450px] w-[450px] rounded-full bg-emerald-500/15 blur-[120px]"></div>
+            <div class="absolute -bottom-32 left-1/3 h-[400px] w-[400px] rounded-full bg-purple-600/15 blur-[120px]"></div>
+            <div class="absolute inset-0 bg-auth-grid"></div>
+        </div>
+
+        <!-- Content Shell -->
+        <div class="relative z-10 flex min-h-svh w-full flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
+            <div class="w-full flex justify-center animate-auth-entrance">
+                {{ $slot }}
             </div>
         </div>
 
@@ -42,3 +41,4 @@
         @fluxScripts
     </body>
 </html>
+
