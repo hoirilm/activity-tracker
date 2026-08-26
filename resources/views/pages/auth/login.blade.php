@@ -16,8 +16,8 @@
                         </div>
                     </div>
                     <div class="flex flex-col">
-                        <span class="text-lg font-bold tracking-tight text-white group-hover:text-emerald-400 transition-colors">Dev Track</span>
-                        <span class="text-xs text-zinc-400 font-medium">Activity Tracker</span>
+                        <span class="text-lg font-bold tracking-tight text-white group-hover:text-emerald-400 transition-colors">Klakoan</span>
+                        <span class="text-xs text-zinc-400 font-medium">Developer Activity Tracker</span>
                     </div>
                 </a>
 
