@@ -556,9 +556,18 @@ new class extends Component
                                 ? 'border-amber-500/40 bg-amber-500/10 dark:bg-amber-950/30' 
                                 : 'border-emerald-500/30 bg-emerald-500/5 dark:bg-emerald-950/20' }}" 
                      x-data="{ 
+                         initialSeconds: {{ $running->elapsed_seconds }},
                          seconds: {{ $running->elapsed_seconds }}, 
                          paused: {{ $isPaused ? 'true' : 'false' }},
+                         startTime: Date.now(),
                          timer: null,
+                         visibilityHandler: null,
+                         focusHandler: null,
+                         update() {
+                             if (this.paused) return;
+                             const elapsedSinceInit = Math.floor((Date.now() - this.startTime) / 1000);
+                             this.seconds = this.initialSeconds + Math.max(0, elapsedSinceInit);
+                         },
                          formatTime(sec) {
                              let h = Math.floor(sec / 3600).toString().padStart(2, '0');
                              let m = Math.floor((sec % 3600) / 60).toString().padStart(2, '0');
@@ -568,10 +577,21 @@ new class extends Component
                      }"
                      x-init="
                          if (!paused) {
-                             timer = setInterval(() => { seconds++; }, 1000);
+                             update();
+                             timer = setInterval(() => { update(); }, 1000);
+
+                             visibilityHandler = () => {
+                                 if (document.visibilityState === 'visible') update();
+                             };
+                             focusHandler = () => { update(); };
+
+                             document.addEventListener('visibilitychange', visibilityHandler);
+                             window.addEventListener('focus', focusHandler);
                          }
                          $cleanup(() => {
                              if (timer) clearInterval(timer);
+                             if (visibilityHandler) document.removeEventListener('visibilitychange', visibilityHandler);
+                             if (focusHandler) window.removeEventListener('focus', focusHandler);
                          });
                      ">
                     

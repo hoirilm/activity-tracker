@@ -1,9 +1,19 @@
 <x-layouts::auth :title="__('Confirm password')">
-    <div class="flex flex-col gap-6">
-        <x-auth-header
-            :title="__('Confirm password')"
-            :description="__('This is a secure area of the application. Please confirm your password before continuing.')"
-        />
+    <div class="w-full max-w-md p-8 sm:p-10 rounded-3xl border border-zinc-800/80 bg-zinc-900/60 backdrop-blur-2xl shadow-2xl space-y-6">
+        <!-- Brand Logo & Header -->
+        <div class="text-center space-y-3">
+            <a href="{{ route('home') }}" class="inline-flex items-center justify-center group" wire:navigate>
+                <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-tr from-amber-500 to-orange-400 p-0.5 shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform duration-300">
+                    <div class="flex h-full w-full items-center justify-center rounded-[10px] bg-zinc-950">
+                        <x-app-logo-icon class="h-6 w-6 text-amber-400" />
+                    </div>
+                </div>
+            </a>
+            <div class="space-y-1">
+                <h2 class="text-2xl font-bold tracking-tight text-white">{{ __('Confirm password') }}</h2>
+                <p class="text-xs text-zinc-400">{{ __('This is a secure area of the application. Please confirm your password before continuing.') }}</p>
+            </div>
+        </div>
 
         <x-auth-session-status class="text-center" :status="session('status')" />
 
@@ -15,22 +25,27 @@
             :separator="__('Or confirm with password')"
         />
 
-        <form method="POST" action="{{ route('password.confirm.store') }}" class="flex flex-col gap-6">
+        <form method="POST" action="{{ route('password.confirm.store') }}" class="space-y-5" autocomplete="off">
             @csrf
 
-            <flux:input
-                name="password"
-                :label="__('Password')"
-                type="password"
-                required
-                autocomplete="current-password"
-                :placeholder="__('Password')"
-                viewable
-            />
+            <div class="space-y-1.5">
+                <flux:input
+                    name="password"
+                    :label="__('Password')"
+                    type="password"
+                    required
+                    autocomplete="current-password"
+                    :placeholder="__('Password')"
+                    viewable
+                />
+            </div>
 
-            <flux:button variant="primary" type="submit" class="w-full" data-test="confirm-password-button">
-                {{ __('Confirm') }}
-            </flux:button>
+            <button type="submit" data-test="confirm-password-button" class="w-full py-3 px-4 rounded-xl font-semibold text-sm text-zinc-950 bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:from-amber-300 hover:to-orange-400 active:scale-[0.99] shadow-lg shadow-amber-500/20 hover:shadow-amber-500/30 transition-all duration-200 flex items-center justify-center gap-2 group cursor-pointer">
+                <span>{{ __('Confirm') }}</span>
+                <svg class="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                </svg>
+            </button>
         </form>
     </div>
 </x-layouts::auth>

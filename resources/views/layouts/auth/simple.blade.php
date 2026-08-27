@@ -1,7 +1,11 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
     <head>
         @include('partials.head')
+        <script>
+            // Ensure auth pages always render in dark mode
+            document.documentElement.classList.add('dark');
+        </script>
         <style>
             @keyframes authSlideUp {
                 from { opacity: 0; transform: translateY(20px) scale(0.99); }
@@ -16,7 +20,7 @@
             }
         </style>
     </head>
-    <body class="min-h-screen bg-zinc-950 text-zinc-100 antialiased selection:bg-amber-500 selection:text-white dark:bg-zinc-950 dark:text-zinc-100 relative overflow-x-hidden">
+    <body class="dark min-h-screen bg-zinc-950 text-zinc-100 antialiased selection:bg-amber-500 selection:text-white relative overflow-x-hidden">
         <!-- Ambient Glow Elements -->
         <div class="pointer-events-none fixed inset-0 z-0 overflow-hidden">
             <div class="absolute -top-32 -left-32 h-[500px] w-[500px] rounded-full bg-amber-500/15 blur-[130px]"></div>
@@ -39,6 +43,9 @@
         @endpersist
 
         @fluxScripts
+        <script>
+            document.documentElement.classList.add('dark');
+        </script>
     </body>
 </html>
 

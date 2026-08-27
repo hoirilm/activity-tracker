@@ -61,15 +61,12 @@
                    class="text-sm text-center text-red-600 dark:text-red-400"></p>
             </div>
 
-            <div class="relative my-6">
-                <div class="absolute inset-0 flex items-center">
-                    <div class="w-full border-t border-zinc-200 dark:border-zinc-700"></div>
-                </div>
-                <div class="relative flex justify-center text-xs uppercase">
-                    <span class="px-2 text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-900">
-                        {{ $separator }}
-                    </span>
-                </div>
+            <div class="relative flex items-center my-6">
+                <div class="flex-grow border-t border-zinc-800"></div>
+                <span class="flex-shrink-0 mx-4 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
+                    {{ $separator }}
+                </span>
+                <div class="flex-grow border-t border-zinc-800"></div>
             </div>
         </div>
     </template>
