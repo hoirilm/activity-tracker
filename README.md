@@ -28,7 +28,7 @@ Pada versi **3.0.0**, aplikasi ini menggunakan tema eksklusif *Graphite Monochro
 * **Backend**: Laravel 13 (PHP 8.3+)
 * **Frontend**: Livewire 4, Alpine.js, Tailwind CSS v4
 * **UI Components**: Flux UI (Pro)
-* **Database**: PostgreSQL (Dioptimalkan untuk koneksi *pooler* seperti Neon DB)
+* **Database**: PostgreSQL / MySQL / SQLite
 * **Infrastruktur**: Docker, Nginx
 
 ---
@@ -87,7 +87,6 @@ Aplikasi ini sudah dilengkapi dengan `Dockerfile` dan `docker-entrypoint.sh` yan
 
 **Catatan Penting untuk Production:**
 - Pastikan menetapkan `APP_ENV=production` di *environment variables* server Anda. Konfigurasi ini akan memicu aplikasi untuk memaksa penggunaan `https://` (*TrustProxies*).
-- Jika menggunakan **Neon PostgreSQL**, aplikasi ini sudah mengaktifkan `PDO::ATTR_EMULATE_PREPARES` secara bawaan agar koneksi stabil saat menggunakan sistem *Connection Pooling*.
 
 ---
 

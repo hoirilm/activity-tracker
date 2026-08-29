@@ -119,13 +119,13 @@ Versi ini menghadirkan fitur *Onboarding Tour* interaktif untuk memandu pengguna
 
 ## [v3.0.0] - 2026-07-26 🚀
 
-Versi ini berfokus pada penyelesaian masalah infrastruktur saat *deployment* ke *production* (Railway & Neon PostgreSQL), perombakan total pada desain Halaman Depan dengan gaya *Graphite Monochrome*, serta penambahan puluhan animasi interaktif yang membuat aplikasi terasa lebih "hidup". 
+Versi ini berfokus pada penyelesaian masalah infrastruktur saat *deployment* ke *production* (Railway & PostgreSQL), perombakan total pada desain Halaman Depan dengan gaya *Graphite Monochrome*, serta penambahan puluhan animasi interaktif yang membuat aplikasi terasa lebih "hidup". 
 
 **Perbedaan Utama dari v2.0.0:** 
 Jika v2.0.0 sebelumnya berfokus pada penambahan fitur internal (Notifikasi, Manajemen Anggota, *Broadcast*, Passkey), maka v3.0.0 difokuskan sepenuhnya pada **Keandalan Infrastruktur (*Reliability*)** dan **Estetika Visual Premium (*Aesthetics*)** yang meningkatkan nilai jual aplikasi secara drastis di mata pengguna baru.
 
 ### 🛠️ Infrastruktur & Keandalan (*Infrastructure & Reliability*)
-- **Perbaikan Koneksi Neon DB**: Mengaktifkan konfigurasi `PDO::ATTR_EMULATE_PREPARES` pada koneksi PostgreSQL untuk mencegah *error* hilangnya Endpoint ID saat menggunakan *connection pooler* di lingkungan produksi.
+- **Perbaikan Koneksi PostgreSQL**: Optimasi konfigurasi koneksi PostgreSQL di lingkungan produksi.
 - **Optimasi *Build* Docker & Nginx**: 
   - Mengubah struktur tahapan `Dockerfile` agar aset *frontend* dibangun setelah instalasi dependensi Composer (Vendor), memastikan semua kelas UI dari *Livewire/Flux* dikompilasi dengan sempurna ke dalam CSS.
   - Memperbarui `nginx.conf` dengan inklusi `mime.types`, menghilangkan potensi masalah *rendering file* statis (CSS/JS) di *browser*.
