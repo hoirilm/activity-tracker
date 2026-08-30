@@ -188,45 +188,61 @@ new class extends Component
                 </h3>
                 
                 <div class="border border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 sm:p-5 bg-zinc-50/50 dark:bg-zinc-950/60 backdrop-blur-xl flex-1 flex flex-col justify-between gap-4">
-                    <!-- macOS Style Glass Banner Card -->
-                    <div class="w-full bg-white/90 dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 backdrop-blur-2xl rounded-2xl p-5 shadow-xl transition-all duration-300 relative overflow-hidden flex flex-col gap-3">
+                    <!-- macOS Style Glass Banner Card (Identical to Floating Notification Card, Light & Dark Responsive) -->
+                    <div class="w-full text-zinc-900 dark:text-white rounded-xl p-3.5 bg-white/70 dark:bg-white/[0.05] border border-zinc-200/80 dark:border-white/10 backdrop-blur-2xl shadow-xl transition-all duration-300 relative overflow-hidden flex flex-col gap-1.5">
                         
-                        <!-- Header -->
-                        <div class="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 relative z-10">
-                            <div class="flex items-center gap-2">
-                                <div class="size-5 rounded-md bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 flex items-center justify-center font-bold text-[10px] shadow-xs">
-                                    K
-                                </div>
-                                <span class="font-bold text-zinc-700 dark:text-zinc-200 uppercase tracking-wider text-[9px]">Klakoan Tracker</span>
-                                <span>&bull;</span>
-                                <span class="text-[10px]">Just now</span>
-                            </div>
-                            
-                            <!-- Indicator Type Badge -->
-                            <div class="text-[9px] font-mono font-semibold uppercase tracking-wider">
+                        <!-- Top Bar: Status Bar on Left & Timestamp on Far Top-Right -->
+                        <div class="flex items-center justify-between gap-1.5 mb-0.5">
+                            <div class="flex items-center gap-1.5 min-w-0">
                                 @if($type === 'success')
-                                    <span class="bg-emerald-50 dark:bg-zinc-800 text-emerald-600 dark:text-emerald-400 px-2.5 py-0.5 rounded-md border border-emerald-200 dark:border-zinc-700/60">success</span>
+                                    <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 tracking-wide">
+                                        <span class="size-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></span>
+                                        <span>Success</span>
+                                    </span>
                                 @elseif($type === 'warning')
-                                    <span class="bg-amber-50 dark:bg-zinc-800 text-amber-600 dark:text-amber-400 px-2.5 py-0.5 rounded-md border border-amber-200 dark:border-zinc-700/60">warning</span>
+                                    <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-600 dark:text-amber-400 tracking-wide">
+                                        <span class="size-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(251,191,36,0.8)]"></span>
+                                        <span>Warning</span>
+                                    </span>
+                                @elseif($type === 'danger')
+                                    <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-rose-600 dark:text-rose-400 tracking-wide">
+                                        <span class="size-1.5 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(251,113,133,0.8)]"></span>
+                                        <span>Alert</span>
+                                    </span>
                                 @else
-                                    <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-2.5 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60">info</span>
+                                    <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-sky-600 dark:text-sky-400 tracking-wide">
+                                        <span class="size-1.5 rounded-full bg-sky-500 shadow-[0_0_8px_rgba(56,189,248,0.8)]"></span>
+                                        <span>Info</span>
+                                    </span>
                                 @endif
                             </div>
+
+                            <!-- Notification Timestamp in Top Right -->
+                            <span class="text-[10px] text-zinc-500 dark:text-zinc-400 font-normal shrink-0">Just now</span>
                         </div>
 
-                        <!-- Title -->
-                        <h4 class="text-sm font-bold text-zinc-900 dark:text-zinc-100 leading-snug relative z-10 flex items-center gap-1.5">
-                            <span>📢</span>
-                            <span>{{ $title ?: 'Judul Pengumuman...' }}</span>
+                        <!-- Notification Title -->
+                        <h4 class="font-semibold text-xs text-zinc-900 dark:text-zinc-100 tracking-tight leading-snug">
+                            {{ Str::replace(['📢 ', '📢'], '', $title) ?: 'Judul Pengumuman...' }}
                         </h4>
-                        
-                        <!-- Markdown Message Body Preview -->
-                        <div class="text-xs leading-relaxed text-zinc-700 dark:text-zinc-300 relative z-10 bg-zinc-50 dark:bg-zinc-950/60 p-3.5 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 min-h-[90px] max-h-[300px] overflow-y-auto space-y-2">
+
+                        <!-- Markdown Message Body (Clean Left-aligned, No Indentation) -->
+                        <div class="text-[11.5px] leading-relaxed text-zinc-700 dark:text-zinc-300/90 font-sans break-words text-left [&>p]:m-0 [&>p]:leading-relaxed [&>ul]:list-disc [&>ul]:pl-4 [&>ol]:list-decimal [&>ol]:pl-4 [&>h1]:text-xs [&>h1]:font-bold [&>h2]:text-xs [&>h2]:font-bold [&>h3]:text-xs [&>h3]:font-bold [&>code]:bg-zinc-200 dark:[&>code]:bg-white/10 [&>code]:px-1 [&>code]:rounded min-h-[50px] max-h-[250px] overflow-y-auto">
                             @if(trim($body))
-                                {!! Str::markdown($body) !!}
+                                {!! Str::markdown(trim($body)) !!}
                             @else
-                                <p class="text-zinc-400 italic">Isi pesan pengumuman dalam format Markdown (.md) yang akan disiarkan ke semua pengguna terdaftar...</p>
+                                <p class="text-zinc-400 dark:text-zinc-500 italic">Isi pesan pengumuman dalam format Markdown (.md) yang akan disiarkan ke semua pengguna terdaftar...</p>
                             @endif
+                        </div>
+
+                        <!-- Bottom Row: Mark as read button on Bottom Right -->
+                        <div class="flex items-center justify-end mt-1">
+                            <button type="button" 
+                                    class="text-[10px] text-zinc-500 dark:text-zinc-400 hover:text-emerald-600 dark:hover:text-emerald-400 font-medium flex items-center gap-1 transition-colors pointer-events-none"
+                                    title="Mark as read">
+                                <span>Mark as read</span>
+                                <flux:icon name="check" class="size-2.5" />
+                            </button>
                         </div>
                     </div>
                     
