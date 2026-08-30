@@ -89,7 +89,7 @@ new class extends Component
                                    placeholder="Brief summary of the issue" 
                                    required 
                                    autocomplete="off"
-                                   class="w-full h-10 pl-9 pr-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 shadow-2xs transition-all">
+                                   class="w-full h-10 pl-9 pr-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 shadow-2xs transition-all">
                             <flux:icon name="pencil-square" class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-zinc-400 dark:text-zinc-500 pointer-events-none" />
                         </div>
                     </div>
@@ -101,7 +101,7 @@ new class extends Component
                                       placeholder="Detailed description of what happened..." 
                                       rows="3" 
                                       required
-                                      class="w-full p-3 pl-9 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 shadow-2xs transition-all leading-relaxed"></textarea>
+                                      class="w-full p-3 pl-9 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 shadow-2xs transition-all leading-relaxed"></textarea>
                             <flux:icon name="document-text" class="absolute left-3 top-3.5 size-4 text-zinc-400 dark:text-zinc-500 pointer-events-none" />
                         </div>
                     </div>
@@ -110,8 +110,8 @@ new class extends Component
                         <flux:modal.close>
                             <flux:button variant="ghost" size="sm" class="rounded-xl">Cancel</flux:button>
                         </flux:modal.close>
-                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs px-5 py-2.5 rounded-xl border border-indigo-500 active:scale-95 transition-all shadow-xs shadow-indigo-500/20 flex items-center gap-1.5 cursor-pointer">
-                            <flux:icon name="paper-airplane" class="size-3.5 text-white" />
+                        <button type="submit" class="bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-zinc-950 font-bold text-xs px-5 py-2.5 rounded-xl shadow-md shadow-amber-500/20 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer">
+                            <flux:icon name="paper-airplane" class="size-3.5 text-zinc-950" />
                             <span>Submit Report</span>
                         </button>
                     </div>

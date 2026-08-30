@@ -23,16 +23,16 @@
     --color-zinc-900: #171717;
     --color-zinc-950: #0a0a0a;
 
-    --color-accent: var(--color-neutral-800);
-    --color-accent-content: var(--color-neutral-800);
-    --color-accent-foreground: var(--color-white);
+    --color-accent: #f59e0b;
+    --color-accent-content: #d97706;
+    --color-accent-foreground: #ffffff;
 }
 
 @layer theme {
     .dark {
-        --color-accent: var(--color-white);
-        --color-accent-content: var(--color-white);
-        --color-accent-foreground: var(--color-neutral-800);
+        --color-accent: #f59e0b;
+        --color-accent-content: #fbbf24;
+        --color-accent-foreground: #09090b;
     }
 }
 
@@ -44,6 +44,11 @@
     ::backdrop,
     ::file-selector-button {
         border-color: var(--color-gray-200, currentColor);
+    }
+
+    ::selection {
+        background-color: #f59e0b;
+        color: #ffffff;
     }
 }
 
@@ -58,19 +63,21 @@
 input:focus[data-flux-control],
 textarea:focus[data-flux-control],
 select:focus[data-flux-control] {
-    @apply outline-hidden ring-2 ring-accent ring-offset-2 ring-offset-accent-foreground;
+    @apply outline-hidden ring-2 ring-amber-500/30 border-amber-500;
 }
 
-/* \[:where(&)\]:size-4 {
-    @apply size-4;
-} */
+/* Custom Scrollbars */
+.custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 9999px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #71717a; }
 
 /* Driver.js Premium Dark Mode Overrides */
 html.dark .driver-popover {
-    @apply bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl p-5 text-white max-w-sm font-sans;
+    @apply bg-zinc-900/95 border border-zinc-800 rounded-2xl shadow-2xl p-5 text-white max-w-sm font-sans backdrop-blur-xl;
 }
 html.dark .driver-popover-title {
-    @apply text-white font-semibold text-lg tracking-tight mb-2;
+    @apply text-white font-bold text-lg tracking-tight mb-2 flex items-center gap-2;
 }
 html.dark .driver-popover-description {
     @apply text-zinc-400 text-sm leading-relaxed;
@@ -79,19 +86,19 @@ html.dark .driver-popover-footer {
     @apply mt-5 flex items-center justify-between border-t border-zinc-800 pt-4;
 }
 html.dark .driver-popover-progress-text {
-    @apply text-zinc-500 text-xs font-medium;
+    @apply text-zinc-500 text-xs font-mono font-medium;
 }
 html.dark .driver-popover-navigation-btns {
     @apply flex gap-2;
 }
 html.dark .driver-popover-prev-btn {
-    @apply px-3 py-1.5 text-xs font-medium rounded-md text-zinc-300 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 transition-colors cursor-pointer !text-shadow-none;
+    @apply px-3 py-1.5 text-xs font-medium rounded-xl text-zinc-300 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 transition-colors cursor-pointer !text-shadow-none;
 }
 html.dark .driver-popover-next-btn {
-    @apply px-3 py-1.5 text-xs font-medium rounded-md text-zinc-900 bg-white hover:bg-zinc-200 transition-colors cursor-pointer !text-shadow-none;
+    @apply px-3.5 py-1.5 text-xs font-semibold rounded-xl text-zinc-950 bg-gradient-to-r from-amber-400 to-orange-400 hover:from-amber-300 hover:to-orange-300 transition-all cursor-pointer !text-shadow-none shadow-md shadow-amber-500/20;
 }
 html.dark .driver-popover-arrow {
-    @apply border-zinc-700;
+    @apply border-zinc-800;
 }
 html.dark .driver-popover-arrow:after {
     @apply border-zinc-900;
@@ -99,4 +106,5 @@ html.dark .driver-popover-arrow:after {
 html.dark .driver-popover-close-btn {
     @apply text-zinc-400 hover:text-white transition-colors cursor-pointer top-3 right-3;
 }
+
 
