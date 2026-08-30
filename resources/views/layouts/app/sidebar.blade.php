@@ -62,23 +62,13 @@
 
             <flux:spacer />
 
-            <flux:sidebar.nav>
-                <flux:sidebar.item icon="folder-git-2" href="https://github.com/hoirilm/activity-tracker" target="_blank">
-                    {{ __('Repository') }}
-                </flux:sidebar.item>
-
-                <flux:sidebar.item icon="book-open-text" href="https://laravel.com/docs/starter-kits#livewire" target="_blank">
-                    {{ __('Documentation') }}
-                </flux:sidebar.item>
-            </flux:sidebar.nav>
-
             <x-desktop-user-menu :name="auth()->user()->name" />
         </flux:sidebar>
 
         <!-- Mobile Top Bar (Clean & Compact) -->
-        <header class="lg:hidden sticky top-0 z-30 flex items-center justify-between px-3 sm:px-4 py-2.5 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border-b border-zinc-200/80 dark:border-zinc-800">
+        <header class="lg:hidden sticky top-0 z-30 flex items-center justify-between px-3 sm:px-4 py-2.5 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-xl border-b border-zinc-200/80 dark:border-zinc-800/80">
             <div class="flex items-center gap-3">
-                <button @click="mobileNavOpen = true" type="button" class="p-2 rounded-xl text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 active:scale-95 transition-all cursor-pointer">
+                <button @click="mobileNavOpen = true" type="button" class="p-2 rounded-xl text-zinc-700 dark:text-zinc-300 hover:text-amber-500 dark:hover:text-amber-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 active:scale-95 transition-all cursor-pointer">
                     <flux:icon name="bars-2" class="size-6" />
                 </button>
                 <x-app-logo href="{{ route('dashboard') }}" wire:navigate />
@@ -94,7 +84,7 @@
              x-transition:leave="transition-opacity ease-in duration-200"
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0"
-             class="fixed inset-0 bg-black/60 backdrop-blur-md z-[998] lg:hidden"
+             class="fixed inset-0 bg-black/70 backdrop-blur-md z-[998] lg:hidden"
              style="display: none;"></div>
 
         <!-- Glassmorphism Mobile Sidebar Drawer Panel (z-999) -->
@@ -119,60 +109,48 @@
 
                 <!-- Navigation Links -->
                 <nav class="space-y-1">
-                    <a href="{{ route('dashboard') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('dashboard') ? 'bg-indigo-600 text-white font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/70 hover:text-zinc-900 dark:hover:text-white' }}">
+                    <a href="{{ route('dashboard') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('dashboard') ? 'bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-transparent text-amber-600 dark:text-amber-400 font-semibold border-l-2 border-amber-500 shadow-2xs' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900 hover:text-zinc-900 dark:hover:text-white' }}">
                         <flux:icon name="home" class="size-5" />
                         <span>{{ __('Dashboard') }}</span>
                     </a>
 
-                    <a href="{{ route('tracker') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('tracker') ? 'bg-indigo-600 text-white font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/70 hover:text-zinc-900 dark:hover:text-white' }}">
+                    <a href="{{ route('tracker') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('tracker') ? 'bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-transparent text-amber-600 dark:text-amber-400 font-semibold border-l-2 border-amber-500 shadow-2xs' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900 hover:text-zinc-900 dark:hover:text-white' }}">
                         <flux:icon name="clock" class="size-5" />
                         <span>{{ __('Tracker') }}</span>
                     </a>
 
-                    <a href="{{ route('manage') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('manage') ? 'bg-indigo-600 text-white font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/70 hover:text-zinc-900 dark:hover:text-white' }}">
+                    <a href="{{ route('manage') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('manage') ? 'bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-transparent text-amber-600 dark:text-amber-400 font-semibold border-l-2 border-amber-500 shadow-2xs' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900 hover:text-zinc-900 dark:hover:text-white' }}">
                         <flux:icon name="cog-8-tooth" class="size-5" />
                         <span>{{ __('Manage') }}</span>
                     </a>
 
                     @if(auth()->check() && auth()->user()->is_admin)
                         @php $openAdminIssues = App\Models\Issue::where('status', 'open')->count(); @endphp
-                        <a href="{{ route('issues') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('issues') ? 'bg-indigo-600 text-white font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/70 hover:text-zinc-900 dark:hover:text-white' }}">
+                        <a href="{{ route('issues') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('issues') ? 'bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-transparent text-amber-600 dark:text-amber-400 font-semibold border-l-2 border-amber-500 shadow-2xs' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900 hover:text-zinc-900 dark:hover:text-white' }}">
                             <div class="flex items-center gap-3">
                                 <flux:icon name="flag" class="size-5" />
                                 <span>{{ __('Issues') }}</span>
                             </div>
                             @if($openAdminIssues)
-                                <span class="px-2 py-0.5 text-xs font-bold bg-red-500/20 text-red-600 dark:text-red-400 rounded-full border border-red-500/30">{{ $openAdminIssues }}</span>
+                                <span class="px-2 py-0.5 text-xs font-bold bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded-full border border-amber-500/30">{{ $openAdminIssues }}</span>
                             @endif
                         </a>
 
-                        <a href="{{ route('members') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('members') ? 'bg-indigo-600 text-white font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/70 hover:text-zinc-900 dark:hover:text-white' }}">
+                        <a href="{{ route('members') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('members') ? 'bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-transparent text-amber-600 dark:text-amber-400 font-semibold border-l-2 border-amber-500 shadow-2xs' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900 hover:text-zinc-900 dark:hover:text-white' }}">
                             <flux:icon name="users" class="size-5" />
                             <span>{{ __('Members') }}</span>
                         </a>
 
-                        <a href="{{ route('broadcast') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('broadcast') ? 'bg-indigo-600 text-white font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/70 hover:text-zinc-900 dark:hover:text-white' }}">
+                        <a href="{{ route('broadcast') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('broadcast') ? 'bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-transparent text-amber-600 dark:text-amber-400 font-semibold border-l-2 border-amber-500 shadow-2xs' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900 hover:text-zinc-900 dark:hover:text-white' }}">
                             <flux:icon name="megaphone" class="size-5" />
                             <span>{{ __('Broadcast') }}</span>
                         </a>
                     @endif
-
-                    <div class="pt-4 pb-1 text-[10px] font-semibold text-zinc-500 uppercase tracking-wider px-3.5">Links & Docs</div>
-
-                    <a href="https://github.com/hoirilm/activity-tracker" target="_blank" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
-                        <flux:icon name="folder-git-2" class="size-5" />
-                        <span>{{ __('Repository') }}</span>
-                    </a>
-
-                    <a href="https://laravel.com/docs/starter-kits#livewire" target="_blank" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
-                        <flux:icon name="book-open-text" class="size-5" />
-                        <span>{{ __('Documentation') }}</span>
-                    </a>
                 </nav>
             </div>
 
             <!-- User Profile Footer -->
-            <div class="pt-4 border-t border-zinc-800/80">
+            <div class="pt-4 border-t border-zinc-200/80 dark:border-zinc-800/80">
                 <x-desktop-user-menu :name="auth()->user()->name" />
             </div>
         </div>

@@ -54,7 +54,7 @@ new class extends Component
 
         foreach ($users as $user) {
             $user->notifications()->create([
-                'title' => '📢 ' . $this->title,
+                'title' => $this->title,
                 'body' => $this->body,
                 'type' => $this->type,
             ]);
@@ -63,6 +63,7 @@ new class extends Component
         $count = $users->count();
         $this->reset(['title', 'body', 'type']);
         $this->successMessage = "Broadcast successfully sent to {$count} users!";
+        $this->dispatch('notify');
     }
 };
 ?>
@@ -83,14 +84,16 @@ new class extends Component
             </div>
         </div>
 
-        <!-- Alert Status -->
+        <!-- Alert Status (Green / Emerald Success Banner) -->
         @if($successMessage)
-            <div x-data="{ show: true }" x-show="show" class="p-3.5 bg-zinc-100 dark:bg-zinc-800/80 text-zinc-800 dark:text-zinc-200 rounded-2xl border border-zinc-200 dark:border-zinc-700 text-xs font-semibold flex items-center justify-between shadow-xs">
-                <div class="flex items-center gap-2">
-                    <flux:icon name="check-circle" class="size-4.5 text-emerald-500" />
+            <div x-data="{ show: true }" x-show="show" class="p-3.5 bg-emerald-50/90 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 rounded-2xl border border-emerald-300/80 dark:border-emerald-700/60 text-xs font-semibold flex items-center justify-between shadow-xs transition-all">
+                <div class="flex items-center gap-2.5">
+                    <div class="size-6 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                        <flux:icon name="check-circle" class="size-4" />
+                    </div>
                     <span>{{ $successMessage }}</span>
                 </div>
-                <button @click="show = false" class="text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 font-semibold text-xs cursor-pointer">Dismiss</button>
+                <button @click="show = false" class="text-emerald-700 hover:text-emerald-900 dark:text-emerald-400 dark:hover:text-emerald-200 font-semibold text-xs cursor-pointer">Dismiss</button>
             </div>
         @endif
 

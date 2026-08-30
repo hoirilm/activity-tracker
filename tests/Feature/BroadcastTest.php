@@ -19,6 +19,6 @@ test('admin can compose and broadcast markdown announcement', function () {
 
     expect($user->notifications()->count())->toBe(1);
     $notification = $user->notifications()->first();
-    expect($notification->title)->toBe('📢 Release Notes v5.5.0');
+    expect($notification->title)->toBe('Release Notes v5.5.0');
     expect($notification->body)->toContain('Pause & Resume');
 });
