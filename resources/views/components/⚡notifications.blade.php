@@ -91,11 +91,11 @@ new class extends Component
     <div class="fixed top-3.5 right-3.5 sm:top-4 sm:right-4 z-40">
         <button @click="open = !open" 
                 type="button" 
-                class="flex items-center justify-center size-8.5 rounded-xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:border-zinc-300 dark:hover:border-zinc-700 shadow-xs transition-all duration-300 active:scale-95 cursor-pointer relative"
+                class="flex items-center justify-center size-8.5 rounded-xl bg-white/70 dark:bg-zinc-900/80 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:border-zinc-300 dark:hover:border-zinc-700 shadow-xs transition-all duration-300 active:scale-95 cursor-pointer relative"
                 title="Notification Center">
             <flux:icon name="bell" class="size-4" />
             @if($this->unreadCount > 0)
-                <span class="absolute -top-1 -right-1 flex items-center justify-center size-3.5 bg-red-500 text-white text-[8px] font-mono font-bold rounded-full border border-white dark:border-zinc-900 shadow-xs">
+                <span class="absolute -top-1 -right-1 flex items-center justify-center size-3.5 bg-rose-500 text-white text-[8px] font-mono font-bold rounded-full border border-white dark:border-zinc-900 shadow-xs">
                     {{ $this->unreadCount }}
                 </span>
             @endif
@@ -103,7 +103,7 @@ new class extends Component
     </div>
     @endif
 
-    <!-- macOS Floating Notification Popup (True Frosted Glass Overlapping Top Right) -->
+    <!-- macOS Floating Notification Popup (Clean Blur Glass - Light & Dark Dynamic) -->
     <div x-show="open"
          @click.outside="open = false; expanded = false"
          @keydown.escape.window="open = false; expanded = false"
@@ -123,25 +123,28 @@ new class extends Component
                 $cleanLatestTitle = Str::replace(['📢 ', '📢'], '', $latest->title);
             @endphp
 
-            <!-- Single Unified Frosted Glass Container (Light & Dark Mode Responsive) -->
-            <div class="rounded-2xl p-3 transition-all duration-300 ease-out relative overflow-hidden bg-white/80 dark:bg-zinc-900/90 text-zinc-900 dark:text-white border border-zinc-200/80 dark:border-white/10 backdrop-blur-2xl shadow-2xl">
+            <!-- Single Unified Glass Container (No White Borders, Light & Dark Mode Responsive) -->
+            <div class="rounded-2xl p-3.5 transition-all duration-300 ease-out relative overflow-hidden bg-white/50 dark:bg-zinc-900/50 text-zinc-900 dark:text-zinc-100 border border-zinc-200/80 dark:border-zinc-800/80 backdrop-blur-2xl shadow-2xl">
 
                 <!-- Header Bar -->
-                <div class="flex items-center justify-between px-1 pb-2">
-                    <span class="text-xs font-bold tracking-wide text-zinc-800 dark:text-zinc-200">Notifications</span>
+                <div class="flex items-center justify-between px-0.5 pb-2.5 mb-1.5 border-b border-zinc-200/60 dark:border-zinc-800/80">
+                    <div class="flex items-center gap-2">
+                        <flux:icon name="bell" class="size-4 text-zinc-700 dark:text-zinc-300" />
+                        <span class="text-xs font-bold tracking-tight text-zinc-900 dark:text-zinc-100">Notifications</span>
+                    </div>
 
                     <div class="flex items-center gap-1.5">
                         @if($totalCount > 1)
                             <button type="button" 
                                     @click="expanded = !expanded" 
-                                    class="px-2.5 py-0.5 rounded-full bg-zinc-100 hover:bg-zinc-200 dark:bg-white/10 dark:hover:bg-white/20 text-zinc-700 dark:text-zinc-300 text-[10px] font-medium border border-zinc-200 dark:border-white/10 shadow-xs transition-all cursor-pointer">
+                                    class="px-2.5 py-0.5 rounded-full bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 text-[10px] font-medium border border-zinc-200 dark:border-zinc-700 shadow-xs transition-all cursor-pointer">
                                 <span x-text="expanded ? 'Show less' : '+{{ $totalCount - 1 }} more'"></span>
                             </button>
                         @endif
 
                         <button type="button" 
                                 @click="open = false; expanded = false" 
-                                class="size-5 rounded-full bg-zinc-100 hover:bg-zinc-200 dark:bg-white/10 dark:hover:bg-white/20 text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-white flex items-center justify-center text-[10px] transition-all cursor-pointer"
+                                class="size-5 rounded-full bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-white flex items-center justify-center text-[10px] transition-all cursor-pointer"
                                 title="Close">
                             ✕
                         </button>
@@ -153,7 +156,7 @@ new class extends Component
                     <!-- Top / Latest Notification Card (Always Visible) -->
                     <div wire:key="mac-notif-{{ $latest->id }}"
                          @click="!expanded && (expanded = true)"
-                         class="group relative rounded-xl p-3 bg-white/70 dark:bg-white/[0.05] border border-zinc-200/80 dark:border-white/10 hover:bg-zinc-100/80 dark:hover:bg-white/[0.08] transition-all duration-200 cursor-pointer {{ $latest->read_at ? 'opacity-60' : '' }}">
+                         class="group relative rounded-xl p-3 bg-white/40 dark:bg-white/[0.04] border border-zinc-200/50 dark:border-zinc-800/60 hover:bg-white/60 dark:hover:bg-white/[0.08] transition-all duration-200 cursor-pointer shadow-xs {{ $latest->read_at ? 'opacity-60' : '' }}">
 
                         <div>
                             <!-- Top Bar: Status Bar on Left & Timestamp on Far Top-Right -->
@@ -191,7 +194,7 @@ new class extends Component
                             </h4>
 
                             <!-- Markdown Message Body (Clean Left-aligned, No Indentation) -->
-                            <div class="text-[11.5px] leading-relaxed text-zinc-700 dark:text-zinc-300/90 mt-1 font-sans break-words text-left [&>p]:m-0 [&>p]:leading-relaxed [&>ul]:list-disc [&>ul]:pl-4 [&>ol]:list-decimal [&>ol]:pl-4 [&>h1]:text-xs [&>h1]:font-bold [&>h2]:text-xs [&>h2]:font-bold [&>h3]:text-xs [&>h3]:font-bold [&>code]:bg-zinc-200 dark:[&>code]:bg-white/10 [&>code]:px-1 [&>code]:rounded">
+                            <div class="text-[11.5px] leading-relaxed text-zinc-700 dark:text-zinc-300 mt-1 font-sans break-words text-left [&>p]:m-0 [&>p]:leading-relaxed [&>ul]:list-disc [&>ul]:pl-4 [&>ol]:list-decimal [&>ol]:pl-4 [&>h1]:text-xs [&>h1]:font-bold [&>h2]:text-xs [&>h2]:font-bold [&>h3]:text-xs [&>h3]:font-bold [&>code]:bg-zinc-200 dark:[&>code]:bg-zinc-700/50 [&>code]:px-1 [&>code]:rounded">
                                 {!! Str::markdown(trim($latest->body)) !!}
                             </div>
 
@@ -226,7 +229,7 @@ new class extends Component
                                             $cleanTitle = Str::replace(['📢 ', '📢'], '', $notif->title);
                                         @endphp
                                         <div wire:key="mac-notif-{{ $notif->id }}" 
-                                             class="group relative rounded-xl p-3 bg-white/70 dark:bg-white/[0.05] border border-zinc-200/80 dark:border-white/10 hover:bg-zinc-100/80 dark:hover:bg-white/[0.08] transition-all duration-200 {{ $notif->read_at ? 'opacity-60' : '' }}">
+                                             class="group relative rounded-xl p-3 bg-white/40 dark:bg-white/[0.04] border border-zinc-200/50 dark:border-zinc-800/60 hover:bg-white/60 dark:hover:bg-white/[0.08] transition-all duration-200 shadow-xs {{ $notif->read_at ? 'opacity-60' : '' }}">
 
                                             <div>
                                                 <!-- Top Bar: Status Bar on Left & Timestamp on Far Top-Right -->
@@ -264,7 +267,7 @@ new class extends Component
                                                 </h4>
 
                                                 <!-- Markdown Message Body (Clean Left-aligned, No Indentation) -->
-                                                <div class="text-[11.5px] leading-relaxed text-zinc-700 dark:text-zinc-300/90 mt-1 font-sans break-words text-left [&>p]:m-0 [&>p]:leading-relaxed [&>ul]:list-disc [&>ul]:pl-4 [&>ol]:list-decimal [&>ol]:pl-4 [&>h1]:text-xs [&>h1]:font-bold [&>h2]:text-xs [&>h2]:font-bold [&>h3]:text-xs [&>h3]:font-bold [&>code]:bg-zinc-200 dark:[&>code]:bg-white/10 [&>code]:px-1 [&>code]:rounded">
+                                                <div class="text-[11.5px] leading-relaxed text-zinc-700 dark:text-zinc-300 mt-1 font-sans break-words text-left [&>p]:m-0 [&>p]:leading-relaxed [&>ul]:list-disc [&>ul]:pl-4 [&>ol]:list-decimal [&>ol]:pl-4 [&>h1]:text-xs [&>h1]:font-bold [&>h2]:text-xs [&>h2]:font-bold [&>h3]:text-xs [&>h3]:font-bold [&>code]:bg-zinc-200 dark:[&>code]:bg-zinc-700/50 [&>code]:px-1 [&>code]:rounded">
                                                     {!! Str::markdown(trim($notif->body)) !!}
                                                 </div>
 
@@ -308,17 +311,26 @@ new class extends Component
 
         @else
             <!-- Empty Notifications State (Light & Dark Mode Responsive) -->
-            <div class="rounded-2xl p-4 text-center bg-white/80 dark:bg-zinc-900/90 text-zinc-900 dark:text-white border border-zinc-200/80 dark:border-white/10 backdrop-blur-2xl shadow-2xl">
-                <div class="flex items-center justify-between pb-1 mb-2">
-                    <span class="text-xs font-bold tracking-wide text-zinc-800 dark:text-zinc-300">Notifications</span>
-                    <button @click="open = false" class="size-4.5 rounded-full bg-zinc-100 hover:bg-zinc-200 dark:bg-white/10 dark:hover:bg-white/20 text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-white flex items-center justify-center text-[9px] cursor-pointer">
+            <div class="rounded-2xl p-4 text-center bg-white/50 dark:bg-zinc-900/50 text-zinc-900 dark:text-zinc-100 border border-zinc-200/80 dark:border-zinc-800/80 backdrop-blur-2xl shadow-2xl">
+                
+                <!-- Header Bar -->
+                <div class="flex items-center justify-between pb-2.5 mb-2 border-b border-zinc-200/60 dark:border-zinc-800/80">
+                    <div class="flex items-center gap-2">
+                        <flux:icon name="bell" class="size-4 text-zinc-700 dark:text-zinc-300" />
+                        <span class="text-xs font-bold tracking-tight text-zinc-900 dark:text-zinc-100">Notifications</span>
+                    </div>
+
+                    <button @click="open = false" 
+                            class="size-5 rounded-full bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-white flex items-center justify-center text-[10px] transition-all cursor-pointer"
+                            title="Close">
                         ✕
                     </button>
                 </div>
-                <div class="py-4 flex flex-col items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
+
+                <div class="py-4 flex flex-col items-center justify-center gap-1.5">
                     <flux:icon name="bell" class="size-5 text-zinc-400 dark:text-zinc-500" />
-                    <span class="text-xs font-semibold text-zinc-800 dark:text-zinc-300">No Notifications</span>
-                    <span class="text-[10px] text-zinc-500 dark:text-zinc-500">You're all caught up for today.</span>
+                    <span class="text-xs font-semibold text-zinc-900 dark:text-zinc-100">No Notifications</span>
+                    <span class="text-[10px] text-zinc-500 dark:text-zinc-400">You're all caught up for today.</span>
                 </div>
             </div>
         @endif
