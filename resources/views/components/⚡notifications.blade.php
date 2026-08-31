@@ -83,7 +83,7 @@ new class extends Component
      }" 
      x-on:auto-show-notification.window="open = true; expanded = false"
      x-on:toggle-notifications.window="open = !open"
-     wire:poll.1500ms="pollNewNotifications"
+     wire:poll.4000ms="pollNewNotifications"
      class="relative">
 
     <!-- Floating Bell Icon Trigger Button in Top Right -->
@@ -107,12 +107,12 @@ new class extends Component
     <div x-show="open"
          @click.outside="open = false; expanded = false"
          @keydown.escape.window="open = false; expanded = false"
-         x-transition:enter="transition cubic-bezier(0.16, 1, 0.3, 1) duration-300 transform"
-         x-transition:enter-start="opacity-0 -translate-y-2 scale-95"
-         x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-         x-transition:leave="transition cubic-bezier(0.16, 1, 0.3, 1) duration-200 transform"
-         x-transition:leave-start="opacity-100 translate-y-0 scale-100"
-         x-transition:leave-end="opacity-0 -translate-y-2 scale-95"
+         x-transition:enter="transition ease-out duration-150 transform"
+         x-transition:enter-start="-translate-y-1 scale-98"
+         x-transition:enter-end="translate-y-0 scale-100"
+         x-transition:leave="transition ease-in duration-100 transform"
+         x-transition:leave-start="translate-y-0 scale-100"
+         x-transition:leave-end="-translate-y-1 scale-98"
          class="fixed top-3.5 right-3.5 sm:top-4 sm:right-4 z-50 w-[310px] sm:w-[340px] max-w-[calc(100vw-1.75rem)] select-none font-sans"
          style="display: none;">
 
@@ -123,8 +123,8 @@ new class extends Component
                 $cleanLatestTitle = Str::replace(['📢 ', '📢'], '', $latest->title);
             @endphp
 
-            <!-- Single Unified Glass Container (No White Borders, Light & Dark Mode Responsive) -->
-            <div class="rounded-2xl p-3.5 transition-all duration-300 ease-out relative overflow-hidden bg-white/50 dark:bg-zinc-900/50 text-zinc-900 dark:text-zinc-100 border border-zinc-200/80 dark:border-zinc-800/80 backdrop-blur-2xl shadow-2xl">
+            <!-- Solid Instant Container with Subtle Blur (No Transparency Flicker, Responsive Light & Dark Mode) -->
+            <div class="rounded-2xl p-3.5 transition-all duration-200 ease-out relative overflow-hidden bg-white/92 dark:bg-[#18181b]/92 backdrop-blur-md text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800/90 shadow-2xl">
 
                 <!-- Header Bar -->
                 <div class="flex items-center justify-between px-0.5 pb-2.5 mb-1.5 border-b border-zinc-200/60 dark:border-zinc-800/80">
@@ -156,7 +156,7 @@ new class extends Component
                     <!-- Top / Latest Notification Card (Always Visible) -->
                     <div wire:key="mac-notif-{{ $latest->id }}"
                          @click="!expanded && (expanded = true)"
-                         class="group relative rounded-xl p-3 bg-white/40 dark:bg-white/[0.04] border border-zinc-200/50 dark:border-zinc-800/60 hover:bg-white/60 dark:hover:bg-white/[0.08] transition-all duration-200 cursor-pointer shadow-xs {{ $latest->read_at ? 'opacity-60' : '' }}">
+                         class="group relative rounded-xl p-3 bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200/80 dark:border-zinc-700/60 hover:bg-zinc-100 dark:hover:bg-zinc-800/90 transition-all duration-200 cursor-pointer shadow-xs {{ $latest->read_at ? 'opacity-60' : '' }}">
 
                         <div>
                             <!-- Top Bar: Status Bar on Left & Timestamp on Far Top-Right -->
@@ -229,7 +229,7 @@ new class extends Component
                                             $cleanTitle = Str::replace(['📢 ', '📢'], '', $notif->title);
                                         @endphp
                                         <div wire:key="mac-notif-{{ $notif->id }}" 
-                                             class="group relative rounded-xl p-3 bg-white/40 dark:bg-white/[0.04] border border-zinc-200/50 dark:border-zinc-800/60 hover:bg-white/60 dark:hover:bg-white/[0.08] transition-all duration-200 shadow-xs {{ $notif->read_at ? 'opacity-60' : '' }}">
+                                             class="group relative rounded-xl p-3 bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200/80 dark:border-zinc-700/60 hover:bg-zinc-100 dark:hover:bg-zinc-800/90 transition-all duration-200 shadow-xs {{ $notif->read_at ? 'opacity-60' : '' }}">
 
                                             <div>
                                                 <!-- Top Bar: Status Bar on Left & Timestamp on Far Top-Right -->
@@ -310,8 +310,8 @@ new class extends Component
             </div>
 
         @else
-            <!-- Empty Notifications State (Light & Dark Mode Responsive) -->
-            <div class="rounded-2xl p-4 text-center bg-white/50 dark:bg-zinc-900/50 text-zinc-900 dark:text-zinc-100 border border-zinc-200/80 dark:border-zinc-800/80 backdrop-blur-2xl shadow-2xl">
+            <!-- Empty Notifications State (Solid Responsive Light & Dark Mode with Subtle Blur) -->
+            <div class="rounded-2xl p-4 text-center bg-white/92 dark:bg-[#18181b]/92 backdrop-blur-md text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800/90 shadow-2xl">
                 
                 <!-- Header Bar -->
                 <div class="flex items-center justify-between pb-2.5 mb-2 border-b border-zinc-200/60 dark:border-zinc-800/80">
