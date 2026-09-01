@@ -1,35 +1,30 @@
 #!/bin/sh
 set -e
 
-# Fix permissions
-mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache bootstrap/cache
-chmod -R 777 storage bootstrap/cache
+# Ensure all storage and cache directories exist
+mkdir -p storage/logs storage/framework/sessions storage/framework/views storage/framework/cache bootstrap/cache
+touch storage/logs/laravel.log
 
 # Run migrations automatically only if explicitly requested
 if [ "$RUN_MIGRATIONS" = "true" ]; then
     echo "Running database migrations..."
     php artisan migrate --force || echo "Migration skipped or failed"
-    # Seeders should only be run on fresh setups. Commented out to prevent data duplication on shared DB.
-    # php artisan db:seed --force || echo "Seeder skipped"
 fi
 
 # Optimization caching for production
 echo "Caching Laravel configuration & routes..."
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
+php artisan config:cache || echo "Config cache skipped"
+php artisan route:cache || echo "Route cache skipped"
+php artisan view:cache || echo "View cache skipped"
 
-# Dynamically add Nginx port based on Railway's $PORT variable
+# Dynamically add Nginx port based on $PORT variable (default: 8080)
 export PORT=${PORT:-8080}
-echo "Railway assigned PORT: $PORT"
+echo "Assigned PORT: $PORT"
 sed -i "s/server {/server {\n    listen ${PORT};/g" /etc/nginx/http.d/default.conf
-
-echo "--- NGINX CONFIG ---"
-cat /etc/nginx/http.d/default.conf
-echo "--------------------"
 
 echo "Fixing storage permissions..."
 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Start supervisor
 echo "Starting Nginx & PHP-FPM..."
