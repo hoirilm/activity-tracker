@@ -12,7 +12,7 @@ RUN composer dump-autoload --optimize --no-dev
 # ============================================
 # Stage 2: Build Frontend Assets (Vite)
 # ============================================
-FROM node:20-alpine AS build-frontend
+FROM node:20-slim AS build-frontend
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
