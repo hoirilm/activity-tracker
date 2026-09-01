@@ -2666,29 +2666,21 @@ new class extends Component
         <div class="flex flex-col gap-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                    <div class="size-7 rounded-lg bg-amber-500/10 dark:bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
-                        <flux:icon name="bookmark" class="size-4 text-amber-600 dark:text-amber-400" />
+                    <div class="size-7 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0">
+                        <flux:icon name="bookmark" class="size-4 text-zinc-700 dark:text-zinc-300" />
                     </div>
                     <h3 class="font-bold text-sm text-zinc-900 dark:text-zinc-100">Dynamic Task Labels</h3>
                     <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[10px] font-mono font-medium px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60">
                         {{ $this->labels->count() }} Total
                     </span>
                 </div>
-
-                <!-- Quick Add Suggested Label -->
-                @if(!$this->labels->pluck('name')->contains('belum ada open project'))
-                    <button wire:click="addPresetLabel('belum ada open project', 'amber')" type="button" class="text-[11px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-200 dark:border-amber-500/30 hover:bg-amber-100 dark:hover:bg-amber-500/20 transition-all flex items-center gap-1 cursor-pointer">
-                        <flux:icon name="plus" class="size-3" />
-                        <span>+ Add "belum ada open project"</span>
-                    </button>
-                @endif
             </div>
 
             <!-- Add Label Form Card -->
             <div class="border border-zinc-200/80 dark:border-zinc-800 rounded-2xl bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl p-4.5 shadow-xs relative overflow-hidden group hover:border-zinc-400 dark:hover:border-zinc-700 transition-all">
                 <form wire:submit.prevent="addLabel" class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center relative z-10">
                     <div class="flex-1">
-                        <input type="text" wire:model="labelName" placeholder="Label Name (e.g. belum ada open project)" required autocomplete="off"
+                        <input type="text" wire:model="labelName" placeholder="Label Name (e.g. General, Urgent, Review)" required autocomplete="off"
                                class="w-full h-10 px-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-amber-500 shadow-2xs transition-all">
                     </div>
                     
@@ -2734,7 +2726,7 @@ new class extends Component
                                 <flux:icon name="bookmark" class="size-5" />
                             </div>
                             <span class="font-semibold text-zinc-700 dark:text-zinc-300">No task labels created yet.</span>
-                            <span class="text-[11px] text-zinc-500 dark:text-zinc-400">Add custom labels like "belum ada open project" using the form above.</span>
+                            <span class="text-[11px] text-zinc-500 dark:text-zinc-400">Add custom labels like "General" using the form above.</span>
                         </div>
                     @endforelse
                 </div>

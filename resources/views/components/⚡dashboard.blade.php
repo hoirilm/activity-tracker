@@ -673,16 +673,25 @@ new class extends Component
     @endif
 
     <!-- TASK STREAM WIDGET (Interactive & Professional Command Center) -->
-    <div class="flex flex-col gap-3.5 mt-2 bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-4 shadow-sm transition-all duration-300">
+    <div x-data="{
+             isStreamHidden: localStorage.getItem('dashboard_task_stream_hidden') !== 'false',
+             toggleStream() {
+                 this.isStreamHidden = !this.isStreamHidden;
+                 localStorage.setItem('dashboard_task_stream_hidden', this.isStreamHidden ? 'true' : 'false');
+             }
+         }"
+         class="flex flex-col mt-2 bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-4 shadow-sm transition-colors duration-200">
         <!-- Top Bar: Header, Momentum Progress & Main Actions -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-200/60 dark:border-zinc-800/60">
-            <div class="flex items-center gap-3">
-                <div class="size-8.5 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 shrink-0 shadow-xs">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex items-center gap-3 cursor-pointer select-none group/stream-title"
+                 @click="toggleStream()"
+                 title="Click to toggle On Progress Stream">
+                <div class="size-8.5 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 shrink-0 shadow-xs group-hover/stream-title:scale-105 group-hover/stream-title:bg-amber-500/20 transition-all">
                     <flux:icon name="bolt" class="size-4 text-amber-500" />
                 </div>
                 <div>
                     <h3 class="text-xs font-mono font-bold uppercase tracking-wider text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                        <span>ON PROGRESS STREAM</span>
+                        <span class="group-hover/stream-title:text-amber-600 dark:group-hover/stream-title:text-amber-400 transition-colors">ON PROGRESS STREAM</span>
                         <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/25 flex items-center gap-1">
                             <span class="size-1.5 rounded-full bg-amber-500 animate-ping"></span>
                             <span>{{ $this->todayTasks->count() }} active</span>
@@ -699,9 +708,10 @@ new class extends Component
                 </div>
             </div>
 
-            <div class="flex items-center gap-2 self-start sm:self-auto">
+            <div class="flex items-center gap-2 self-start sm:self-auto flex-wrap">
                 <button type="button" 
                         wire:click="$toggle('showQuickTaskForm')" 
+                        @click="if (isStreamHidden) { isStreamHidden = false; localStorage.setItem('dashboard_task_stream_hidden', 'false'); }"
                         class="px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/25 hover:bg-amber-500 hover:text-white transition-all flex items-center gap-1.5 cursor-pointer active:scale-95 shadow-2xs">
                     <flux:icon name="plus" class="size-3.5" />
                     <span>Quick Add</span>
@@ -711,10 +721,27 @@ new class extends Component
                     <span>Manage Tasks</span>
                     <flux:icon name="arrow-right" class="size-3" />
                 </flux:button>
+
+                <!-- Hide / Show Toggle Button -->
+                <button type="button" 
+                        @click="toggleStream()"
+                        :aria-expanded="(!isStreamHidden).toString()"
+                        aria-controls="dashboard-task-stream-content"
+                        :title="isStreamHidden ? 'Show On Progress Stream' : 'Hide On Progress Stream'"
+                        class="px-2.5 py-1.5 rounded-xl text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 bg-zinc-100/80 hover:bg-zinc-200/80 dark:bg-zinc-800/80 dark:hover:bg-zinc-700/80 border border-zinc-200/80 dark:border-zinc-700/60 transition-all flex items-center gap-1.5 cursor-pointer active:scale-95 shadow-2xs">
+                    <flux:icon name="chevron-down" class="size-3.5 transition-transform duration-300" ::class="!isStreamHidden && 'rotate-180'" />
+                    <span x-text="isStreamHidden ? 'Show' : 'Hide'">Show</span>
+                </button>
             </div>
         </div>
 
-        <!-- Toolbar: Filter Tabs & Quick Search Input -->
+        <!-- Collapsible Content Wrapper -->
+        <div x-show="!isStreamHidden" 
+             x-collapse 
+             id="dashboard-task-stream-content"
+             style="display: none;">
+            <div class="pt-3.5 mt-3.5 border-t border-zinc-200/60 dark:border-zinc-800/60 space-y-3.5">
+                <!-- Toolbar: Filter Tabs & Quick Search Input -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
             <!-- Tabs (On Progress & Done Today) -->
             <div class="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-950/70 p-1 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 overflow-x-auto custom-scrollbar">
@@ -903,6 +930,8 @@ new class extends Component
                 </button>
             </div>
         @endif
+            </div>
+        </div>
     </div>
 
     <!-- Insights Cards -->

@@ -48,3 +48,15 @@ test('user can mark task as done directly from dashboard and trigger celebration
 
     expect($task->fresh()->status)->toBe(Task::STATUS_DONE);
 });
+
+test('dashboard renders task stream toggle button and collapsible structure', function () {
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('dashboard')
+        ->assertSee('ON PROGRESS STREAM')
+        ->assertSee('dashboard-task-stream-content')
+        ->assertSee('toggleStream()')
+        ->assertSee('dashboard_task_stream_hidden')
+        ->assertSee('Show On Progress Stream');
+});
