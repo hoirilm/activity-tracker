@@ -52,7 +52,9 @@ new class extends Component
     public function closeModal()
     {
         $this->showModal = false;
-        $this->dispatch('start-onboarding-tour');
+        if ($this->has_project && $this->has_category) {
+            $this->dispatch('start-onboarding-tour');
+        }
     }
 
     public function getProjectsProperty()
@@ -146,11 +148,10 @@ new class extends Component
             ]);
         }
 
-        $this->showModal = false;
+        $this->successMessage = 'Starter Pack activated successfully! All core components are ready.';
         $this->dispatch('quick-setup-updated');
         $this->dispatch('project-created');
         $this->dispatch('category-created');
-        $this->dispatch('start-onboarding-tour');
     }
 
     public function createProject()
@@ -250,7 +251,8 @@ new class extends Component
 
     <!-- Quick Setup Modal Overlay -->
     @if($showModal)
-        <div class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-zinc-950/70 backdrop-blur-md"
+        <div data-quick-setup-modal
+             class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-zinc-950/70 backdrop-blur-md"
              x-data
              x-transition:enter="transition ease-out duration-300"
              x-transition:enter-start="opacity-0 scale-95"

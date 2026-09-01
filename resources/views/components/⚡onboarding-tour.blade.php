@@ -31,6 +31,11 @@ new class extends Component
                     if (tourInstance) return; // avoid duplicate tour instances
 
                     setTimeout(() => {
+                        // Ensure quick setup modal is not currently open
+                        if (document.querySelector('[data-quick-setup-modal]')) {
+                            return;
+                        }
+
                         const driver = window.driver.js.driver;
                         const isAdmin = {{ auth()->user()->is_admin ? 'true' : 'false' }};
                         
@@ -124,7 +129,7 @@ new class extends Component
                 };
 
                 const hasSetup = {{ $hasInitialSetup ? 'true' : 'false' }};
-                if (hasSetup) {
+                if (hasSetup && !document.querySelector('[data-quick-setup-modal]')) {
                     runTour();
                 }
 
