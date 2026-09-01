@@ -146,7 +146,7 @@ new class extends Component
             ]);
         }
 
-        $this->successMessage = 'Starter Pack activated successfully! All core components are ready.';
+        $this->showModal = false;
         $this->dispatch('quick-setup-updated');
         $this->dispatch('project-created');
         $this->dispatch('category-created');
