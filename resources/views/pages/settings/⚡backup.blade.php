@@ -3,6 +3,7 @@
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Flux\Flux;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -29,7 +30,7 @@ new #[Title('Backup & Restore Settings')] class extends Component {
             $data = json_decode($content, true);
 
             if (! is_array($data) || ! isset($data['activities'])) {
-                session()->flash('status_error', 'Invalid file format. Please use a JSON backup file exported from Activity Tracker.');
+                $this->dispatch('toast', title: 'Invalid file format. Please use a JSON backup file.', category: 'BACKUP', type: 'danger');
                 $this->previewData = null;
 
                 return;
@@ -55,7 +56,7 @@ new #[Title('Backup & Restore Settings')] class extends Component {
 
             $this->confirmDifferentAccount = false;
         } catch (\Throwable $e) {
-            session()->flash('status_error', 'Failed to read backup file. Please ensure the file is valid and uncorrupted.');
+            $this->dispatch('toast', title: 'Failed to read backup file.', category: 'BACKUP', type: 'danger');
             $this->previewData = null;
         }
     }
@@ -137,7 +138,7 @@ new #[Title('Backup & Restore Settings')] class extends Component {
     public function processRestore(): void
     {
         if (! $this->backupFile) {
-            session()->flash('status_error', 'Please select a backup file first.');
+            $this->dispatch('toast', title: 'Please select a backup file first.', category: 'RESTORE', type: 'danger');
 
             return;
         }
@@ -150,7 +151,7 @@ new #[Title('Backup & Restore Settings')] class extends Component {
             $data = json_decode($content, true);
 
             if (! is_array($data) || ! isset($data['activities'])) {
-                session()->flash('status_error', 'Invalid backup file structure.');
+                $this->dispatch('toast', title: 'Invalid backup file structure.', category: 'RESTORE', type: 'danger');
 
                 return;
             }
@@ -159,7 +160,7 @@ new #[Title('Backup & Restore Settings')] class extends Component {
             $currentEmail = strtolower(trim($user->email));
 
             if ($fileEmail !== '' && $fileEmail !== $currentEmail && ! $this->confirmDifferentAccount) {
-                session()->flash('status_error', "Account email in backup file ({$fileEmail}) does not match your account ({$currentEmail}). Please check confirmation if you wish to import this data.");
+                $this->dispatch('toast', title: "Account email ({$fileEmail}) does not match your account.", category: 'RESTORE', type: 'danger');
 
                 return;
             }
@@ -298,7 +299,7 @@ new #[Title('Backup & Restore Settings')] class extends Component {
                     $importedCount++;
                 }
 
-                session()->flash('status_success', "Successfully restored {$importedCount} activities and {$importedTaskCount} tasks to your account! 🎉");
+                $this->dispatch('toast', title: "Restored {$importedCount} activities and {$importedTaskCount} tasks!", category: 'RESTORE', type: 'success');
 
                 $user->notifications()->create([
                     'title' => '🔄 Data Restore Successful',
@@ -309,7 +310,7 @@ new #[Title('Backup & Restore Settings')] class extends Component {
 
             $this->reset(['backupFile', 'previewData']);
         } catch (\Throwable $e) {
-            session()->flash('status_error', 'Failed to process data restore: '.$e->getMessage());
+            $this->dispatch('toast', title: 'Failed to process data restore.', category: 'RESTORE', type: 'danger');
         }
     }
 }; ?>
@@ -322,32 +323,6 @@ new #[Title('Backup & Restore Settings')] class extends Component {
     <x-pages::settings.layout :heading="__('Backup & Restore')" :subheading="__('Export your complete activity history or restore from a JSON backup file.')">
         
         <div class="space-y-6">
-            
-            <!-- Alert Notifications -->
-            @if (session()->has('status_success'))
-                <div class="rounded-2xl p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-900 dark:text-emerald-100 flex items-start gap-3 shadow-2xs">
-                    <div class="size-8 rounded-xl bg-emerald-100 dark:bg-emerald-900/60 border border-emerald-300 dark:border-emerald-700/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
-                        <flux:icon name="check-circle" class="size-4.5" />
-                    </div>
-                    <div class="text-xs">
-                        <h4 class="font-bold">Restore Successful</h4>
-                        <p class="mt-0.5 opacity-90 leading-relaxed">{{ session('status_success') }}</p>
-                    </div>
-                </div>
-            @endif
-
-            @if (session()->has('status_error'))
-                <div class="rounded-2xl p-4 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 text-rose-900 dark:text-rose-100 flex items-start gap-3 shadow-2xs">
-                    <div class="size-8 rounded-xl bg-rose-100 dark:bg-rose-900/60 border border-rose-300 dark:border-rose-700/60 flex items-center justify-center text-rose-600 dark:text-rose-400 shrink-0">
-                        <flux:icon name="exclamation-triangle" class="size-4.5" />
-                    </div>
-                    <div class="text-xs">
-                        <h4 class="font-bold">Processing Failed</h4>
-                        <p class="mt-0.5 opacity-90 leading-relaxed">{{ session('status_error') }}</p>
-                    </div>
-                </div>
-            @endif
-
             <!-- BACKUP SECTION -->
             <div class="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 space-y-4 shadow-2xs">
                 <div class="flex items-start gap-3.5">

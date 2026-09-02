@@ -85,7 +85,7 @@ new #[Title('Security settings')] class extends Component {
 
         $this->reset('current_password', 'password', 'password_confirmation');
 
-        Flux::toast(variant: 'success', text: __('Password updated.'));
+        $this->dispatch('toast', title: 'Password updated successfully.', category: 'SECURITY', type: 'success');
     }
 
     /**
@@ -201,9 +201,12 @@ new #[Title('Security settings')] class extends Component {
             />
 
             <div class="flex items-center gap-4">
-                <flux:button variant="primary" type="submit" data-test="update-password-button">
-                    {{ __('Save') }}
-                </flux:button>
+                <button type="submit" 
+                        class="cursor-pointer bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold rounded-xl px-5 py-2.5 text-xs border border-amber-400/80 active:scale-95 transition-all shadow-xs shadow-amber-500/20 flex items-center justify-center gap-1.5" 
+                        data-test="update-password-button">
+                    <flux:icon name="check" class="size-3.5 text-zinc-950" />
+                    <span>{{ __('Save') }}</span>
+                </button>
             </div>
         </form>
 
@@ -220,12 +223,11 @@ new #[Title('Security settings')] class extends Component {
                             </flux:text>
 
                             <div class="flex justify-start">
-                                <flux:button
-                                    variant="danger"
-                                    wire:click="disable"
-                                >
-                                    {{ __('Disable 2FA') }}
-                                </flux:button>
+                                <button type="button"
+                                        wire:click="disable"
+                                        class="cursor-pointer bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 font-semibold rounded-xl px-4 py-2 text-xs border border-rose-500/30 active:scale-95 transition-all flex items-center gap-1.5">
+                                    <span>{{ __('Disable 2FA') }}</span>
+                                </button>
                             </div>
 
                             <livewire:pages::settings.two-factor.recovery-codes :$requiresConfirmation />
@@ -237,12 +239,12 @@ new #[Title('Security settings')] class extends Component {
                             </flux:text>
 
                             <flux:modal.trigger name="two-factor-setup-modal">
-                                <flux:button
-                                    variant="primary"
-                                    wire:click="$dispatch('start-two-factor-setup')"
-                                >
-                                    {{ __('Enable 2FA') }}
-                                </flux:button>
+                                <button type="button"
+                                        wire:click="$dispatch('start-two-factor-setup')"
+                                        class="cursor-pointer bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold rounded-xl px-4 py-2.5 text-xs border border-amber-400/80 active:scale-95 transition-all shadow-xs shadow-amber-500/20 flex items-center gap-1.5">
+                                    <flux:icon name="shield-check" class="size-3.5 text-zinc-950" />
+                                    <span>{{ __('Enable 2FA') }}</span>
+                                </button>
                             </flux:modal.trigger>
 
                             <livewire:pages::settings.two-factor-setup-modal :requires-confirmation="$requiresConfirmation" />

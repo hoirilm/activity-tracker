@@ -2,6 +2,7 @@
 
 use Livewire\Component;
 use App\Models\Issue;
+use Flux\Flux;
 use Livewire\WithPagination;
 
 new class extends Component
@@ -65,8 +66,7 @@ new class extends Component
             'status' => $issue->status === 'open' ? 'closed' : 'open'
         ]);
         
-        session()->flash('status_updated', 'Status updated to ' . $issue->status . '.');
-        $this->redirect(route('issues'));
+        $this->dispatch('toast', title: 'Status updated to ' . $issue->status . '.', category: 'ISSUE', type: 'success');
     }
 };
 ?>
@@ -114,17 +114,6 @@ new class extends Component
             </div>
         </div>
     </div>
-
-    <!-- Alert Status -->
-    @if(session()->has('status_updated'))
-        <div x-data="{ show: true }" x-show="show" class="p-3.5 bg-zinc-100 dark:bg-zinc-800/80 text-zinc-800 dark:text-zinc-200 rounded-2xl border border-zinc-200 dark:border-zinc-700 text-xs font-semibold flex items-center justify-between shadow-xs">
-            <div class="flex items-center gap-2">
-                <flux:icon name="check-circle" class="size-4.5 text-emerald-500" />
-                <span>{{ session('status_updated') }}</span>
-            </div>
-            <button @click="show = false" class="text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 font-semibold text-xs cursor-pointer">Dismiss</button>
-        </div>
-    @endif
 
     <!-- Issue Cards Container -->
     <div class="space-y-4">

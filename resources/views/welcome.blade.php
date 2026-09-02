@@ -15,17 +15,18 @@
             }
         </style>
     </head>
-    <body class="bg-zinc-50 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 antialiased selection:bg-amber-500 selection:text-white overflow-x-hidden">
-        <!-- Navigation Header -->
-        <header class="sticky top-0 z-50 w-full border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 transition-all duration-200">
-            <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between">
-                <div class="flex items-center gap-2 sm:gap-3">
-                    <x-app-logo-icon class="size-6 sm:size-8 text-amber-500" />
+    <body class="bg-zinc-50 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 antialiased selection:bg-amber-500 selection:text-zinc-950 overflow-x-hidden">
+        <!-- Top Navigation Header -->
+        <header class="sticky top-0 z-50 backdrop-blur-xl bg-white/70 dark:bg-zinc-950/70 border-b border-zinc-200/80 dark:border-zinc-800/80 transition-colors">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+                <div class="flex items-center gap-2.5">
+                    <x-app-logo-icon class="size-7 text-amber-500 animate-pulse" />
                     <span class="font-extrabold text-base sm:text-xl tracking-tight text-zinc-900 dark:text-white">
                         {{ config('app.name', 'Klakoan') }}
                     </span>
                 </div>
-                
+
+                <!-- Navigation Links -->
                 <nav class="hidden md:flex items-center gap-6">
                     <a href="#features" class="text-sm font-medium text-zinc-600 hover:text-amber-600 dark:text-zinc-400 dark:hover:text-amber-400 transition-colors">{{ __('welcome.nav_features') }}</a>
                     <a href="#workflow" class="text-sm font-medium text-zinc-600 hover:text-amber-600 dark:text-zinc-400 dark:hover:text-amber-400 transition-colors">{{ __('welcome.nav_workflow') }}</a>
@@ -36,11 +37,11 @@
                     <!-- Language Toggle Switcher -->
                     <div class="flex items-center bg-zinc-100 dark:bg-zinc-900 rounded-lg sm:rounded-xl p-0.5 sm:p-1 border border-zinc-200/60 dark:border-zinc-800/60 text-[10px] sm:text-[11px] font-bold font-mono">
                         <a href="{{ route('language.switch', 'id') }}"
-                           class="px-2 py-0.5 rounded-md sm:rounded-lg transition-all cursor-pointer {{ app()->getLocale() === 'id' ? 'bg-amber-500 text-white shadow-2xs' : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200' }}">
+                           class="px-2 py-0.5 rounded-md sm:rounded-lg transition-all cursor-pointer {{ app()->getLocale() === 'id' ? 'bg-amber-500 text-zinc-950 font-bold shadow-2xs' : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200' }}">
                             ID
                         </a>
                         <a href="{{ route('language.switch', 'en') }}"
-                           class="px-2 py-0.5 rounded-md sm:rounded-lg transition-all cursor-pointer {{ app()->getLocale() === 'en' ? 'bg-amber-500 text-white shadow-2xs' : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200' }}">
+                           class="px-2 py-0.5 rounded-md sm:rounded-lg transition-all cursor-pointer {{ app()->getLocale() === 'en' ? 'bg-amber-500 text-zinc-950 font-bold shadow-2xs' : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200' }}">
                             EN
                         </a>
                     </div>
@@ -48,7 +49,7 @@
                     @if (Route::has('login'))
                         @auth
                             <a href="{{ route('dashboard') }}"
-                               class="inline-flex items-center justify-center px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-semibold text-white bg-amber-500 hover:bg-amber-600 rounded-lg sm:rounded-xl shadow-md shadow-amber-500/20 active:scale-95 transition-all whitespace-nowrap">
+                               class="inline-flex items-center justify-center px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-semibold text-zinc-950 bg-amber-500 hover:bg-amber-400 rounded-lg sm:rounded-xl shadow-md shadow-amber-500/20 active:scale-95 transition-all whitespace-nowrap">
                                 Dashboard
                             </a>
                         @else
@@ -59,7 +60,7 @@
 
                             @if (Route::has('register'))
                                 <a href="{{ route('register') }}"
-                                   class="inline-flex items-center justify-center px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-semibold text-white bg-amber-500 hover:bg-amber-600 rounded-lg sm:rounded-xl shadow-md shadow-amber-500/20 active:scale-95 transition-all whitespace-nowrap">
+                                   class="inline-flex items-center justify-center px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-semibold text-zinc-950 bg-amber-500 hover:bg-amber-400 rounded-lg sm:rounded-xl shadow-md shadow-amber-500/20 active:scale-95 transition-all whitespace-nowrap">
                                     {{ __('welcome.nav_register') }}
                                 </a>
                             @endif
@@ -72,7 +73,7 @@
         <!-- Hero Section with Motion Mouse Parallax & Interactive Mockup Tabs -->
         <section class="relative overflow-hidden pt-8 pb-14 sm:pt-16 sm:pb-20 lg:pt-28 lg:pb-32" id="hero-parallax-container">
             <!-- Background Ambient Glow & Mesh Elements -->
-            <div class="parallax-element absolute -top-24 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-gradient-to-tr from-amber-500/15 via-emerald-500/10 to-indigo-500/10 rounded-full blur-3xl pointer-events-none" data-speed="0.2"></div>
+            <div class="parallax-element absolute -top-24 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-gradient-to-tr from-amber-500/15 via-emerald-500/10 to-amber-500/10 rounded-full blur-3xl pointer-events-none" data-speed="0.2"></div>
             <div class="parallax-element absolute top-1/3 -left-32 size-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" data-speed="0.4"></div>
             <div class="parallax-element absolute bottom-10 right-0 size-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" data-speed="0.3"></div>
 
@@ -110,14 +111,14 @@
 
                         <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-2.5 sm:gap-3.5">
                             @auth
-                                <a href="{{ route('dashboard') }}" class="w-full sm:w-auto inline-flex items-center justify-center px-5 sm:px-6 py-3 sm:py-3.5 text-xs sm:text-sm font-bold text-white bg-amber-500 hover:bg-amber-600 rounded-xl sm:rounded-2xl shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 active:scale-95 transition-all">
+                                <a href="{{ route('dashboard') }}" class="w-full sm:w-auto inline-flex items-center justify-center px-5 sm:px-6 py-3 sm:py-3.5 text-xs sm:text-sm font-bold text-zinc-950 bg-amber-500 hover:bg-amber-400 rounded-xl sm:rounded-2xl border border-amber-400/80 shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 active:scale-95 transition-all">
                                     {{ __('welcome.hero_cta_dashboard') }}
                                 </a>
                             @else
-                                <a href="{{ route('register') }}" class="w-full sm:w-auto inline-flex items-center justify-center px-5 sm:px-6 py-3 sm:py-3.5 text-xs sm:text-sm font-bold text-white bg-amber-500 hover:bg-amber-600 rounded-xl sm:rounded-2xl shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 active:scale-95 transition-all">
+                                <a href="{{ route('register') }}" class="w-full sm:w-auto inline-flex items-center justify-center px-5 sm:px-6 py-3 sm:py-3.5 text-xs sm:text-sm font-bold text-zinc-950 bg-amber-500 hover:bg-amber-400 rounded-xl sm:rounded-2xl border border-amber-400/80 shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 active:scale-95 transition-all">
                                     {{ __('welcome.hero_cta_start') }}
                                 </a>
-                                <a href="#features" class="w-full sm:w-auto inline-flex items-center justify-center px-5 sm:px-6 py-3 sm:py-3.5 text-xs sm:text-sm font-bold text-zinc-700 dark:text-zinc-300 bg-zinc-200/60 hover:bg-zinc-200 dark:bg-zinc-800/60 dark:hover:bg-zinc-800 rounded-xl sm:rounded-2xl transition-all">
+                                <a href="#features" class="w-full sm:w-auto inline-flex items-center justify-center px-5 sm:px-6 py-3 sm:py-3.5 text-xs sm:text-sm font-semibold text-zinc-700 dark:text-zinc-300 bg-zinc-200/60 hover:bg-zinc-200 dark:bg-zinc-800/60 dark:hover:bg-zinc-800 rounded-xl sm:rounded-2xl transition-all">
                                     {{ __('welcome.hero_cta_explore') }}
                                 </a>
                             @endauth
@@ -164,7 +165,7 @@
                     <div class="lg:col-span-6 reveal" style="transition-delay: 200ms;" x-data="{ activeTab: 'stream', searchDemo: '', isChecked: false }">
                         <div id="mockup-3d-card" class="relative mx-auto max-w-[540px] lg:max-w-none transition-transform duration-200 ease-out">
                             <!-- Background Glow & Motion Badges -->
-                            <div class="absolute -inset-3 bg-gradient-to-r from-amber-500/20 via-emerald-500/20 to-indigo-500/20 rounded-3xl blur-2xl dark:opacity-75"></div>
+                            <div class="absolute -inset-3 bg-gradient-to-r from-amber-500/20 via-emerald-500/20 to-amber-500/20 rounded-3xl blur-2xl dark:opacity-75"></div>
                             
                             <!-- Floating Badge 1 (Live Timer Pill) -->
                             <div class="hidden sm:flex absolute -top-5 -left-5 z-20 items-center gap-2 px-3 py-1.5 rounded-2xl bg-zinc-900 border border-emerald-500/40 text-emerald-400 shadow-xl animate-[bounce_4s_infinite]">
@@ -226,7 +227,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <span class="px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-amber-500 text-white shadow-2xs cursor-pointer hover:bg-amber-600 transition-colors">+ Quick Add</span>
+                                            <span class="px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-amber-500 text-zinc-950 shadow-2xs cursor-pointer hover:bg-amber-400 transition-colors">+ Quick Add</span>
                                         </div>
 
                                         <!-- Interactive Search Input Bar -->
@@ -382,9 +383,9 @@
                     </div>
 
                     <!-- Feature 3: Data Backup & Restore -->
-                    <div class="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 hover:border-sky-500/50 transition-all hover:-translate-y-2 hover:shadow-xl hover:shadow-sky-500/10 duration-300 group">
-                        <div class="size-12 rounded-2xl bg-sky-500/10 text-sky-500 border border-sky-500/20 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
-                            <flux:icon name="arrow-down-tray" class="size-6 text-sky-500" />
+                    <div class="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 hover:border-amber-500/50 transition-all hover:-translate-y-2 hover:shadow-xl hover:shadow-amber-500/10 duration-300 group">
+                        <div class="size-12 rounded-2xl bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
+                            <flux:icon name="arrow-down-tray" class="size-6 text-amber-500" />
                         </div>
                         <h3 class="text-lg font-bold text-zinc-900 dark:text-white mb-2">{{ __('welcome.feature3_title') }}</h3>
                         <p class="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed">
@@ -393,9 +394,9 @@
                     </div>
 
                     <!-- Feature 4: Passkeys & Google SSO -->
-                    <div class="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 hover:border-purple-500/50 transition-all hover:-translate-y-2 hover:shadow-xl hover:shadow-purple-500/10 duration-300 group">
-                        <div class="size-12 rounded-2xl bg-purple-500/10 text-purple-500 border border-purple-500/20 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
-                            <flux:icon name="finger-print" class="size-6 text-purple-500" />
+                    <div class="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all hover:-translate-y-2 hover:shadow-xl hover:shadow-zinc-500/10 duration-300 group">
+                        <div class="size-12 rounded-2xl bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
+                            <flux:icon name="finger-print" class="size-6 text-zinc-700 dark:text-zinc-300" />
                         </div>
                         <h3 class="text-lg font-bold text-zinc-900 dark:text-white mb-2">{{ __('welcome.feature4_title') }}</h3>
                         <p class="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed">
@@ -404,9 +405,9 @@
                     </div>
 
                     <!-- Feature 5: Real-Time & Parallel Timers -->
-                    <div class="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 hover:border-rose-500/50 transition-all hover:-translate-y-2 hover:shadow-xl hover:shadow-rose-500/10 duration-300 group">
-                        <div class="size-12 rounded-2xl bg-rose-500/10 text-rose-500 border border-rose-500/20 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
-                            <flux:icon name="clock" class="size-6 text-rose-500" />
+                    <div class="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 hover:border-emerald-500/50 transition-all hover:-translate-y-2 hover:shadow-xl hover:shadow-emerald-500/10 duration-300 group">
+                        <div class="size-12 rounded-2xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
+                            <flux:icon name="clock" class="size-6 text-emerald-500" />
                         </div>
                         <h3 class="text-lg font-bold text-zinc-900 dark:text-white mb-2">{{ __('welcome.feature5_title') }}</h3>
                         <p class="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed">
@@ -415,9 +416,9 @@
                     </div>
 
                     <!-- Feature 6: Excel Export & Analytics -->
-                    <div class="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 hover:border-indigo-500/50 transition-all hover:-translate-y-2 hover:shadow-xl hover:shadow-indigo-500/10 duration-300 group">
-                        <div class="size-12 rounded-2xl bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
-                            <flux:icon name="chart-bar" class="size-6 text-indigo-500" />
+                    <div class="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 hover:border-amber-500/50 transition-all hover:-translate-y-2 hover:shadow-xl hover:shadow-amber-500/10 duration-300 group">
+                        <div class="size-12 rounded-2xl bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
+                            <flux:icon name="chart-bar" class="size-6 text-amber-500" />
                         </div>
                         <h3 class="text-lg font-bold text-zinc-900 dark:text-white mb-2">{{ __('welcome.feature6_title') }}</h3>
                         <p class="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed">
@@ -443,7 +444,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-10 relative reveal">
                     <!-- Step 1 -->
                     <div class="text-center space-y-4 group cursor-default p-6 rounded-2xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200/70 dark:border-zinc-800 hover:border-amber-500/50 transition-all">
-                        <div class="w-14 h-14 rounded-2xl bg-amber-500 text-white flex items-center justify-center text-xl font-bold font-mono mx-auto shadow-lg shadow-amber-500/30 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300">
+                        <div class="w-14 h-14 rounded-2xl bg-amber-500 text-zinc-950 flex items-center justify-center text-xl font-bold font-mono mx-auto shadow-lg shadow-amber-500/30 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300">
                             01
                         </div>
                         <h3 class="text-lg font-bold text-zinc-900 dark:text-white">{{ __('welcome.step1_title') }}</h3>
@@ -465,7 +466,7 @@
 
                     <!-- Step 3 -->
                     <div class="text-center space-y-4 group cursor-default p-6 rounded-2xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200/70 dark:border-zinc-800 hover:border-amber-500/50 transition-all">
-                        <div class="w-14 h-14 rounded-2xl bg-indigo-500 text-white flex items-center justify-center text-xl font-bold font-mono mx-auto shadow-lg shadow-indigo-500/30 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300">
+                        <div class="w-14 h-14 rounded-2xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-950 flex items-center justify-center text-xl font-bold font-mono mx-auto shadow-lg shadow-zinc-900/20 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300">
                             03
                         </div>
                         <h3 class="text-lg font-bold text-zinc-900 dark:text-white">{{ __('welcome.step3_title') }}</h3>

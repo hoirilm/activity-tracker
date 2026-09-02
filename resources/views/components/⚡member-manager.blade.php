@@ -2,6 +2,7 @@
 
 use Livewire\Component;
 use App\Models\User;
+use Flux\Flux;
 use Livewire\WithPagination;
 
 new class extends Component
@@ -46,7 +47,7 @@ new class extends Component
 
         // Prevent self-lockout
         if (auth()->id() === (int) $userId) {
-            session()->flash('error', 'You cannot revoke your own administrator privileges.');
+            $this->dispatch('toast', title: 'You cannot revoke your own administrator privileges.', category: 'PERMISSION', type: 'danger');
             return;
         }
 
@@ -77,7 +78,7 @@ new class extends Component
         }
 
         $status = $user->is_admin ? 'promoted to Administrator' : 'removed from Administrator';
-        session()->flash('status_updated', "User {$user->name} successfully {$status}.");
+        $this->dispatch('toast', title: "User {$user->name} successfully {$status}.", category: 'MEMBER', type: 'success');
     }
 };
 ?>
@@ -125,26 +126,6 @@ new class extends Component
             </div>
         </div>
     </div>
-
-    <!-- Alert status -->
-    @if(session()->has('status_updated'))
-        <div x-data="{ show: true }" x-show="show" class="p-3.5 bg-zinc-100 dark:bg-zinc-800/80 text-zinc-800 dark:text-zinc-200 rounded-2xl border border-zinc-200 dark:border-zinc-700 text-xs font-semibold flex items-center justify-between shadow-xs">
-            <div class="flex items-center gap-2">
-                <flux:icon name="check-circle" class="size-4.5 text-emerald-500" />
-                <span>{{ session('status_updated') }}</span>
-            </div>
-            <button @click="show = false" class="text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 font-semibold text-xs cursor-pointer">Dismiss</button>
-        </div>
-    @endif
-    @if(session()->has('error'))
-        <div x-data="{ show: true }" x-show="show" class="p-3.5 bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 rounded-2xl border border-red-200 dark:border-red-800/50 text-xs font-semibold flex items-center justify-between shadow-xs">
-            <div class="flex items-center gap-2">
-                <flux:icon name="exclamation-circle" class="size-4.5 text-red-500 dark:text-red-400" />
-                <span>{{ session('error') }}</span>
-            </div>
-            <button @click="show = false" class="text-red-500 hover:text-red-700 dark:text-zinc-400 dark:hover:text-zinc-200 font-semibold text-xs cursor-pointer">Dismiss</button>
-        </div>
-    @endif
 
     <!-- Member Cards Container -->
     <div class="space-y-3.5">
@@ -196,8 +177,8 @@ new class extends Component
                             </button>
                         @else
                             <button type="button" wire:click="toggleAdmin({{ $member->id }})" 
-                                    class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs px-3.5 py-1.5 rounded-xl border border-indigo-500 active:scale-95 transition-all shadow-xs shadow-indigo-500/20 cursor-pointer flex items-center gap-1.5">
-                                <flux:icon name="shield-check" class="size-3.5 text-white" />
+                                    class="bg-amber-500 hover:bg-amber-400 text-zinc-950 font-semibold text-xs px-3.5 py-1.5 rounded-xl border border-amber-400/80 active:scale-95 transition-all shadow-xs shadow-amber-500/20 cursor-pointer flex items-center gap-1.5">
+                                <flux:icon name="shield-check" class="size-3.5 text-zinc-950" />
                                 <span>Make Admin</span>
                             </button>
                         @endif

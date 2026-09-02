@@ -6,6 +6,7 @@ use App\Models\Project;
 use App\Models\Category;
 use App\Models\Task;
 use Carbon\Carbon;
+use Flux\Flux;
 use Livewire\WithFileUploads;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ActivitiesExport;
@@ -266,6 +267,7 @@ new class extends Component
             } else {
                 $activity->update(['end_time' => now()]);
             }
+            $this->dispatch('toast', title: 'Activity session saved.', category: 'ACTIVITY', type: 'success');
         }
     }
 
@@ -294,11 +296,7 @@ new class extends Component
             Excel::import(new ActivitiesImport, $this->importFile);
             $this->importFile = null;
 
-            session()->flash('import_status', [
-                'type' => 'success',
-                'title' => 'Import Successful! 🎉',
-                'message' => "File '{$fileName}' has been successfully imported and added to your activity history.",
-            ]);
+            $this->dispatch('toast', title: "File '{$fileName}' imported successfully!", category: 'IMPORT', type: 'success');
 
             auth()->user()->notifications()->create([
                 'title' => '📥 Activity Import Successful',
@@ -307,18 +305,10 @@ new class extends Component
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             $errorMsg = $e->validator->errors()->first('importFile');
-            session()->flash('import_status', [
-                'type' => 'error',
-                'title' => 'Invalid File Format ⚠️',
-                'message' => $errorMsg ?: 'Please double-check your uploaded file.',
-            ]);
+            $this->dispatch('toast', title: $errorMsg ?: 'Please double-check your uploaded file.', category: 'IMPORT', type: 'danger');
         } catch (\Throwable $e) {
             $this->importFile = null;
-            session()->flash('import_status', [
-                'type' => 'error',
-                'title' => 'Import Failed ❌',
-                'message' => 'An error occurred while processing the Excel file. Please ensure column headers match (project, category, detail, start_time, end_time).',
-            ]);
+            $this->dispatch('toast', title: 'Import failed. Please ensure column headers match.', category: 'IMPORT', type: 'danger');
 
             auth()->user()->notifications()->create([
                 'title' => '⚠️ Activity Import Failed',
@@ -361,6 +351,7 @@ new class extends Component
             
             $this->showEditModal = false;
             $this->editingActivityId = null;
+            $this->dispatch('toast', title: 'Activity log updated.', category: 'ACTIVITY', type: 'success');
         }
     }
 
@@ -427,11 +418,7 @@ new class extends Component
             $activity = auth()->user()->activities()->find($id);
             if ($activity) {
                 $activity->delete();
-                $this->dispatch('notify', [
-                    'title' => 'Activity Deleted',
-                    'body' => 'The activity log has been deleted successfully.',
-                    'type' => 'success',
-                ]);
+                $this->dispatch('toast', title: 'Activity log deleted.', category: 'ACTIVITY', type: 'success');
             }
         }
     }
@@ -461,20 +448,20 @@ new class extends Component
     </div>
 
     @if(!$this->projects->count() || !$this->categories->count())
-        <div class="p-5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-indigo-500/10 border border-amber-500/30 dark:border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-pulse">
+        <div class="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div class="flex items-start gap-3">
-                <div class="p-2.5 rounded-xl bg-amber-500 text-white shrink-0 shadow-md">
-                    <flux:icon name="sparkles" class="size-6" />
+                <div class="p-2 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 shrink-0">
+                    <flux:icon name="exclamation-triangle" class="size-5" />
                 </div>
                 <div>
-                    <h3 class="text-sm font-bold text-zinc-900 dark:text-white">Project & Category Not Available Yet! ⚠️</h3>
-                    <p class="text-xs text-zinc-600 dark:text-zinc-400 mt-1 leading-relaxed">
-                        You cannot record activities yet because no Project and Category have been created. Use <strong class="font-bold text-amber-600 dark:text-amber-400">Quick Setup</strong> to create them in 1 click!
+                    <h3 class="text-xs font-bold text-amber-900 dark:text-amber-200">Project & Category Required</h3>
+                    <p class="text-xs text-amber-800/80 dark:text-amber-300/80 mt-0.5 leading-relaxed">
+                        You need at least one project and category before you can log activity time.
                     </p>
                 </div>
             </div>
-            <button @click="$dispatch('open-quick-setup')" type="button" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold text-xs shadow-md active:scale-95 transition-all cursor-pointer whitespace-nowrap">
-                🚀 Open Quick Setup
+            <button @click="$dispatch('open-quick-setup')" type="button" class="w-full sm:w-auto px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-semibold text-xs border border-amber-400/80 shadow-xs shadow-amber-500/20 active:scale-95 transition-all cursor-pointer whitespace-nowrap">
+                Complete Setup
             </button>
         </div>
     @endif
@@ -490,12 +477,12 @@ new class extends Component
             <div class="flex items-center gap-2">
                 <div class="relative flex-1">
                     <input type="text" wire:model="detail" x-ref="detailInputMobile" placeholder="What are you working on?" required autocomplete="off"
-                           class="w-full h-10 pl-9 pr-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-zinc-600 focus:ring-2 focus:ring-zinc-600/20 shadow-2xs transition-all">
+                           class="w-full h-10 pl-9 pr-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 shadow-2xs transition-all">
                     <flux:icon name="play-circle" class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-zinc-400" />
                 </div>
                 <button type="submit" 
-                        class="h-10 px-4 flex items-center justify-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl border border-indigo-500/80 active:scale-95 transition-all shrink-0 shadow-xs shadow-indigo-500/20">
-                    <flux:icon name="play" class="size-3.5 text-white" />
+                        class="h-10 px-4 flex items-center justify-center gap-1.5 bg-amber-500 hover:bg-amber-400 text-zinc-950 font-semibold text-xs rounded-xl border border-amber-400/80 active:scale-95 transition-all shrink-0 shadow-xs shadow-amber-500/20 cursor-pointer">
+                    <flux:icon name="play" class="size-3.5 text-zinc-950" />
                     <span>Start</span>
                 </button>
             </div>
@@ -504,7 +491,7 @@ new class extends Component
                 <!-- Project Select Chip -->
                 <div class="relative shrink-0 max-w-[180px]">
                     <select wire:model.live="project_id" required 
-                            class="w-full max-w-full appearance-none [-webkit-appearance:none] [-moz-appearance:none] bg-none h-7 pl-6.5 pr-6 rounded-lg bg-white dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-800 text-[11px] font-medium text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-500 cursor-pointer shadow-2xs truncate">
+                            class="w-full max-w-full appearance-none [-webkit-appearance:none] [-moz-appearance:none] bg-none h-7 pl-6.5 pr-6 rounded-lg bg-white dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-800 text-[11px] font-medium text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-amber-500 cursor-pointer shadow-2xs truncate">
                         @foreach($this->projects as $project)
                             <option value="{{ $project->id }}">{{ $project->name }}</option>
                         @endforeach
@@ -516,7 +503,7 @@ new class extends Component
                 <!-- Task Select Chip (Optional) -->
                 <div class="relative shrink-0 max-w-[180px]">
                     <select wire:model.live="task_id" 
-                            class="w-full max-w-full appearance-none [-webkit-appearance:none] [-moz-appearance:none] bg-none h-7 pl-6.5 pr-6 rounded-lg bg-white dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-800 text-[11px] font-medium text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-500 cursor-pointer shadow-2xs truncate">
+                            class="w-full max-w-full appearance-none [-webkit-appearance:none] [-moz-appearance:none] bg-none h-7 pl-6.5 pr-6 rounded-lg bg-white dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-800 text-[11px] font-medium text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-amber-500 cursor-pointer shadow-2xs truncate">
                         <option value="">-- Task (Optional) --</option>
                         @foreach($this->tasks as $task)
                             <option value="{{ $task->id }}">{{ $task->title }}</option>
@@ -529,7 +516,7 @@ new class extends Component
                 <!-- Category Select Chip -->
                 <div class="relative shrink-0 max-w-[160px]">
                     <select wire:model="category_id" required 
-                            class="w-full max-w-full appearance-none [-webkit-appearance:none] [-moz-appearance:none] bg-none h-7 pl-6.5 pr-6 rounded-lg bg-white dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-800 text-[11px] font-medium text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-500 cursor-pointer shadow-2xs truncate">
+                            class="w-full max-w-full appearance-none [-webkit-appearance:none] [-moz-appearance:none] bg-none h-7 pl-6.5 pr-6 rounded-lg bg-white dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-800 text-[11px] font-medium text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-amber-500 cursor-pointer shadow-2xs truncate">
                         @foreach($this->categories as $category)
                             <option value="{{ $category->id }}">{{ $category->name }}</option>
                         @endforeach
@@ -543,7 +530,7 @@ new class extends Component
                         wire:click="$toggle('is_parallel')" 
                         class="h-7 px-2.5 rounded-lg border text-[11px] font-medium flex items-center gap-1 transition-all duration-200 shrink-0 cursor-pointer active:scale-95 shadow-2xs"
                         :class="$wire.is_parallel 
-                            ? 'bg-indigo-600 text-white border-indigo-600 font-semibold shadow-xs shadow-indigo-500/20' 
+                            ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-950 border-zinc-900 dark:border-zinc-100 font-semibold' 
                             : 'bg-white dark:bg-zinc-950 text-zinc-600 dark:text-zinc-400 border-zinc-200/80 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900'">
                     <flux:icon name="arrows-right-left" class="size-3" />
                     <span>Parallel</span>
@@ -557,11 +544,11 @@ new class extends Component
             <div class="flex items-center gap-3">
                 <div class="relative flex-1">
                     <input type="text" wire:model="detail" x-ref="detailInput" placeholder="What are you working on?" required autocomplete="off"
-                           class="w-full h-11 pl-10 pr-4 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-sm font-medium border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 shadow-2xs transition-all">
+                           class="w-full h-11 pl-10 pr-4 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-sm font-medium border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 shadow-2xs transition-all">
                     <flux:icon name="play-circle" class="absolute left-3.5 top-1/2 -translate-y-1/2 size-4.5 text-zinc-400 pointer-events-none" />
                 </div>
-                <button type="submit" class="h-11 px-6 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl border border-indigo-500/80 active:scale-95 transition-all shrink-0 shadow-xs shadow-indigo-500/20 flex items-center justify-center gap-2 cursor-pointer text-xs">
-                    <flux:icon name="play" class="size-4 text-white" />
+                <button type="submit" class="h-11 px-6 bg-amber-500 hover:bg-amber-400 text-zinc-950 font-semibold rounded-xl border border-amber-400/80 active:scale-95 transition-all shrink-0 shadow-xs shadow-amber-500/20 flex items-center justify-center gap-2 cursor-pointer text-xs">
+                    <flux:icon name="play" class="size-4 text-zinc-950" />
                     <span>Start Tracking</span>
                 </button>
             </div>
@@ -572,7 +559,7 @@ new class extends Component
                     <!-- Project Selector Chip -->
                     <div class="relative shrink-0 max-w-[200px] sm:max-w-[220px]">
                         <select wire:model.live="project_id" required title="Project Reference"
-                                class="w-full max-w-full appearance-none [-webkit-appearance:none] [-moz-appearance:none] bg-none h-8 pl-7.5 pr-6 rounded-lg bg-white dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-500 cursor-pointer shadow-2xs truncate transition-all">
+                                class="w-full max-w-full appearance-none [-webkit-appearance:none] [-moz-appearance:none] bg-none h-8 pl-7.5 pr-6 rounded-lg bg-white dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-amber-500 cursor-pointer shadow-2xs truncate transition-all">
                             @foreach($this->projects as $project)
                                 <option value="{{ $project->id }}">{{ $project->name }}</option>
                             @endforeach
@@ -584,13 +571,13 @@ new class extends Component
                     <!-- Task Selector Chip (Optional) -->
                     <div class="relative shrink-0 max-w-[220px] sm:max-w-[240px]">
                         <select wire:model.live="task_id" title="Task Reference"
-                                class="w-full max-w-full appearance-none [-webkit-appearance:none] [-moz-appearance:none] bg-none h-8 pl-7.5 pr-7 rounded-lg text-xs font-semibold cursor-pointer shadow-2xs truncate transition-all focus:outline-none focus:border-indigo-500 {{ $task_id ? 'bg-indigo-50/90 text-indigo-900 dark:bg-indigo-500/15 dark:text-indigo-200 border-indigo-300 dark:border-indigo-500/40 ring-1 ring-indigo-500/30' : 'bg-white dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 border-zinc-200/80 dark:border-zinc-800' }}">
+                                class="w-full max-w-full appearance-none [-webkit-appearance:none] [-moz-appearance:none] bg-none h-8 pl-7.5 pr-7 rounded-lg text-xs font-semibold cursor-pointer shadow-2xs truncate transition-all focus:outline-none focus:border-amber-500 {{ $task_id ? 'bg-amber-50/90 text-amber-950 dark:bg-amber-500/15 dark:text-amber-200 border-amber-300 dark:border-amber-500/40 ring-1 ring-amber-500/30' : 'bg-white dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 border-zinc-200/80 dark:border-zinc-800' }}">
                             <option value="">-- Task (Optional) --</option>
                             @foreach($this->tasks as $task)
                                 <option value="{{ $task->id }}">{{ $task->title }}</option>
                             @endforeach
                         </select>
-                        <flux:icon name="clipboard-document-list" class="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 {{ $task_id ? 'text-indigo-500' : 'text-zinc-400' }} pointer-events-none" />
+                        <flux:icon name="clipboard-document-list" class="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 {{ $task_id ? 'text-amber-500' : 'text-zinc-400' }} pointer-events-none" />
                         @if($task_id)
                             <button type="button" wire:click="$set('task_id', null)" class="absolute right-2 top-1/2 -translate-y-1/2 size-3.5 rounded-full bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 flex items-center justify-center cursor-pointer" title="Clear task">
                                 <flux:icon name="x-mark" class="size-2" />
@@ -603,7 +590,7 @@ new class extends Component
                     <!-- Category Selector Chip -->
                     <div class="relative shrink-0 max-w-[180px] sm:max-w-[200px]">
                         <select wire:model="category_id" required title="Category Reference"
-                                class="w-full max-w-full appearance-none [-webkit-appearance:none] [-moz-appearance:none] bg-none h-8 pl-7.5 pr-6 rounded-lg bg-white dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-500 cursor-pointer shadow-2xs truncate transition-all">
+                                class="w-full max-w-full appearance-none [-webkit-appearance:none] [-moz-appearance:none] bg-none h-8 pl-7.5 pr-6 rounded-lg bg-white dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-amber-500 cursor-pointer shadow-2xs truncate transition-all">
                             @foreach($this->categories as $category)
                                 <option value="{{ $category->id }}">{{ $category->name }}</option>
                             @endforeach
@@ -617,7 +604,7 @@ new class extends Component
                             wire:click="$toggle('is_parallel')" 
                             class="h-8 px-3 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-all duration-200 shrink-0 cursor-pointer active:scale-95 shadow-2xs"
                             :class="$wire.is_parallel 
-                                ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs shadow-indigo-500/20' 
+                                ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-950 border-zinc-900 dark:border-zinc-100' 
                                 : 'bg-white dark:bg-zinc-950 text-zinc-600 dark:text-zinc-400 border-zinc-200/80 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900'">
                         <flux:icon name="arrows-right-left" class="size-3.5" />
                         <span>Parallel</span>
@@ -638,7 +625,7 @@ new class extends Component
     @if($this->runningActivities->count() > 0)
     <div class="space-y-3 animate-page-entrance" wire:transition.slide.up>
         <div class="flex items-center justify-between">
-            <h2 class="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 flex items-center gap-2 font-mono">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 mb-3 flex items-center gap-2 font-mono">
                 <span class="relative flex h-2.5 w-2.5">
                   <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                   <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
@@ -719,7 +706,9 @@ new class extends Component
                             <span>&bull;</span>
                             <span class="font-medium text-zinc-700 dark:text-zinc-300">{{ $running->category->name }}</span>
                             @if($running->is_parallel) 
-                                <span class="bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-md font-mono font-bold ml-1 border border-indigo-500/20">Parallel</span> 
+                                <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-1.5 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60 inline-flex items-center justify-center ml-1" title="Parallel Tracking">
+                                    <flux:icon name="arrows-right-left" class="size-3 text-zinc-600 dark:text-zinc-400" />
+                                </span> 
                             @endif
                         </div>
                     </div>
@@ -746,9 +735,9 @@ new class extends Component
                                 <!-- Pause Button -->
                                 <button type="button" 
                                         wire:click="pauseActivity({{ $running->id }})" 
-                                        class="bg-amber-500 hover:bg-amber-400 text-white font-semibold text-xs sm:text-sm px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border border-amber-400 shadow-xs active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0" 
+                                        class="bg-amber-500 hover:bg-amber-400 text-zinc-950 font-semibold text-xs sm:text-sm px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border border-amber-400/80 shadow-xs shadow-amber-500/20 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0" 
                                         title="Pause Activity">
-                                    <flux:icon name="pause" class="size-3.5 sm:size-4 fill-current" />
+                                    <flux:icon name="pause" class="size-3.5 sm:size-4 fill-current text-zinc-950" />
                                     <span>Pause</span>
                                 </button>
                             @endif
@@ -881,40 +870,6 @@ new class extends Component
             </div>
         </div>
         
-        @if(session()->has('import_status'))
-            @php $status = session('import_status'); @endphp
-            <div x-data="{ show: true }" x-show="show" x-transition.out.duration.500ms class="rounded-2xl p-4 border shadow-2xs transition-all duration-300 {{ $status['type'] === 'success' ? 'bg-emerald-50/90 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/60 text-emerald-900 dark:text-emerald-100' : 'bg-rose-50/90 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800/60 text-rose-900 dark:text-rose-100' }}">
-                <div class="flex items-start justify-between gap-3">
-                    <div class="flex items-start gap-3 min-w-0">
-                        <div class="size-8 rounded-xl flex items-center justify-center shrink-0 border {{ $status['type'] === 'success' ? 'bg-emerald-100 dark:bg-emerald-900/60 border-emerald-300 dark:border-emerald-700/60 text-emerald-600 dark:text-emerald-400' : 'bg-rose-100 dark:bg-rose-900/60 border-rose-300 dark:border-rose-700/60 text-rose-600 dark:text-rose-400' }}">
-                            @if($status['type'] === 'success')
-                                <flux:icon name="check-circle" class="size-4.5" />
-                            @else
-                                <flux:icon name="exclamation-triangle" class="size-4.5" />
-                            @endif
-                        </div>
-                        <div class="min-w-0">
-                            <h4 class="text-xs font-bold">{{ $status['title'] }}</h4>
-                            <p class="text-xs mt-0.5 opacity-90 leading-relaxed">{{ $status['message'] }}</p>
-                        </div>
-                    </div>
-                    <button type="button" @click="show = false" class="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 p-1 rounded-lg transition-colors cursor-pointer shrink-0">
-                        <flux:icon name="x-mark" class="size-4" />
-                    </button>
-                </div>
-            </div>
-        @elseif(session()->has('message'))
-            <div x-data="{ show: true }" x-show="show" x-transition class="text-xs font-medium text-emerald-600 dark:text-emerald-400 flex items-center justify-between gap-2 bg-emerald-50 dark:bg-emerald-950/30 p-3 rounded-xl border border-emerald-200 dark:border-emerald-800/40">
-                <div class="flex items-center gap-2">
-                    <flux:icon name="check-circle" class="size-4 shrink-0" />
-                    <span>{{ session('message') }}</span>
-                </div>
-                <button type="button" @click="show = false" class="text-emerald-500 hover:text-emerald-700 p-0.5 cursor-pointer">
-                    <flux:icon name="x-mark" class="size-3.5" />
-                </button>
-            </div>
-        @endif
-        
         <div class="space-y-4">
             @forelse($this->activitiesData['activities'] as $date => $dayActivities)
                 @php
@@ -957,20 +912,24 @@ new class extends Component
                                             {{ $activity->detail }}
                                         </div>
                                         <div class="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 flex flex-wrap items-center gap-2">
+                                            <span class="bg-zinc-100 dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 text-[10px] font-medium px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60 flex items-center gap-1.5 shrink-0" title="Project: {{ $activity->project->name }}">
+                                                <flux:icon name="folder" class="size-3 shrink-0 text-zinc-500 dark:text-zinc-400" />
+                                                <span>{{ $activity->project->name }}</span>
+                                            </span>
                                             @if($activity->task)
-                                                <span class="bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[10px] font-medium px-2 py-0.5 rounded-md border border-indigo-200 dark:border-indigo-500/20 flex items-center gap-1">
-                                                    <flux:icon name="clipboard-document-list" class="size-3 shrink-0" />
+                                                <span class="bg-zinc-100 dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 text-[10px] font-medium px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60 flex items-center gap-1.5 shrink-0" title="Task: {{ $activity->task->title }}">
+                                                    <flux:icon name="clipboard-document-list" class="size-3 shrink-0 text-zinc-500 dark:text-zinc-400" />
                                                     <span class="truncate max-w-[150px]">{{ $activity->task->title }}</span>
                                                 </span>
                                             @endif
-                                            <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[10px] font-medium px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60">
-                                                {{ $activity->project->name }}
-                                            </span>
-                                            <span class="bg-zinc-100/80 dark:bg-zinc-800/60 text-zinc-600 dark:text-zinc-400 text-[10px] font-medium px-2 py-0.5 rounded-md border border-zinc-200/80 dark:border-zinc-800">
-                                                {{ $activity->category->name }}
+                                            <span class="bg-zinc-100 dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 text-[10px] font-medium px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60 flex items-center gap-1.5 shrink-0" title="Category: {{ $activity->category->name }}">
+                                                <flux:icon name="tag" class="size-3 shrink-0 text-zinc-500 dark:text-zinc-400" />
+                                                <span>{{ $activity->category->name }}</span>
                                             </span>
                                             @if($activity->is_parallel) 
-                                                <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[9px] font-mono font-medium uppercase tracking-wider px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60">Parallel</span>
+                                                <span class="bg-zinc-100 dark:bg-zinc-800/80 text-zinc-500 dark:text-zinc-400 px-1.5 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center shrink-0" title="Parallel Tracking">
+                                                    <flux:icon name="arrows-right-left" class="size-3 text-zinc-500 dark:text-zinc-400" />
+                                                </span>
                                             @endif
                                         </div>
                                     </div>
@@ -1021,7 +980,10 @@ new class extends Component
                     </flux:button>
                 </div>
             @endif
-      <!-- Edit Time Modal -->
+        </div>
+    </div>
+
+    <!-- Edit Time Modal -->
     <div x-data="{ show: @entangle('showEditModal') }" x-show="show" style="display: none;" class="relative z-[100]">
         <!-- Backdrop -->
         <div x-show="show" x-transition.opacity class="fixed inset-0 bg-black/60"></div>

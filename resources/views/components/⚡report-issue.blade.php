@@ -82,26 +82,32 @@ new class extends Component
 
                 <form wire:submit="submit" class="space-y-4">
                     <div>
-                        <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5">Title</label>
+                        <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5 flex items-center gap-1.5">
+                            <flux:icon name="pencil-square" class="size-3.5 text-zinc-400 dark:text-zinc-500" />
+                            <span>Title <span class="text-red-500">*</span></span>
+                        </label>
                         <div class="relative w-full">
                             <input type="text" 
                                    wire:model="title" 
-                                   placeholder="Brief summary of the issue" 
+                                   placeholder="Brief summary of the issue..." 
                                    required 
                                    autocomplete="off"
-                                   class="w-full h-10 pl-9 pr-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 shadow-2xs transition-all">
+                                   class="w-full h-10 pl-9 pr-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 shadow-2xs transition-all font-sans">
                             <flux:icon name="pencil-square" class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-zinc-400 dark:text-zinc-500 pointer-events-none" />
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5">Description</label>
+                        <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5 flex items-center gap-1.5">
+                            <flux:icon name="document-text" class="size-3.5 text-zinc-400 dark:text-zinc-500" />
+                            <span>Description <span class="text-red-500">*</span></span>
+                        </label>
                         <div class="relative w-full">
                             <textarea wire:model="description" 
-                                      placeholder="Detailed description of what happened..." 
+                                      placeholder="Describe the issue in detail, what you expected, or steps to reproduce..." 
                                       rows="3" 
                                       required
-                                      class="w-full p-3 pl-9 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 shadow-2xs transition-all leading-relaxed"></textarea>
+                                      class="w-full p-3 pl-9 rounded-xl bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 shadow-2xs transition-all leading-relaxed font-sans"></textarea>
                             <flux:icon name="document-text" class="absolute left-3 top-3.5 size-4 text-zinc-400 dark:text-zinc-500 pointer-events-none" />
                         </div>
                     </div>
@@ -110,8 +116,8 @@ new class extends Component
                         <flux:modal.close>
                             <flux:button variant="ghost" size="sm" class="rounded-xl">Cancel</flux:button>
                         </flux:modal.close>
-                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs px-5 py-2.5 rounded-xl border border-indigo-500 active:scale-95 transition-all shadow-xs shadow-indigo-500/20 flex items-center gap-1.5 cursor-pointer">
-                            <flux:icon name="paper-airplane" class="size-3.5 text-white" />
+                        <button type="submit" class="bg-amber-500 hover:bg-amber-400 text-zinc-950 font-semibold text-xs px-5 py-2.5 rounded-xl border border-amber-400/80 active:scale-95 transition-all shadow-xs shadow-amber-500/20 flex items-center gap-1.5 cursor-pointer">
+                            <flux:icon name="paper-airplane" class="size-3.5 text-zinc-950" />
                             <span>Submit Report</span>
                         </button>
                     </div>

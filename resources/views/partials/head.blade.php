@@ -62,6 +62,11 @@
 </script>
 
 <style>
+    /* Prevent Alpine JS uninitialized layout blink */
+    [x-cloak] {
+        display: none !important;
+    }
+
     /* Remove glowing focus ring/shadow effects globally on focus (Light & Dark mode) */
     [data-flux-control]:focus-within,
     [data-flux-control]:focus,

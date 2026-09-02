@@ -4,6 +4,7 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use App\Models\User;
 use App\Models\Notification;
+use Flux\Flux;
 use Illuminate\Support\Str;
 
 new class extends Component
@@ -13,7 +14,6 @@ new class extends Component
     public $title = '';
     public $body = '';
     public $type = 'info';
-    public $successMessage = '';
     public $mdFile;
 
     public function updatedMdFile()
@@ -62,7 +62,7 @@ new class extends Component
 
         $count = $users->count();
         $this->reset(['title', 'body', 'type']);
-        $this->successMessage = "Broadcast successfully sent to {$count} users!";
+        $this->dispatch('toast', title: "Broadcast successfully sent to {$count} users!", category: 'BROADCAST', type: 'success');
         $this->dispatch('notify');
     }
 };
@@ -84,19 +84,6 @@ new class extends Component
             </div>
         </div>
 
-        <!-- Alert Status (Green / Emerald Success Banner) -->
-        @if($successMessage)
-            <div x-data="{ show: true }" x-show="show" class="p-3.5 bg-emerald-50/90 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 rounded-2xl border border-emerald-300/80 dark:border-emerald-700/60 text-xs font-semibold flex items-center justify-between shadow-xs transition-all">
-                <div class="flex items-center gap-2.5">
-                    <div class="size-6 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                        <flux:icon name="check-circle" class="size-4" />
-                    </div>
-                    <span>{{ $successMessage }}</span>
-                </div>
-                <button @click="show = false" class="text-emerald-700 hover:text-emerald-900 dark:text-emerald-400 dark:hover:text-emerald-200 font-semibold text-xs cursor-pointer">Dismiss</button>
-            </div>
-        @endif
-
         <!-- Split Layout -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
@@ -112,8 +99,8 @@ new class extends Component
                     </h3>
 
                     <!-- Upload .md File Button -->
-                    <label class="cursor-pointer inline-flex items-center gap-1.5 text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 font-semibold bg-indigo-50 dark:bg-indigo-500/10 px-2.5 py-1.5 rounded-lg border border-indigo-200 dark:border-indigo-500/20 transition-all">
-                        <flux:icon name="arrow-up-tray" class="size-3.5" />
+                    <label class="cursor-pointer inline-flex items-center gap-1.5 text-xs text-zinc-700 dark:text-zinc-300 font-semibold bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700/60 transition-all">
+                        <flux:icon name="arrow-up-tray" class="size-3.5 text-zinc-500" />
                         <span>Upload .md File</span>
                         <input type="file" wire:model="mdFile" accept=".md,.markdown,.txt" class="hidden">
                     </label>
@@ -125,7 +112,7 @@ new class extends Component
                         <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5">Notification Priority / Type</label>
                         <div class="relative w-full">
                             <select wire:model.live="type" required
-                                    class="w-full h-10 pl-9 pr-8 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-zinc-600 focus:ring-2 focus:ring-zinc-600/20 shadow-2xs transition-all appearance-none cursor-pointer">
+                                    class="w-full h-10 pl-9 pr-8 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 shadow-2xs transition-all appearance-none cursor-pointer">
                                 <option value="info">Info</option>
                                 <option value="success">Success</option>
                                 <option value="warning">Warning</option>
@@ -144,7 +131,7 @@ new class extends Component
                                    placeholder="e.g. System Maintenance / New Release v5.5.0" 
                                    required 
                                    autocomplete="off"
-                                   class="w-full h-10 pl-9 pr-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-zinc-600 focus:ring-2 focus:ring-zinc-600/20 shadow-2xs transition-all">
+                                   class="w-full h-10 pl-9 pr-3 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 shadow-2xs transition-all">
                             <flux:icon name="chat-bubble-left-ellipsis" class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-zinc-400 pointer-events-none" />
                         </div>
                     </div>
@@ -154,25 +141,25 @@ new class extends Component
                         <div class="flex items-center justify-between mb-1.5">
                             <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">Announcement Details (Markdown Supported .md)</label>
                             <span class="text-[10px] text-zinc-400 font-mono flex items-center gap-1">
-                                <flux:icon name="code-bracket" class="size-3 text-indigo-500" />
+                                <flux:icon name="code-bracket" class="size-3 text-zinc-400" />
                                 <span>Markdown enabled</span>
                             </span>
                         </div>
                         <div class="relative w-full">
                             <textarea wire:model.live="body" 
-                                      placeholder="Type your markdown content here or upload a .md file (e.g. # Title, **bold**, - list item, [link](url))..." 
+                                      placeholder="Write announcement details or notes (supports Markdown)..." 
                                       rows="6" 
                                       required
-                                      class="w-full p-3 pl-9 rounded-xl bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-zinc-600 focus:ring-2 focus:ring-zinc-600/20 shadow-2xs transition-all leading-relaxed font-mono"></textarea>
-                            <flux:icon name="document-text" class="absolute left-3 top-3.5 size-4 text-zinc-400 pointer-events-none" />
+                                      class="w-full p-3 pl-9 rounded-xl bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 shadow-2xs transition-all leading-relaxed font-sans"></textarea>
+                            <flux:icon name="document-text" class="absolute left-3 top-3.5 size-4 text-zinc-400 dark:text-zinc-500 pointer-events-none" />
                         </div>
                     </div>
 
                     <!-- Action buttons -->
                     <div class="flex justify-end pt-3 border-t border-zinc-200/50 dark:border-zinc-800/50">
-                        <button type="submit" class="bg-violet-600 hover:bg-violet-500 text-white font-semibold text-xs px-6 py-2.5 rounded-xl border border-violet-500 active:scale-95 transition-all shadow-xs shadow-violet-500/25 flex items-center gap-2 cursor-pointer">
-                            <flux:icon name="megaphone" class="size-4 text-white" />
-                            <span>Send Broadcast Now</span>
+                        <button type="submit" class="bg-amber-500 hover:bg-amber-400 text-zinc-950 font-semibold text-xs px-6 py-2.5 rounded-xl border border-amber-400/80 active:scale-95 transition-all shadow-xs shadow-amber-500/20 flex items-center gap-2 cursor-pointer">
+                            <flux:icon name="megaphone" class="size-4 text-zinc-950" />
+                            <span>Broadcast to All</span>
                         </button>
                     </div>
                 </form>

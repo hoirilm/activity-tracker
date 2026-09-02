@@ -25,9 +25,112 @@
                     display: none !important;
                 }
             }
+
+            /* Navigation Items - Consistent Theme Styling */
+            [data-flux-sidebar-item] {
+                transition: all 180ms ease !important;
+                border-radius: 0.75rem !important; /* rounded-xl */
+                font-size: 0.8125rem !important;
+                font-weight: 500 !important;
+                min-height: 2.25rem !important;
+                padding-left: 0.75rem !important;
+                padding-right: 0.75rem !important;
+                margin-top: 2px !important;
+                margin-bottom: 2px !important;
+            }
+
+            /* Hover on Inactive Items */
+            html.dark [data-flux-sidebar-item]:not([data-current]):hover {
+                background-color: rgba(255, 255, 255, 0.05) !important;
+                color: #f4f4f5 !important;
+            }
+            html:not(.dark) [data-flux-sidebar-item]:not([data-current]):hover {
+                background-color: rgba(0, 0, 0, 0.04) !important;
+                color: #18181b !important;
+            }
+
+            /* Active State - Signature Warm Amber Gradient & Indicator */
+            html.dark [data-flux-sidebar-item][data-current] {
+                background: linear-gradient(90deg, rgba(245, 158, 11, 0.18) 0%, rgba(245, 158, 11, 0.05) 70%, transparent 100%) !important;
+                color: #fbbf24 !important; /* amber-400 */
+                font-weight: 600 !important;
+                border-left: 3px solid #f59e0b !important; /* amber-500 */
+                border-top-left-radius: 0.25rem !important;
+                border-bottom-left-radius: 0.25rem !important;
+                border-top: 1px solid rgba(245, 158, 11, 0.15) !important;
+                border-bottom: 1px solid rgba(245, 158, 11, 0.08) !important;
+                border-right: 1px solid transparent !important;
+            }
+            html:not(.dark) [data-flux-sidebar-item][data-current] {
+                background: linear-gradient(90deg, rgba(245, 158, 11, 0.15) 0%, rgba(245, 158, 11, 0.04) 70%, transparent 100%) !important;
+                color: #d97706 !important; /* amber-600 */
+                font-weight: 600 !important;
+                border-left: 3px solid #f59e0b !important; /* amber-500 */
+                border-top-left-radius: 0.25rem !important;
+                border-bottom-left-radius: 0.25rem !important;
+                border-top: 1px solid rgba(245, 158, 11, 0.15) !important;
+                border-bottom: 1px solid rgba(245, 158, 11, 0.08) !important;
+                border-right: 1px solid transparent !important;
+            }
+
+            /* Active Icon Glow */
+            html.dark [data-flux-sidebar-item][data-current] svg,
+            html.dark [data-flux-sidebar-item][data-current] [data-slot="icon"] {
+                color: #fbbf24 !important;
+            }
+            html:not(.dark) [data-flux-sidebar-item][data-current] svg,
+            html:not(.dark) [data-flux-sidebar-item][data-current] [data-slot="icon"] {
+                color: #d97706 !important;
+            }
+
+            /* Badge Styling (Issues count, etc.) */
+            html.dark [data-flux-sidebar-item] [data-flux-navlist-badge],
+            html.dark [data-flux-navlist-badge] {
+                background-color: rgba(245, 158, 11, 0.18) !important;
+                color: #fbbf24 !important;
+                border: 1px solid rgba(245, 158, 11, 0.35) !important;
+                border-radius: 9999px !important;
+                font-size: 10px !important;
+                font-weight: 700 !important;
+                padding: 1px 6.5px !important;
+            }
+            html:not(.dark) [data-flux-sidebar-item] [data-flux-navlist-badge],
+            html:not(.dark) [data-flux-navlist-badge] {
+                background-color: rgba(245, 158, 11, 0.14) !important;
+                color: #d97706 !important;
+                border: 1px solid rgba(245, 158, 11, 0.3) !important;
+                border-radius: 9999px !important;
+                font-size: 10px !important;
+                font-weight: 700 !important;
+                padding: 1px 6.5px !important;
+            }
+
+            /* Dynamic User Menu: In-place Accordion vs Collapsed Flyout */
+            .desktop-user-menu-flyout {
+                display: none !important;
+            }
+            @media (min-width: 1024px) {
+                ui-sidebar[data-flux-sidebar-collapsed-desktop] .desktop-user-menu-flyout {
+                    display: block !important;
+                }
+                ui-sidebar[data-flux-sidebar-collapsed-desktop] .desktop-user-menu-expanded {
+                    display: none !important;
+                }
+                ui-sidebar[data-flux-sidebar-collapsed-desktop] .desktop-user-menu-wrapper {
+                    background: transparent !important;
+                    border-color: transparent !important;
+                    padding: 0 !important;
+                    box-shadow: none !important;
+                }
+            }
+
+            /* Ensure Livewire loading indicators are strictly hidden when not loading */
+            [wire\:loading], [wire\:loading\.delay] {
+                display: none;
+            }
         </style>
     </head>
-    <body class="min-h-screen bg-white dark:bg-zinc-800" x-data="{ mobileNavOpen: false }">
+    <body class="min-h-screen bg-white dark:bg-zinc-800" x-data="{ mobileNavOpen: false }" @close-mobile-nav.window="mobileNavOpen = false">
         <!-- Desktop Sidebar (Hidden on mobile) -->
         <flux:sidebar sticky collapsible class="hidden lg:flex h-screen border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
             <flux:sidebar.header>
@@ -150,18 +253,12 @@
             </div>
 
             <!-- User Profile Footer -->
-            <div class="pt-4 border-t border-zinc-200 dark:border-zinc-700">
+            <div class="pt-2">
                 <x-desktop-user-menu :name="auth()->user()->name" />
             </div>
         </div>
 
         {{ $slot }}
-
-        @persist('toast')
-            <flux:toast.group>
-                <flux:toast />
-            </flux:toast.group>
-        @endpersist
         
         <!-- Floating Action Menu Top Right (Help, FAQ & Bug Report) -->
         @if(auth()->check())
@@ -180,8 +277,8 @@
                 <div class="px-3 py-1.5 text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Help & Support</div>
                 
                 <!-- Quick Setup -->
-                <button @click="open = false; $dispatch('open-quick-setup')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors duration-150 text-left cursor-pointer">
-                    <flux:icon name="sparkles" class="size-4 text-indigo-500 dark:text-indigo-400 shrink-0" />
+                <button @click="open = false; $dispatch('open-quick-setup')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-amber-600 dark:text-amber-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors duration-150 text-left cursor-pointer">
+                    <flux:icon name="sparkles" class="size-4 text-amber-500 dark:text-amber-400 shrink-0" />
                     <span>Quick Setup</span>
                 </button>
 
@@ -215,8 +312,8 @@
             <button @click="open = !open" 
                     type="button"
                     id="tour-help-button"
-                    class="flex items-center justify-center size-9 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-indigo-500 dark:hover:text-indigo-400 shadow-xs transition-all duration-300 active:scale-95 cursor-pointer"
-                    :class="open ? 'rotate-180 text-indigo-500 dark:text-indigo-400 border-indigo-500/30' : ''">
+                    class="flex items-center justify-center size-9 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-amber-500 dark:hover:text-amber-400 shadow-xs transition-all duration-300 active:scale-95 cursor-pointer"
+                    :class="open ? 'rotate-180 text-amber-500 dark:text-amber-400 border-amber-500/30' : ''">
                 <!-- Question mark icon -->
                 <svg x-show="!open" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-4.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />

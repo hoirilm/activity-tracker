@@ -4,6 +4,7 @@ use Livewire\Component;
 use App\Models\Activity;
 use App\Models\Task;
 use Carbon\Carbon;
+use Flux\Flux;
 
 new class extends Component
 {
@@ -309,6 +310,7 @@ new class extends Component
 
         $this->reset(['newTaskTitle', 'newTaskProjectId', 'showQuickTaskForm']);
         $this->dispatch('task-created', title: $task->title);
+        $this->dispatch('toast', title: 'Task created successfully.', category: 'TASK', type: 'success');
     }
 
     public function updateTaskStatus(int $taskId, string $status)
@@ -394,8 +396,8 @@ new class extends Component
             'rose' => 'bg-rose-500/10 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300/90 border-rose-200/80 dark:border-rose-900/40',
             'sky' => 'bg-sky-500/10 text-sky-800 dark:bg-sky-950/40 dark:text-sky-300/90 border-sky-200/80 dark:border-sky-900/40',
             'purple' => 'bg-purple-500/10 text-purple-800 dark:bg-purple-950/40 dark:text-purple-300/90 border-purple-200/80 dark:border-purple-900/40',
-            'zinc' => 'bg-zinc-500/10 text-zinc-700 dark:bg-zinc-800/60 dark:text-zinc-300/90 border-zinc-200/80 dark:border-zinc-700/60',
-            default => 'bg-indigo-500/10 text-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-300/90 border-indigo-200/80 dark:border-indigo-900/40',
+            'zinc' => 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700/60',
+            default => 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700/60',
         };
     }
 
@@ -440,13 +442,12 @@ new class extends Component
 };
 ?>
 
+<div class="flex min-h-[calc(100vh-10rem)] w-full flex-col gap-5 sm:gap-6 px-3 sm:px-4 py-2 text-neutral-900 dark:text-neutral-100 max-w-6xl mx-auto mt-1 sm:mt-4 pb-12" x-data="{ scrolled: false }" @scroll.window="scrolled = (window.pageYOffset > 300)">
 <style>
 .custom-scrollbar::-webkit-scrollbar { width: 5px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 9999px; }
 </style>
-
-<div class="flex min-h-[calc(100vh-10rem)] w-full flex-col gap-5 sm:gap-6 px-3 sm:px-4 py-2 text-neutral-900 dark:text-neutral-100 max-w-6xl mx-auto mt-1 sm:mt-4 pb-12" x-data="{ scrolled: false }" @scroll.window="scrolled = (window.pageYOffset > 300)">
 
     <!-- Main Animated Content -->
     <div class="flex flex-col gap-6 animate-page-entrance">
@@ -616,7 +617,9 @@ new class extends Component
                             <span>&bull;</span>
                             <span class="font-medium text-zinc-700 dark:text-zinc-300">{{ $running->category->name }}</span>
                             @if($running->is_parallel) 
-                                <span class="bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-md font-mono font-bold ml-1 border border-indigo-500/20">Parallel</span> 
+                                <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-1.5 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60 inline-flex items-center justify-center ml-1" title="Parallel Tracking">
+                                    <flux:icon name="arrows-right-left" class="size-3 text-zinc-600 dark:text-zinc-400" />
+                                </span> 
                             @endif
                         </div>
                     </div>
@@ -643,9 +646,9 @@ new class extends Component
                                 <!-- Pause Button -->
                                 <button type="button" 
                                         wire:click="pauseActivity({{ $running->id }})" 
-                                        class="bg-amber-500 hover:bg-amber-400 text-white font-semibold text-xs sm:text-sm px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border border-amber-400 shadow-xs active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0" 
+                                        class="bg-amber-500 hover:bg-amber-400 text-zinc-950 font-semibold text-xs sm:text-sm px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border border-amber-400/80 shadow-xs shadow-amber-500/20 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0" 
                                         title="Pause Activity">
-                                    <flux:icon name="pause" class="size-3.5 sm:size-4 fill-current" />
+                                    <flux:icon name="pause" class="size-3.5 sm:size-4 fill-current text-zinc-950" />
                                     <span>Pause</span>
                                 </button>
                             @endif
@@ -706,8 +709,8 @@ new class extends Component
                 <button type="button" 
                         wire:click="$toggle('showQuickTaskForm')" 
                         @click="if (isStreamHidden) { isStreamHidden = false; localStorage.setItem('dashboard_task_stream_hidden', 'false'); }"
-                        class="px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/25 hover:bg-amber-500 hover:text-white transition-all flex items-center gap-1.5 cursor-pointer active:scale-95 shadow-2xs">
-                    <flux:icon name="plus" class="size-3.5" />
+                        class="px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-amber-500 hover:bg-amber-400 text-zinc-950 border border-amber-400/80 shadow-xs shadow-amber-500/20 transition-all flex items-center gap-1.5 cursor-pointer active:scale-95">
+                    <flux:icon name="plus" class="size-3.5 text-zinc-950" />
                     <span>Quick Add</span>
                 </button>
 
@@ -786,8 +789,8 @@ new class extends Component
                         @endforeach
                     </select>
 
-                    <button type="submit" class="h-9 px-3.5 bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs rounded-lg transition-all active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer shrink-0">
-                        <flux:icon name="plus" class="size-3.5" />
+                    <button type="submit" class="h-9 px-3.5 bg-amber-500 hover:bg-amber-400 text-zinc-950 font-semibold text-xs rounded-xl border border-amber-400/80 shadow-xs shadow-amber-500/20 transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer shrink-0">
+                        <flux:icon name="plus" class="size-3.5 text-zinc-950" />
                         <span>Add Task</span>
                     </button>
 
@@ -846,8 +849,8 @@ new class extends Component
                                         <span class="inline-flex items-center gap-1 text-[9px] font-semibold px-2 py-0.5 rounded-md border
                                             {{ $badge['color'] === 'rose' ? 'bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-200/80 dark:border-rose-900/40 font-bold' : '' }}
                                             {{ $badge['color'] === 'amber' ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-200/80 dark:border-amber-900/40 font-bold' : '' }}
-                                            {{ $badge['color'] === 'indigo' ? 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-200/80 dark:border-indigo-900/40' : '' }}
-                                            {{ $badge['color'] === 'sky' ? 'bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-200/80 dark:border-sky-900/40' : '' }}
+                                            {{ $badge['color'] === 'indigo' ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700/60' : '' }}
+                                            {{ $badge['color'] === 'sky' ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700/60' : '' }}
                                             {{ $badge['color'] === 'zinc' ? 'bg-zinc-100/60 dark:bg-zinc-800/40 text-zinc-500 dark:text-zinc-400 border-zinc-200/50 dark:border-zinc-800/80' : '' }}">
                                             <flux:icon name="{{ $badge['icon'] }}" class="size-2.5 shrink-0" />
                                             <span>{{ $badge['label'] }}</span>
@@ -888,28 +891,25 @@ new class extends Component
                 </button>
             </div>
         @elseif($taskFilter === 'on_progress')
-            <!-- Celebratory Empty State when 0 On-Progress tasks exist -->
-            <div class="py-10 px-6 rounded-2xl text-center border border-dashed border-amber-500/25 bg-gradient-to-b from-amber-500/5 via-transparent to-emerald-500/5 flex flex-col items-center justify-center gap-3">
-                <div class="relative flex items-center justify-center mb-1">
-                    <span class="absolute size-14 rounded-full bg-amber-500/15 animate-ping"></span>
-                    <div class="relative size-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500 shadow-sm">
-                        <flux:icon name="sparkles" class="size-6 text-amber-500" />
-                    </div>
+            <!-- Clean Empty State when 0 On-Progress tasks exist -->
+            <div class="py-8 px-4 rounded-xl text-center border border-dashed border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 flex flex-col items-center justify-center gap-2.5">
+                <div class="size-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                    <flux:icon name="check-circle" class="size-5" />
                 </div>
 
                 <div class="max-w-md">
-                    <h4 class="text-sm font-extrabold text-zinc-900 dark:text-zinc-100 flex items-center justify-center gap-1.5">
-                        <span>All On-Progress Tasks Completed! 🎉</span>
+                    <h4 class="text-xs font-bold text-zinc-900 dark:text-zinc-100">
+                        No In-Progress Tasks
                     </h4>
-                    <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-                        Great job! You have no pending tasks in progress right now. Enjoy your accomplishment or create a new task for today.
+                    <p class="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+                        You have no tasks currently in progress. Start a task from your backlog or create a new one.
                     </p>
                 </div>
 
                 <button type="button" 
                         wire:click="$set('showQuickTaskForm', true)" 
-                        class="mt-2 px-3.5 py-1.5 text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white rounded-xl shadow-xs transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer">
-                    <flux:icon name="plus" class="size-3.5" />
+                        class="mt-2 px-3.5 py-1.5 text-xs font-semibold bg-amber-500 hover:bg-amber-400 text-zinc-950 rounded-xl border border-amber-400/80 shadow-xs shadow-amber-500/20 transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer">
+                    <flux:icon name="plus" class="size-3.5 text-zinc-950" />
                     <span>Add New Task</span>
                 </button>
             </div>
@@ -949,11 +949,11 @@ new class extends Component
                      
                      const gradient = ctx.createLinearGradient(0, 0, 0, canvas.parentElement.offsetHeight || 300);
                      if (this.isDark) {
-                         gradient.addColorStop(0, 'rgba(96, 165, 250, 0.25)');
-                         gradient.addColorStop(1, 'rgba(96, 165, 250, 0.0)');
+                         gradient.addColorStop(0, 'rgba(245, 158, 11, 0.25)');
+                         gradient.addColorStop(1, 'rgba(245, 158, 11, 0.0)');
                      } else {
-                         gradient.addColorStop(0, 'rgba(59, 130, 246, 0.15)');
-                         gradient.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
+                         gradient.addColorStop(0, 'rgba(245, 158, 11, 0.15)');
+                         gradient.addColorStop(1, 'rgba(245, 158, 11, 0.0)');
                      }
 
                      const gridColor = this.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)';
@@ -966,17 +966,17 @@ new class extends Component
                              datasets: [{
                                  label: 'Hours Worked',
                                  data: data,
-                                 borderColor: this.isDark ? '#60a5fa' : '#3b82f6',
+                                 borderColor: '#f59e0b',
                                  backgroundColor: gradient,
                                  borderWidth: 2.5,
                                  fill: true,
                                  tension: 0.4,
                                  pointBackgroundColor: this.isDark ? '#18181b' : '#ffffff',
-                                 pointBorderColor: this.isDark ? '#60a5fa' : '#3b82f6',
+                                 pointBorderColor: '#f59e0b',
                                  pointBorderWidth: 2,
                                  pointRadius: 0,
                                  pointHoverRadius: 5,
-                                 pointHoverBackgroundColor: this.isDark ? '#60a5fa' : '#3b82f6',
+                                 pointHoverBackgroundColor: '#f59e0b',
                                  pointHoverBorderColor: '#ffffff',
                                  pointHoverBorderWidth: 2,
                                  pointHitRadius: 10,
@@ -1078,31 +1078,31 @@ new class extends Component
                                     <div class="flex items-center justify-between text-xs mb-1.5">
                                         <div class="flex items-center gap-1.5 font-semibold text-zinc-800 dark:text-zinc-200 group-hover:text-zinc-900 dark:group-hover:text-zinc-100 transition-colors">
                                             <flux:icon name="chevron-right" class="size-3.5 text-zinc-400 transition-transform duration-200" ::class="open && 'rotate-90'" />
-                                            <span class="size-2 rounded-full bg-blue-600 dark:bg-blue-500 shrink-0"></span>
+                                            <span class="size-2 rounded-full bg-amber-500 shrink-0"></span>
                                             <span>{{ $stat['name'] }}</span>
                                         </div>
-                                        <span class="text-zinc-500 dark:text-zinc-400 font-mono text-[11px] group-hover:text-zinc-800 dark:group-hover:text-zinc-300 transition-colors">{{ $stat['duration'] }} <span class="font-bold text-blue-600 dark:text-blue-400">({{ $stat['percentage'] }}%)</span></span>
+                                        <span class="text-zinc-500 dark:text-zinc-400 font-mono text-[11px] group-hover:text-zinc-800 dark:group-hover:text-zinc-300 transition-colors">{{ $stat['duration'] }} <span class="font-bold text-amber-600 dark:text-amber-400">({{ $stat['percentage'] }}%)</span></span>
                                     </div>
                                     <div class="w-full bg-zinc-100 dark:bg-zinc-800 rounded-full h-2 overflow-hidden p-0.5 border border-zinc-200 dark:border-zinc-700">
-                                        <div class="bg-blue-600 dark:bg-blue-500 h-1.5 rounded-full transition-all duration-500 shadow-2xs" style="width: {{ $stat['percentage'] }}%"></div>
+                                        <div class="bg-amber-500 dark:bg-amber-400 h-1.5 rounded-full transition-all duration-500 shadow-2xs" style="width: {{ $stat['percentage'] }}%"></div>
                                     </div>
                                 </button>
 
                                 <div x-show="open" 
                                      x-collapse
-                                     class="pl-4 pr-1 space-y-2 border-l-2 border-emerald-500/30 dark:border-emerald-500/20 ml-2 mt-2" 
+                                     class="pl-4 pr-1 space-y-2 border-l-2 border-zinc-200 dark:border-zinc-700 ml-2 mt-2" 
                                      style="display: none;">
                                      @foreach($stat['categories'] as $cat)
                                          <div class="space-y-1">
                                              <div class="flex justify-between text-[10px]">
                                                  <span class="text-zinc-500 dark:text-zinc-400 font-medium flex items-center gap-1">
-                                                     <span class="size-1.5 rounded-full bg-emerald-500/80 inline-block"></span>
+                                                     <span class="size-1.5 rounded-full bg-zinc-400 dark:bg-zinc-500 inline-block"></span>
                                                      <span>{{ $cat['name'] }}</span>
                                                  </span>
-                                                 <span class="text-zinc-500 dark:text-zinc-400 font-mono">{{ $cat['duration'] }} <span class="font-semibold text-emerald-600 dark:text-emerald-400">({{ $cat['percentage'] }}%)</span></span>
+                                                 <span class="text-zinc-500 dark:text-zinc-400 font-mono">{{ $cat['duration'] }} <span class="font-semibold text-zinc-700 dark:text-zinc-300">({{ $cat['percentage'] }}%)</span></span>
                                              </div>
                                              <div class="w-full bg-zinc-100 dark:bg-zinc-800 rounded-full h-1 overflow-hidden">
-                                                 <div class="bg-emerald-500/70 dark:bg-emerald-500/60 h-1 rounded-full" style="width: {{ $cat['percentage'] }}%"></div>
+                                                 <div class="bg-zinc-300 dark:bg-zinc-600 h-1 rounded-full" style="width: {{ $cat['percentage'] }}%"></div>
                                              </div>
                                          </div>
                                      @endforeach
@@ -1156,20 +1156,24 @@ new class extends Component
                         <div class="min-w-0">
                             <div class="font-bold text-sm text-zinc-900 dark:text-zinc-100 truncate group-hover/row:text-zinc-700 dark:group-hover/row:text-zinc-300 transition-colors">{{ $activity->detail }}</div>
                             <div class="text-[11px] truncate flex items-center gap-1.5 mt-1 flex-wrap">
+                                <span class="bg-zinc-100 dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 text-[10px] font-medium px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60 flex items-center gap-1.5 shrink-0" title="Project: {{ $activity->project->name }}">
+                                    <flux:icon name="folder" class="size-3 text-zinc-500 dark:text-zinc-400 shrink-0" />
+                                    <span>{{ $activity->project->name }}</span>
+                                </span>
                                 @if($activity->task)
-                                    <span class="bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[10px] font-medium px-2 py-0.5 rounded-md border border-indigo-200 dark:border-indigo-500/20 flex items-center gap-1 shrink-0">
-                                        <flux:icon name="clipboard-document-list" class="size-3 shrink-0" />
+                                    <span class="bg-zinc-100 dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 text-[10px] font-medium px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60 flex items-center gap-1.5 shrink-0" title="Task: {{ $activity->task->title }}">
+                                        <flux:icon name="clipboard-document-list" class="size-3 text-zinc-500 dark:text-zinc-400 shrink-0" />
                                         <span class="truncate max-w-[140px]">{{ $activity->task->title }}</span>
                                     </span>
                                 @endif
-                                <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[10px] font-medium px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700 shrink-0">
-                                    {{ $activity->project->name }}
-                                </span>
-                                <span class="bg-zinc-100/80 dark:bg-zinc-800/60 text-zinc-600 dark:text-zinc-400 text-[10px] font-medium px-2 py-0.5 rounded-md border border-zinc-200/80 dark:border-zinc-800 shrink-0">
-                                    {{ $activity->category->name }}
+                                <span class="bg-zinc-100 dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 text-[10px] font-medium px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60 flex items-center gap-1.5 shrink-0" title="Category: {{ $activity->category->name }}">
+                                    <flux:icon name="tag" class="size-3 text-zinc-500 dark:text-zinc-400 shrink-0" />
+                                    <span>{{ $activity->category->name }}</span>
                                 </span>
                                 @if($activity->is_parallel) 
-                                    <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[9px] font-mono font-medium uppercase tracking-wider px-1.5 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60 shrink-0">Parallel</span>
+                                    <span class="bg-zinc-100 dark:bg-zinc-800/80 text-zinc-500 dark:text-zinc-400 px-1.5 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center shrink-0" title="Parallel Tracking">
+                                        <flux:icon name="arrows-right-left" class="size-3 text-zinc-500 dark:text-zinc-400" />
+                                    </span>
                                 @endif
                             </div>
                         </div>
@@ -1200,4 +1204,5 @@ new class extends Component
             @endforelse
         </div>
     </div>
+</div>
 </div>

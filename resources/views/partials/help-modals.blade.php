@@ -2,58 +2,85 @@
 <flux:modal name="help-modal" class="w-[calc(100vw-2rem)] max-w-2xl z-[200]">
     <div class="space-y-5">
         <div class="flex items-center gap-3">
-            <div class="size-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0">
-                <flux:icon name="question-mark-circle" class="size-5" />
+            <div class="size-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0">
+                <flux:icon name="question-mark-circle" class="size-5 text-zinc-500 dark:text-zinc-400" />
             </div>
             <div>
-                <flux:heading size="lg" class="font-bold tracking-tight">Help &amp; Support Center</flux:heading>
+                <flux:heading size="lg" class="font-bold tracking-tight text-zinc-900 dark:text-zinc-100">Help &amp; Support Center</flux:heading>
                 <flux:text class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Everything you need to get help and make the most out of your activity tracking experience.</flux:text>
             </div>
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto pr-1 custom-scrollbar">
-            <div class="space-y-2.5 p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all group">
-                <div class="flex items-center gap-2">
-                    <div class="size-7 rounded-lg bg-zinc-200 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0">
-                        <flux:icon name="book-open" class="size-4" />
+            <!-- User Guides Card -->
+            <div class="space-y-3 p-4 rounded-2xl bg-zinc-50/70 dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all flex flex-col justify-between group">
+                <div class="space-y-2">
+                    <div class="flex items-center gap-2.5">
+                        <div class="size-8 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-600 dark:text-zinc-400 shrink-0">
+                            <flux:icon name="book-open" class="size-4 text-zinc-500 dark:text-zinc-400" />
+                        </div>
+                        <flux:heading size="md" class="font-bold text-sm text-zinc-900 dark:text-zinc-100">User Guides</flux:heading>
                     </div>
-                    <flux:heading size="md" class="font-semibold text-sm">User Guides</flux:heading>
+                    <flux:text class="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed font-sans">
+                        Read our detailed documentation on how to manage tasks, set up projects, define categories &amp; labels, track activity time, and export/restore data.
+                    </flux:text>
                 </div>
-                <flux:text class="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">Read our detailed documentation on how to manage tasks, set up projects, define categories &amp; labels, track activity time, and export/restore data.</flux:text>
                 <div class="pt-1">
-                    <button type="button" onclick="window.open('https://laravel.com/docs/starter-kits#livewire', '_blank')" class="bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-white dark:text-zinc-900 font-semibold text-xs px-3.5 py-1.5 rounded-xl active:scale-95 transition-all shadow-2xs cursor-pointer">Open Docs &rarr;</button>
+                    <button type="button" onclick="window.open('https://laravel.com/docs/starter-kits#livewire', '_blank')" class="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-semibold bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700/80 text-zinc-800 dark:text-zinc-200 border border-zinc-200/80 dark:border-zinc-700/60 inline-flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer">
+                        <span>Open Docs</span>
+                        <flux:icon name="arrow-up-right" class="size-3.5 text-zinc-400" />
+                    </button>
                 </div>
             </div>
             
-            <div class="space-y-2.5 p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all group">
-                <div class="flex items-center gap-2">
-                    <div class="size-7 rounded-lg bg-zinc-200 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0">
-                        <flux:icon name="bug-ant" class="size-4" />
+            <!-- Report an Issue Card -->
+            <div class="space-y-3 p-4 rounded-2xl bg-zinc-50/70 dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all flex flex-col justify-between group">
+                <div class="space-y-2">
+                    <div class="flex items-center gap-2.5">
+                        <div class="size-8 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-600 dark:text-zinc-400 shrink-0">
+                            <flux:icon name="bug-ant" class="size-4 text-zinc-500 dark:text-zinc-400" />
+                        </div>
+                        <flux:heading size="md" class="font-bold text-sm text-zinc-900 dark:text-zinc-100">Report an Issue</flux:heading>
                     </div>
-                    <flux:heading size="md" class="font-semibold text-sm">Report an Issue</flux:heading>
+                    <flux:text class="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed font-sans">
+                        Encountered a problem or want to suggest a new feature? You can file a detailed report directly through our issue reporter.
+                    </flux:text>
                 </div>
-                <flux:text class="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">Encountered a problem or want to suggest a new feature? You can file a detailed report directly through the floating help menu.</flux:text>
                 <div class="pt-1">
                     <flux:modal.trigger name="report-issue-modal">
-                        <button type="button" class="bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs px-3.5 py-1.5 rounded-xl border border-rose-500 active:scale-95 transition-all shadow-2xs cursor-pointer">File Bug Report</button>
+                        <button type="button" class="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-zinc-950 border border-amber-400/80 shadow-xs shadow-amber-500/20 inline-flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer">
+                            <flux:icon name="bug-ant" class="size-3.5 text-zinc-950" />
+                            <span>File Bug Report</span>
+                        </button>
                     </flux:modal.trigger>
                 </div>
             </div>
             
-            <div class="space-y-2.5 p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 md:col-span-2">
-                <div class="flex items-center gap-2">
-                    <div class="size-7 rounded-lg bg-zinc-200 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0">
-                        <flux:icon name="chat-bubble-left-right" class="size-4" />
+            <!-- Contact Administrator Card -->
+            <div class="space-y-2.5 p-4 rounded-2xl bg-zinc-50/70 dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800 md:col-span-2">
+                <div class="flex items-center gap-2.5">
+                    <div class="size-8 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-600 dark:text-zinc-400 shrink-0">
+                        <flux:icon name="chat-bubble-left-right" class="size-4 text-zinc-500 dark:text-zinc-400" />
                     </div>
-                    <flux:heading size="md" class="font-semibold text-sm">Contact Administrator</flux:heading>
+                    <flux:heading size="md" class="font-bold text-sm text-zinc-900 dark:text-zinc-100">Contact Administrator</flux:heading>
                 </div>
-                <flux:text class="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">If you require immediate help or technical support for your user account (such as password resets or permission changes), contact platform administrator at <a href="mailto:horimo.me@gmail.com" class="text-zinc-900 dark:text-zinc-100 underline font-semibold">horimo.me@gmail.com</a>.</flux:text>
+                <flux:text class="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed font-sans">
+                    If you require immediate help or technical support for your user account (such as password resets or permission changes), contact platform administrator:
+                </flux:text>
+                <div class="pt-1 flex flex-wrap items-center gap-2">
+                    <a href="mailto:horimo.me@gmail.com" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700/80 border border-zinc-200/80 dark:border-zinc-700/60 text-zinc-800 dark:text-zinc-200 hover:text-amber-600 dark:hover:text-amber-400 text-xs font-semibold transition-all">
+                        <flux:icon name="envelope" class="size-3.5 text-zinc-400" />
+                        <span>horimo.me@gmail.com</span>
+                    </a>
+                </div>
             </div>
         </div>
 
-        <div class="flex justify-end pt-2">
+        <div class="flex justify-end pt-3 border-t border-zinc-200/80 dark:border-zinc-800/80">
             <flux:modal.close>
-                <flux:button variant="ghost" size="sm">Close</flux:button>
+                <button type="button" class="px-4 py-2 rounded-xl text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 bg-zinc-100 dark:bg-zinc-800/60 hover:bg-zinc-200 dark:hover:bg-zinc-700/80 border border-zinc-200/80 dark:border-zinc-700/60 transition-all cursor-pointer active:scale-95">
+                    Close
+                </button>
             </flux:modal.close>
         </div>
     </div>
@@ -77,7 +104,7 @@
             <!-- GENERAL -->
             <div class="space-y-2">
                 <div class="flex items-center gap-2">
-                    <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[10px] font-mono font-medium px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60 uppercase tracking-wider">
+                    <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[10px] font-sans font-semibold px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60 uppercase tracking-wider">
                         General
                     </span>
                 </div>
@@ -121,7 +148,7 @@
             <!-- MANAGE & TASKS -->
             <div class="space-y-2">
                 <div class="flex items-center gap-2">
-                    <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[10px] font-mono font-medium px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60 uppercase tracking-wider">
+                    <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[10px] font-sans font-semibold px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60 uppercase tracking-wider">
                         Manage &amp; Tasks
                     </span>
                 </div>
@@ -165,7 +192,7 @@
             <!-- TRACKER -->
             <div class="space-y-2">
                 <div class="flex items-center gap-2">
-                    <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[10px] font-mono font-medium px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60 uppercase tracking-wider">
+                    <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[10px] font-sans font-semibold px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60 uppercase tracking-wider">
                         Tracker
                     </span>
                 </div>
@@ -209,7 +236,7 @@
             <!-- DASHBOARD -->
             <div class="space-y-2">
                 <div class="flex items-center gap-2">
-                    <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[10px] font-mono font-medium px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60 uppercase tracking-wider">
+                    <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[10px] font-sans font-semibold px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60 uppercase tracking-wider">
                         Dashboard
                     </span>
                 </div>
@@ -242,7 +269,7 @@
             <!-- SECURITY -->
             <div class="space-y-2">
                 <div class="flex items-center gap-2">
-                    <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[10px] font-mono font-medium px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60 uppercase tracking-wider">
+                    <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[10px] font-sans font-semibold px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60 uppercase tracking-wider">
                         Security
                     </span>
                 </div>
@@ -263,9 +290,11 @@
 
         </div>
 
-        <div class="flex justify-end pt-2">
+        <div class="flex justify-end pt-3 border-t border-zinc-200/80 dark:border-zinc-800/80">
             <flux:modal.close>
-                <flux:button variant="ghost" size="sm">Close</flux:button>
+                <button type="button" class="px-4 py-2 rounded-xl text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 bg-zinc-100 dark:bg-zinc-800/60 hover:bg-zinc-200 dark:hover:bg-zinc-700/80 border border-zinc-200/80 dark:border-zinc-700/60 transition-all cursor-pointer active:scale-95">
+                    Close
+                </button>
             </flux:modal.close>
         </div>
     </div>

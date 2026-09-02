@@ -41,7 +41,7 @@ new #[Title('Profile settings')] class extends Component {
 
         $user->save();
 
-        Flux::toast(variant: 'success', text: __('Profile updated.'));
+        $this->dispatch('toast', title: 'Profile settings updated.', category: 'PROFILE', type: 'success');
     }
 
     /**
@@ -83,10 +83,10 @@ new #[Title('Profile settings')] class extends Component {
 
     <x-pages::settings.layout :heading="__('Profile')" :subheading="__('Update your name and email address')">
         <form wire:submit="updateProfileInformation" class="my-6 w-full space-y-6">
-            <flux:input wire:model="name" :label="__('Name')" type="text" required autofocus autocomplete="name" />
+            <flux:input wire:model="name" :label="__('Name')" icon="user" type="text" required autofocus autocomplete="name" />
 
             <div>
-                <flux:input wire:model="email" :label="__('Email')" type="email" required autocomplete="email" />
+                <flux:input wire:model="email" :label="__('Email')" icon="envelope" type="email" required autocomplete="email" />
 
                 @if ($this->hasUnverifiedEmail)
                     <div>
@@ -108,12 +108,14 @@ new #[Title('Profile settings')] class extends Component {
             </div>
 
             <div class="flex items-center gap-4">
-                <div class="flex items-center justify-end">
-                    <flux:button variant="primary" type="submit" class="w-full" data-test="update-profile-button">
-                        {{ __('Save') }}
-                    </flux:button>
+                <div class="flex items-center justify-start">
+                    <button type="submit" 
+                            class="cursor-pointer bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold rounded-xl px-5 py-2.5 text-xs border border-amber-400/80 active:scale-95 transition-all shadow-xs shadow-amber-500/20 flex items-center justify-center gap-1.5" 
+                            data-test="update-profile-button">
+                        <flux:icon name="check" class="size-3.5 text-zinc-950" />
+                        <span>{{ __('Save') }}</span>
+                    </button>
                 </div>
-
             </div>
         </form>
 
