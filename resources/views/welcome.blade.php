@@ -17,7 +17,7 @@
     </head>
     <body class="bg-zinc-50 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 antialiased selection:bg-amber-500 selection:text-white overflow-x-hidden">
         <!-- Navigation Header -->
-        <header class="sticky top-0 z-50 w-full border-b border-zinc-200/80 dark:border-zinc-800/80 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md transition-all duration-300">
+        <header class="sticky top-0 z-50 w-full border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 transition-all duration-200">
             <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between">
                 <div class="flex items-center gap-2 sm:gap-3">
                     <x-app-logo-icon class="size-6 sm:size-8 text-amber-500" />
@@ -80,7 +80,7 @@
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12 lg:gap-8 items-center">
                     <!-- Hero Text -->
                     <div class="lg:col-span-6 text-center lg:text-left reveal">
-                        <div class="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-semibold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/25 mb-3 sm:mb-4 shadow-2xs backdrop-blur-md">
+                        <div class="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-semibold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/25 mb-3 sm:mb-4 shadow-2xs">
                             <span class="relative flex h-1.5 sm:h-2 w-1.5 sm:w-2">
                                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
                                 <span class="relative inline-flex rounded-full h-1.5 sm:h-2 w-1.5 sm:w-2 bg-amber-500"></span>
@@ -94,7 +94,7 @@
                         </h1>
 
                         <!-- Feature Highlight Badge with Smooth Typewriter Animation -->
-                        <div class="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25 mb-4 sm:mb-6 shadow-sm backdrop-blur-md max-w-full">
+                        <div class="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25 mb-4 sm:mb-6 shadow-sm max-w-full">
                             <flux:icon name="sparkles" class="size-3.5 sm:size-4 text-amber-500 shrink-0 animate-pulse" />
                             <span class="text-[11px] sm:text-sm font-mono font-bold tracking-wide">
                                 <span>{{ app()->getLocale() === 'id' ? 'Tingkatkan Hasil dengan' : 'Boost Results with' }}</span>
@@ -123,10 +123,10 @@
                             @endauth
                         </div>
 
-                        <!-- Quick Info Stats (3 Glassmorphism Mini Feature Cards) -->
-                        <div class="grid grid-cols-3 gap-2 sm:gap-3.5 mt-6 sm:mt-10 pt-6 sm:pt-8 border-t border-zinc-200/80 dark:border-zinc-800/80">
+                        <!-- Quick Info Stats -->
+                        <div class="grid grid-cols-3 gap-2 sm:gap-3.5 mt-6 sm:mt-10 pt-6 sm:pt-8 border-t border-zinc-200 dark:border-zinc-800">
                             <!-- Stat Card 1 -->
-                            <div class="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 flex flex-col sm:flex-row items-center text-center sm:text-left gap-1.5 sm:gap-3 shadow-2xs hover:border-amber-500/40 transition-all group cursor-default">
+                            <div class="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row items-center text-center sm:text-left gap-1.5 sm:gap-3 shadow-2xs hover:border-amber-500/40 transition-all group cursor-default">
                                 <div class="size-7 sm:size-9 rounded-lg sm:rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                                     <flux:icon name="bolt" class="size-3.5 sm:size-4 text-amber-500" />
                                 </div>
@@ -137,7 +137,7 @@
                             </div>
 
                             <!-- Stat Card 2 -->
-                            <div class="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 flex flex-col sm:flex-row items-center text-center sm:text-left gap-1.5 sm:gap-3 shadow-2xs hover:border-emerald-500/40 transition-all group cursor-default">
+                            <div class="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row items-center text-center sm:text-left gap-1.5 sm:gap-3 shadow-2xs hover:border-emerald-500/40 transition-all group cursor-default">
                                 <div class="size-7 sm:size-9 rounded-lg sm:rounded-xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                                     <flux:icon name="queue-list" class="size-3.5 sm:size-4 text-emerald-500" />
                                 </div>
@@ -148,7 +148,7 @@
                             </div>
 
                             <!-- Stat Card 3 -->
-                            <div class="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 flex flex-col sm:flex-row items-center text-center sm:text-left gap-1.5 sm:gap-3 shadow-2xs hover:border-sky-500/40 transition-all group cursor-default">
+                            <div class="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row items-center text-center sm:text-left gap-1.5 sm:gap-3 shadow-2xs hover:border-sky-500/40 transition-all group cursor-default">
                                 <div class="size-7 sm:size-9 rounded-lg sm:rounded-xl bg-sky-500/10 text-sky-500 border border-sky-500/20 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                                     <flux:icon name="arrow-down-tray" class="size-3.5 sm:size-4 text-sky-500" />
                                 </div>
@@ -167,20 +167,20 @@
                             <div class="absolute -inset-3 bg-gradient-to-r from-amber-500/20 via-emerald-500/20 to-indigo-500/20 rounded-3xl blur-2xl dark:opacity-75"></div>
                             
                             <!-- Floating Badge 1 (Live Timer Pill) -->
-                            <div class="hidden sm:flex absolute -top-5 -left-5 z-20 items-center gap-2 px-3 py-1.5 rounded-2xl bg-zinc-900/95 border border-emerald-500/40 text-emerald-400 shadow-xl backdrop-blur-xl animate-[bounce_4s_infinite]">
+                            <div class="hidden sm:flex absolute -top-5 -left-5 z-20 items-center gap-2 px-3 py-1.5 rounded-2xl bg-zinc-900 border border-emerald-500/40 text-emerald-400 shadow-xl animate-[bounce_4s_infinite]">
                                 <span class="size-2 rounded-full bg-emerald-500 animate-ping"></span>
                                 <span class="font-mono text-xs font-bold">00:42:18</span>
                                 <span class="text-[10px] text-zinc-400 uppercase font-mono">Live Tracking</span>
                             </div>
 
                             <!-- Floating Badge 2 (Backup Safe Badge) -->
-                            <div class="hidden sm:flex absolute -bottom-5 -right-5 z-20 items-center gap-2 px-3 py-1.5 rounded-2xl bg-zinc-900/95 border border-amber-500/40 text-amber-400 shadow-xl backdrop-blur-xl">
+                            <div class="hidden sm:flex absolute -bottom-5 -right-5 z-20 items-center gap-2 px-3 py-1.5 rounded-2xl bg-zinc-900 border border-amber-500/40 text-amber-400 shadow-xl">
                                 <flux:icon name="shield-check" class="size-4 text-amber-500" />
                                 <span class="font-mono text-xs font-bold">100% JSON Safe</span>
                             </div>
 
                             <!-- App Mockup Card Structure -->
-                            <div class="relative bg-white/90 dark:bg-zinc-900/95 backdrop-blur-2xl rounded-2xl shadow-2xl border border-zinc-200/80 dark:border-zinc-800 overflow-hidden">
+                            <div class="relative bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
                                 <!-- Mockup Top Bar & Tab Switcher -->
                                 <div class="px-4 py-3 bg-zinc-100/80 dark:bg-zinc-950/80 border-b border-zinc-200/80 dark:border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-2">
                                     <div class="flex items-center gap-2">
@@ -485,7 +485,7 @@
                     <div class="order-2 lg:order-1">
                         <div class="bg-gradient-to-tr from-zinc-900 via-amber-950 to-zinc-900 p-8 rounded-3xl shadow-2xl border border-amber-500/20 flex items-center justify-center relative overflow-hidden">
                             <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-amber-500/10 via-transparent to-transparent"></div>
-                            <div class="bg-white/10 backdrop-blur-xl border border-white/20 p-6 rounded-2xl text-white text-center max-w-sm space-y-4 relative z-10">
+                            <div class="bg-zinc-900 border border-zinc-700 p-6 rounded-2xl text-white text-center max-w-sm space-y-4 relative z-10">
                                 <flux:icon name="shield-check" class="size-16 mx-auto text-amber-400" />
                                 <h4 class="text-lg font-bold">{{ __('welcome.security_mockup_title') }}</h4>
                                 <p class="text-xs text-white/80 leading-relaxed">{{ __('welcome.security_mockup_desc') }}</p>

@@ -1,5 +1,5 @@
-<x-layouts::auth :title="__('Two-factor authentication')">
-    <div class="w-full max-w-md p-8 sm:p-10 rounded-3xl border border-zinc-800/80 bg-zinc-900/60 backdrop-blur-2xl shadow-2xl space-y-6">
+<x-layouts::auth :title="__('Two-factor confirmation')">
+    <div class="w-full max-w-md p-8 sm:p-10 rounded-3xl border border-zinc-800 bg-zinc-900 shadow-2xl space-y-6">
         <!-- Brand Logo -->
         <div class="text-center">
             <a href="{{ route('home') }}" class="inline-flex items-center justify-center group mb-2" wire:navigate>

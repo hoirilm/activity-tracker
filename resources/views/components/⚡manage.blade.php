@@ -993,7 +993,7 @@ new class extends Component
     <!-- TAB 1: TASKS MANAGEMENT -->
     <div x-show="activeTab === 'tasks'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" class="space-y-4" x-data="{ showArchived: false }">
         <!-- Controls Bar: Search, Project Filter, Status Filter, View Mode & Add Task -->
-        <div class="bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-3 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-2xl p-3 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
             <!-- Left Controls: Search & Filters -->
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 flex-1 min-w-0">
                 <!-- Search Input -->
@@ -1263,7 +1263,7 @@ new class extends Component
                                     </div>
 
                                     <!-- Delete Modal -->
-                                    <flux:modal name="delete-task-{{ $task->id }}" class="w-[calc(100vw-2rem)] max-w-md backdrop:backdrop-blur-md z-[200]">
+                                    <flux:modal name="delete-task-{{ $task->id }}" class="w-[calc(100vw-2rem)] max-w-md z-[200]">
                                         <div class="space-y-4">
                                             <div class="flex items-center gap-3">
                                                 <div class="size-9 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 flex items-center justify-center text-red-600 dark:text-red-500 shrink-0">
@@ -1302,7 +1302,7 @@ new class extends Component
 
         <!-- LIST VIEW -->
         @else
-            <div class="bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-xs divide-y divide-zinc-200/50 dark:divide-zinc-800/50">
+            <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-2xl overflow-hidden shadow-xs divide-y divide-zinc-200 dark:divide-zinc-800">
                 @forelse($this->tasks as $task)
                     <flux:modal.trigger name="detail-task-modal">
                         <div wire:key="task-list-{{ $task->id }}" 
@@ -1381,7 +1381,7 @@ new class extends Component
                             </div>
                         </div>
 
-                        <flux:modal name="delete-task-list-{{ $task->id }}" class="w-[calc(100vw-2rem)] max-w-md backdrop:backdrop-blur-md z-[200]">
+                        <flux:modal name="delete-task-list-{{ $task->id }}" class="w-[calc(100vw-2rem)] max-w-md z-[200]">
                             <div class="space-y-4">
                                 <div class="flex items-center gap-3">
                                     <div class="size-9 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 flex items-center justify-center text-red-600 dark:text-red-500 shrink-0">
@@ -1419,7 +1419,7 @@ new class extends Component
         @endif
 
         <!-- CREATE TASK MODAL -->
-        <flux:modal name="create-task-modal" class="w-[calc(100vw-2rem)] max-w-lg backdrop:backdrop-blur-md z-[200]">
+        <flux:modal name="create-task-modal" class="w-[calc(100vw-2rem)] max-w-lg z-[200]">
             <form wire:submit.prevent="addTask" class="space-y-4" x-data="{ showChecklist: false, showDeadline: false, showLabels: false, selectedLabels: $wire.entangle('taskLabelIds') }">
                 <div class="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-zinc-800">
                     <div class="flex items-center gap-2">
@@ -1743,7 +1743,7 @@ new class extends Component
         </flux:modal>
 
         <!-- EDIT TASK MODAL -->
-        <flux:modal name="edit-task-modal" class="w-[calc(100vw-2rem)] max-w-lg backdrop:backdrop-blur-md z-[200]">
+        <flux:modal name="edit-task-modal" class="w-[calc(100vw-2rem)] max-w-lg z-[200]">
             <form wire:submit.prevent="updateTask" class="space-y-4" x-data="{ showDeadline: false, showLabels: false, selectedLabels: $wire.entangle('editingTaskLabelIds') }">
                 <div class="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-zinc-800">
                     <div class="flex items-center gap-2">
@@ -1986,7 +1986,7 @@ new class extends Component
         </flux:modal>
 
         <!-- DETAIL TASK MODAL -->
-        <flux:modal name="detail-task-modal" class="w-[calc(100vw-2rem)] max-w-xl max-h-[90vh] overflow-y-auto backdrop:backdrop-blur-md z-[200]" x-on:close="$wire.set('viewingTaskId', null)">
+        <flux:modal name="detail-task-modal" class="w-[calc(100vw-2rem)] max-w-xl max-h-[90vh] overflow-y-auto z-[200]" x-on:close="$wire.set('viewingTaskId', null)">
             @if($this->viewingTask)
                 @php
                     $task = $this->viewingTask;
@@ -2264,7 +2264,7 @@ new class extends Component
         </flux:modal>
 
         <!-- ARCHIVED TASKS MODAL -->
-        <flux:modal name="archived-tasks-modal" class="w-[calc(100vw-2rem)] max-w-4xl backdrop:backdrop-blur-md z-[200]" x-on:close="$wire.set('archiveSearchQuery', '')">
+        <flux:modal name="archived-tasks-modal" class="w-[calc(100vw-2rem)] max-w-4xl z-[200]" x-on:close="$wire.set('archiveSearchQuery', '')">
             <div class="space-y-4 text-left">
                 <!-- Modal Header -->
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-purple-200/60 dark:border-purple-900/30 pr-6">
@@ -2427,7 +2427,7 @@ new class extends Component
         </div>
 
         <!-- Add Project Card -->
-        <div class="border border-zinc-200/80 dark:border-zinc-800 rounded-2xl bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl p-4.5 shadow-xs relative overflow-hidden group hover:border-zinc-400 dark:hover:border-zinc-700 transition-all">
+        <div class="border border-zinc-200 dark:border-zinc-700 rounded-2xl bg-white dark:bg-zinc-900 p-4.5 shadow-xs relative overflow-hidden group hover:border-zinc-400 dark:hover:border-zinc-600 transition-all">
             <form wire:submit.prevent="addProject" class="space-y-3 relative z-10">
                 <div class="relative w-full">
                     <input type="text" wire:model="projectName" placeholder="Project Name" required autocomplete="off"
@@ -2458,7 +2458,7 @@ new class extends Component
         </div>
 
         <!-- Projects Grouped List Card -->
-        <div class="bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-xs divide-y divide-zinc-200/50 dark:divide-zinc-800/50">
+        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-2xl overflow-hidden shadow-xs divide-y divide-zinc-200 dark:divide-zinc-800">
             @forelse($this->projects as $project)
                 <div wire:key="project-{{ $project->id }}" class="p-3.5 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors group relative">
                     @if($this->editingProjectId === $project->id)
@@ -2511,7 +2511,7 @@ new class extends Component
                         </div>
                     @endif
 
-                    <flux:modal name="delete-project-{{ $project->id }}" class="w-[calc(100vw-2rem)] max-w-md backdrop:backdrop-blur-md z-[200]">
+                    <flux:modal name="delete-project-{{ $project->id }}" class="w-[calc(100vw-2rem)] max-w-md z-[200]">
                         <div class="space-y-4">
                             <div class="flex items-center gap-3">
                                 <div class="size-10 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 flex items-center justify-center text-red-600 dark:text-red-500 shrink-0">
@@ -2565,7 +2565,7 @@ new class extends Component
             </div>
 
             <!-- Add Category Card -->
-            <div class="border border-zinc-200/80 dark:border-zinc-800 rounded-2xl bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl p-4.5 shadow-xs relative overflow-hidden group hover:border-zinc-400 dark:hover:border-zinc-700 transition-all">
+            <div class="border border-zinc-200 dark:border-zinc-700 rounded-2xl bg-white dark:bg-zinc-900 p-4.5 shadow-xs relative overflow-hidden group hover:border-zinc-400 dark:hover:border-zinc-600 transition-all">
                 <form wire:submit.prevent="addCategory" class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center relative z-10">
                     <div class="flex-1 w-full">
                         <div class="relative w-full">
@@ -2589,7 +2589,7 @@ new class extends Component
             </div>
 
             <!-- Categories List Card -->
-            <div class="bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-xs divide-y divide-zinc-200/50 dark:divide-zinc-800/50">
+            <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-2xl overflow-hidden shadow-xs divide-y divide-zinc-200 dark:divide-zinc-800">
                 @forelse($this->categories as $category)
                     <div wire:key="category-{{ $category->id }}" class="p-3.5 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors group relative">
                         @if($this->editingCategoryId === $category->id)
@@ -2627,7 +2627,7 @@ new class extends Component
                             </div>
                         @endif
 
-                        <flux:modal name="delete-category-{{ $category->id }}" class="w-[calc(100vw-2rem)] max-w-md backdrop:backdrop-blur-md z-[200]">
+                        <flux:modal name="delete-category-{{ $category->id }}" class="w-[calc(100vw-2rem)] max-w-md z-[200]">
                             <div class="space-y-4">
                                 <div class="flex items-center gap-3">
                                     <div class="size-10 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 flex items-center justify-center text-red-600 dark:text-red-500 shrink-0">
@@ -2677,7 +2677,7 @@ new class extends Component
             </div>
 
             <!-- Add Label Form Card -->
-            <div class="border border-zinc-200/80 dark:border-zinc-800 rounded-2xl bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl p-4.5 shadow-xs relative overflow-hidden group hover:border-zinc-400 dark:hover:border-zinc-700 transition-all">
+            <div class="border border-zinc-200 dark:border-zinc-700 rounded-2xl bg-white dark:bg-zinc-900 p-4.5 shadow-xs relative overflow-hidden group hover:border-zinc-400 dark:hover:border-zinc-600 transition-all">
                 <form wire:submit.prevent="addLabel" class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center relative z-10">
                     <div class="flex-1">
                         <input type="text" wire:model="labelName" placeholder="Label Name (e.g. General, Urgent, Review)" required autocomplete="off"
@@ -2710,7 +2710,7 @@ new class extends Component
             </div>
 
             <!-- Labels Grid List -->
-            <div class="bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-4 shadow-xs">
+            <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-2xl p-4 shadow-xs">
                 <div class="flex flex-wrap gap-2">
                     @forelse($this->labels as $label)
                         <div wire:key="label-tag-{{ $label->id }}" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all group {{ $this->getLabelBgClass($label->color) }}">

@@ -150,13 +150,13 @@ new class extends Component
     <div class="space-y-3.5">
         @forelse($this->members as $member)
             <div wire:key="member-{{ $member->id }}" 
-                 class="bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-4 sm:p-5 shadow-xs hover:border-zinc-400 dark:hover:border-zinc-700 transition-all group flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                 class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-2xl p-4 sm:p-5 shadow-xs hover:border-zinc-400 dark:hover:border-zinc-600 transition-all group flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 
                 <div class="flex items-center gap-3.5 flex-1 min-w-0">
                     @if($member->avatar)
-                        <img src="{{ $member->avatar }}" alt="{{ $member->name }}" class="size-11 rounded-2xl object-cover border border-zinc-200 dark:border-zinc-700/60 shrink-0 group-hover:scale-105 transition-transform shadow-xs" />
+                        <img src="{{ $member->avatar }}" alt="{{ $member->name }}" class="size-11 rounded-2xl object-cover border border-zinc-200 dark:border-zinc-700 shrink-0 group-hover:scale-105 transition-transform shadow-xs" />
                     @else
-                        <div class="size-11 rounded-2xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 text-zinc-800 dark:text-zinc-200 font-extrabold text-sm flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-xs">
+                        <div class="size-11 rounded-2xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 font-extrabold text-sm flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-xs">
                             {{ $member->initials() }}
                         </div>
                     @endif
@@ -165,17 +165,17 @@ new class extends Component
                         <div class="font-bold text-sm text-zinc-900 dark:text-zinc-100 truncate flex items-center gap-2 flex-wrap">
                             <span class="group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-colors">{{ $member->name }}</span>
                             @if($member->is_admin)
-                                <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[9px] font-mono font-medium uppercase tracking-wider px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60 flex items-center gap-1">
+                                <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[9px] font-mono font-medium uppercase tracking-wider px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700 flex items-center gap-1">
                                     <flux:icon name="shield-check" class="size-3 text-zinc-500 dark:text-zinc-400 shrink-0" />
                                     <span>Administrator</span>
                                 </span>
                             @else
-                                <span class="bg-zinc-100/80 dark:bg-zinc-800/60 text-zinc-600 dark:text-zinc-400 text-[9px] font-mono font-medium uppercase tracking-wider px-2 py-0.5 rounded-md border border-zinc-200/80 dark:border-zinc-800">
+                                <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-[9px] font-mono font-medium uppercase tracking-wider px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700">
                                     Member
                                 </span>
                             @endif
                             @if(auth()->id() === $member->id)
-                                <span class="bg-zinc-200 dark:bg-zinc-700/80 text-zinc-800 dark:text-zinc-200 text-[9px] font-mono font-medium uppercase tracking-wider px-2 py-0.5 rounded-md border border-zinc-300 dark:border-zinc-600">You</span>
+                                <span class="bg-zinc-200 dark:bg-zinc-700 text-zinc-800 dark:text-zinc-200 text-[9px] font-mono font-medium uppercase tracking-wider px-2 py-0.5 rounded-md border border-zinc-300 dark:border-zinc-600">You</span>
                             @endif
                         </div>
                         <div class="text-xs font-mono text-zinc-500 dark:text-zinc-400 mt-1 truncate">{{ $member->email }}</div>
@@ -184,7 +184,7 @@ new class extends Component
 
                 <div class="w-full md:w-auto flex justify-end shrink-0 pt-1 md:pt-0">
                     @if(auth()->id() === $member->id)
-                        <span class="text-[11px] font-mono text-zinc-500 bg-zinc-100 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 px-3 py-1.5 rounded-xl cursor-not-allowed">
+                        <span class="text-[11px] font-mono text-zinc-500 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 px-3 py-1.5 rounded-xl cursor-not-allowed">
                             Self-editing restricted
                         </span>
                     @else
@@ -205,8 +205,8 @@ new class extends Component
                 </div>
             </div>
         @empty
-            <div class="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-12 text-center flex flex-col items-center justify-center gap-3">
-                <div class="size-12 rounded-2xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-500 dark:text-zinc-400">
+            <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-2xl p-12 text-center flex flex-col items-center justify-center gap-3">
+                <div class="size-12 rounded-2xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-zinc-500 dark:text-zinc-400">
                     <flux:icon name="users" class="size-6" />
                 </div>
                 <div>

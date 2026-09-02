@@ -48,7 +48,7 @@ new class extends Component
 ?>
 
 <div>
-    <flux:modal name="report-issue-modal" class="w-[calc(100vw-2rem)] max-w-lg backdrop:backdrop-blur-md z-[200]" x-on:close="$wire.set('success', false)">
+    <flux:modal name="report-issue-modal" class="w-[calc(100vw-2rem)] max-w-lg z-[200]" x-on:close="$wire.set('success', false)">
         <div class="space-y-6">
             @if($success)
                 <div class="text-center py-6 space-y-4">

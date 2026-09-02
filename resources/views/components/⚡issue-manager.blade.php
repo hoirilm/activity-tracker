@@ -130,13 +130,12 @@ new class extends Component
     <div class="space-y-4">
         @forelse($this->issues as $issue)
             <div wire:key="issue-{{ $issue->id }}" 
-                 class="bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-4 sm:p-5 shadow-xs hover:border-zinc-400 dark:hover:border-zinc-700 transition-all group relative overflow-hidden flex flex-col gap-3.5">
-                <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-300/60 dark:via-zinc-600/40 to-transparent"></div>
+                 class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-2xl p-4 sm:p-5 shadow-xs hover:border-zinc-400 dark:hover:border-zinc-600 transition-all group flex flex-col gap-3.5">
                 
                 <!-- Card Header (Icon, Ticket ID, Title, Description & Status Badge) -->
-                <div class="flex items-start justify-between gap-3 relative z-10">
+                <div class="flex items-start justify-between gap-3">
                     <div class="flex items-start gap-3 min-w-0 flex-1">
-                        <div class="size-9 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0 mt-0.5">
+                        <div class="size-9 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0 mt-0.5">
                             @if($issue->status === 'open')
                                 <flux:icon name="bug-ant" class="size-4.5 text-zinc-700 dark:text-zinc-300" />
                             @else
@@ -146,7 +145,7 @@ new class extends Component
 
                         <div class="min-w-0 flex-1">
                             <div class="flex items-center gap-2 flex-wrap">
-                                <span class="font-mono text-[10px] font-semibold text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60 shrink-0">
+                                <span class="font-mono text-[10px] font-semibold text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700 shrink-0">
                                     TKT-{{ str_pad($issue->id, 4, '0', STR_PAD_LEFT) }}
                                 </span>
                                 <h3 class="font-bold text-sm text-zinc-900 dark:text-zinc-100 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-colors {{ $issue->status === 'closed' ? 'line-through opacity-60' : '' }}">
@@ -161,12 +160,12 @@ new class extends Component
 
                     <div class="shrink-0">
                         @if($issue->status === 'open')
-                            <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[9px] font-mono font-medium uppercase tracking-wider px-2.5 py-1 rounded-md border border-zinc-200 dark:border-zinc-700/60 flex items-center gap-1.5">
+                            <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[9px] font-mono font-medium uppercase tracking-wider px-2.5 py-1 rounded-md border border-zinc-200 dark:border-zinc-700 flex items-center gap-1.5">
                                 <span class="size-1.5 rounded-full bg-amber-500 inline-block animate-pulse"></span>
                                 <span>Open</span>
                             </span>
                         @else
-                            <span class="bg-zinc-100/80 dark:bg-zinc-800/60 text-zinc-600 dark:text-zinc-400 text-[9px] font-mono font-medium uppercase tracking-wider px-2.5 py-1 rounded-md border border-zinc-200/80 dark:border-zinc-800 flex items-center gap-1.5">
+                            <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-[9px] font-mono font-medium uppercase tracking-wider px-2.5 py-1 rounded-md border border-zinc-200 dark:border-zinc-700 flex items-center gap-1.5">
                                 <span class="size-1.5 rounded-full bg-emerald-500 inline-block"></span>
                                 <span>Solved</span>
                             </span>
@@ -175,9 +174,9 @@ new class extends Component
                 </div>
 
                 <!-- Card Footer (Reporter metadata & Mark Solved action button) -->
-                <div class="pt-3 border-t border-zinc-200/50 dark:border-zinc-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-[11px] relative z-10">
+                <div class="pt-3 border-t border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-[11px]">
                     <div class="flex items-center gap-2 text-zinc-500 dark:text-zinc-400 flex-wrap">
-                        <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-medium px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700/60 flex items-center gap-1.5">
+                        <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-medium px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700 flex items-center gap-1.5">
                             <flux:icon name="user" class="size-3 text-zinc-500 dark:text-zinc-400 shrink-0" />
                             <span>Reporter: <strong>{{ $issue->user->name }}</strong></span>
                         </span>
@@ -205,8 +204,8 @@ new class extends Component
                 </div>
             </div>
         @empty
-            <div class="bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-12 text-center flex flex-col items-center justify-center gap-3">
-                <div class="size-12 rounded-2xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300">
+            <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-2xl p-12 text-center flex flex-col items-center justify-center gap-3">
+                <div class="size-12 rounded-2xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-zinc-700 dark:text-zinc-300">
                     <flux:icon name="bug-ant" class="size-6 text-zinc-700 dark:text-zinc-300" />
                 </div>
                 <div>

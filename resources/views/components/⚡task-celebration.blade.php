@@ -152,7 +152,7 @@ new class extends Component
             class="pointer-events-none fixed inset-0 w-full h-full z-[99999]"
             style="display: none;"></canvas>
 
-    <!-- macOS / iOS Style Glassmorphic Celebration Toast Modal -->
+    <!-- Celebration Toast Modal -->
     <div x-show="show" 
          style="display: none;"
          x-transition:enter="transition ease-out duration-500 transform"
@@ -163,11 +163,7 @@ new class extends Component
          x-transition:leave-end="opacity-0 -translate-y-8 scale-95"
          class="fixed top-6 inset-x-0 mx-auto w-[92%] max-w-md z-[100000] pointer-events-auto">
         
-        <div class="relative overflow-hidden rounded-3xl bg-white/90 dark:bg-zinc-900/90 backdrop-blur-2xl border border-zinc-200/90 dark:border-zinc-800/90 shadow-2xl shadow-emerald-500/20 p-5 ring-1 ring-black/5">
-            <!-- Background Glow Decorators -->
-            <div class="absolute -top-12 -right-12 size-36 bg-emerald-500/20 dark:bg-emerald-500/30 rounded-full blur-3xl pointer-events-none"></div>
-            <div class="absolute -bottom-12 -left-12 size-36 bg-amber-500/20 dark:bg-amber-500/30 rounded-full blur-3xl pointer-events-none"></div>
-
+        <div class="relative overflow-hidden rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 shadow-2xl p-5">
             <div class="relative flex items-start gap-4">
                 <!-- Glowing Checkmark / Trophy Icon Badge -->
                 <div class="shrink-0 relative">

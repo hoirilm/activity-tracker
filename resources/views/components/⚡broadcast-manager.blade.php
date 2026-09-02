@@ -101,7 +101,7 @@ new class extends Component
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
             <!-- Left Side: Form (Spans 2 columns) -->
-            <div class="lg:col-span-2 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl p-5 sm:p-6 shadow-xs relative overflow-hidden group hover:border-zinc-400 dark:hover:border-zinc-700 transition-all">
+            <div class="lg:col-span-2 border border-zinc-200 dark:border-zinc-700 rounded-2xl bg-white dark:bg-zinc-900 p-5 sm:p-6 shadow-xs relative overflow-hidden group hover:border-zinc-400 dark:hover:border-zinc-600 transition-all">
 
                 <div class="flex items-center justify-between mb-4 relative z-10">
                     <h3 class="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
@@ -187,9 +187,9 @@ new class extends Component
                     <span>Live Card Preview</span>
                 </h3>
                 
-                <div class="border border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 sm:p-5 bg-zinc-50/50 dark:bg-zinc-950/60 backdrop-blur-xl flex-1 flex flex-col justify-between gap-4">
-                    <!-- macOS Style Glass Banner Card (Identical to Floating Notification Card, Light & Dark Responsive) -->
-                    <div class="w-full text-zinc-900 dark:text-white rounded-xl p-3.5 bg-white/70 dark:bg-white/[0.05] border border-zinc-200/80 dark:border-white/10 backdrop-blur-2xl shadow-xl transition-all duration-300 relative overflow-hidden flex flex-col gap-1.5">
+                <div class="border border-dashed border-zinc-200 dark:border-zinc-700 rounded-2xl p-4 sm:p-5 bg-zinc-50 dark:bg-zinc-900 flex-1 flex flex-col justify-between gap-4">
+                    <!-- Preview Card -->
+                    <div class="w-full text-zinc-900 dark:text-white rounded-xl p-3.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-700 shadow-xl transition-all duration-200 relative overflow-hidden flex flex-col gap-1.5">
                         
                         <!-- Top Bar: Status Bar on Left & Timestamp on Far Top-Right -->
                         <div class="flex items-center justify-between gap-1.5 mb-0.5">

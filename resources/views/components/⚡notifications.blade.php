@@ -91,7 +91,7 @@ new class extends Component
     <div class="fixed top-3.5 right-3.5 sm:top-4 sm:right-4 z-40">
         <button @click="open = !open" 
                 type="button" 
-                class="flex items-center justify-center size-8.5 rounded-xl bg-white/70 dark:bg-zinc-900/80 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:border-zinc-300 dark:hover:border-zinc-700 shadow-xs transition-all duration-300 active:scale-95 cursor-pointer relative"
+                class="flex items-center justify-center size-8.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:border-zinc-300 dark:hover:border-zinc-600 shadow-xs transition-all duration-200 active:scale-95 cursor-pointer relative"
                 title="Notification Center">
             <flux:icon name="bell" class="size-4" />
             @if($this->unreadCount > 0)
@@ -103,7 +103,7 @@ new class extends Component
     </div>
     @endif
 
-    <!-- macOS Floating Notification Popup (Clean Blur Glass - Light & Dark Dynamic) -->
+    <!-- macOS Floating Notification Popup -->
     <div x-show="open"
          @click.outside="open = false; expanded = false"
          @keydown.escape.window="open = false; expanded = false"
@@ -123,8 +123,8 @@ new class extends Component
                 $cleanLatestTitle = Str::replace(['📢 ', '📢'], '', $latest->title);
             @endphp
 
-            <!-- Solid Instant Container with Subtle Blur (No Transparency Flicker, Responsive Light & Dark Mode) -->
-            <div class="rounded-2xl p-3.5 transition-all duration-200 ease-out relative overflow-hidden bg-white/92 dark:bg-[#18181b]/92 backdrop-blur-md text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800/90 shadow-2xl">
+            <!-- Solid Instant Container (Responsive Light & Dark Mode) -->
+            <div class="rounded-2xl p-3.5 transition-all duration-200 ease-out relative overflow-hidden bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-700 shadow-2xl">
 
                 <!-- Header Bar -->
                 <div class="flex items-center justify-between px-0.5 pb-2.5 mb-1.5 border-b border-zinc-200/60 dark:border-zinc-800/80">
@@ -310,8 +310,8 @@ new class extends Component
             </div>
 
         @else
-            <!-- Empty Notifications State (Solid Responsive Light & Dark Mode with Subtle Blur) -->
-            <div class="rounded-2xl p-4 text-center bg-white/92 dark:bg-[#18181b]/92 backdrop-blur-md text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800/90 shadow-2xl">
+            <!-- Empty Notifications State (Responsive Light & Dark Mode) -->
+            <div class="rounded-2xl p-4 text-center bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-700 shadow-2xl">
                 
                 <!-- Header Bar -->
                 <div class="flex items-center justify-between pb-2.5 mb-2 border-b border-zinc-200/60 dark:border-zinc-800/80">

@@ -1,5 +1,5 @@
 <x-layouts::auth :title="__('Reset password')">
-    <div class="w-full max-w-md p-8 sm:p-10 rounded-3xl border border-zinc-800/80 bg-zinc-900/60 backdrop-blur-2xl shadow-2xl space-y-6">
+    <div class="w-full max-w-md p-8 sm:p-10 rounded-3xl border border-zinc-800 bg-zinc-900 shadow-2xl space-y-6">
         <!-- Brand Logo & Header -->
         <div class="text-center space-y-3">
             <a href="{{ route('home') }}" class="inline-flex items-center justify-center group" wire:navigate>

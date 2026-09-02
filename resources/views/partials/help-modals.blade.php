@@ -1,8 +1,8 @@
 <!-- HELP CENTER MODAL -->
-<flux:modal name="help-modal" class="w-[calc(100vw-2rem)] max-w-2xl backdrop:backdrop-blur-md z-[200]">
+<flux:modal name="help-modal" class="w-[calc(100vw-2rem)] max-w-2xl z-[200]">
     <div class="space-y-5">
         <div class="flex items-center gap-3">
-            <div class="size-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0">
+            <div class="size-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0">
                 <flux:icon name="question-mark-circle" class="size-5" />
             </div>
             <div>
@@ -12,9 +12,9 @@
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto pr-1 custom-scrollbar">
-            <div class="space-y-2.5 p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all group">
+            <div class="space-y-2.5 p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all group">
                 <div class="flex items-center gap-2">
-                    <div class="size-7 rounded-lg bg-zinc-200/80 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0">
+                    <div class="size-7 rounded-lg bg-zinc-200 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0">
                         <flux:icon name="book-open" class="size-4" />
                     </div>
                     <flux:heading size="md" class="font-semibold text-sm">User Guides</flux:heading>
@@ -25,9 +25,9 @@
                 </div>
             </div>
             
-            <div class="space-y-2.5 p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all group">
+            <div class="space-y-2.5 p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all group">
                 <div class="flex items-center gap-2">
-                    <div class="size-7 rounded-lg bg-zinc-200/80 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0">
+                    <div class="size-7 rounded-lg bg-zinc-200 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0">
                         <flux:icon name="bug-ant" class="size-4" />
                     </div>
                     <flux:heading size="md" class="font-semibold text-sm">Report an Issue</flux:heading>
@@ -40,9 +40,9 @@
                 </div>
             </div>
             
-            <div class="space-y-2.5 p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800 md:col-span-2">
+            <div class="space-y-2.5 p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 md:col-span-2">
                 <div class="flex items-center gap-2">
-                    <div class="size-7 rounded-lg bg-zinc-200/80 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0">
+                    <div class="size-7 rounded-lg bg-zinc-200 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0">
                         <flux:icon name="chat-bubble-left-right" class="size-4" />
                     </div>
                     <flux:heading size="md" class="font-semibold text-sm">Contact Administrator</flux:heading>
@@ -60,7 +60,7 @@
 </flux:modal>
 
 <!-- FAQ MODAL -->
-<flux:modal name="faq-modal" class="w-[calc(100vw-2rem)] max-w-2xl backdrop:backdrop-blur-md z-[200]">
+<flux:modal name="faq-modal" class="w-[calc(100vw-2rem)] max-w-2xl z-[200]">
     <div class="space-y-5">
         <div class="flex items-center gap-3">
             <div class="size-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0">

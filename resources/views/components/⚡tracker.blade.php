@@ -480,7 +480,7 @@ new class extends Component
     @endif
 
     <!-- Start Activity Form -->
-    <div class="fixed bottom-3 left-3 right-3 z-20 md:sticky md:top-4 md:left-auto md:right-auto overflow-visible md:overflow-hidden rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 bg-zinc-50/95 dark:bg-zinc-900/95 backdrop-blur-xl p-3 md:p-5 shadow-[0_8px_32px_rgba(0,0,0,0.18)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)] mb-0 md:mb-6"
+    <div class="fixed bottom-3 left-3 right-3 z-20 md:sticky md:top-4 md:left-auto md:right-auto overflow-visible md:overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 p-3 md:p-5 shadow-lg mb-0 md:mb-6"
          x-data="{}"
          @keydown.window.prevent.ctrl.slash="$refs.detailInput.focus()"
          @keydown.window.ctrl.enter="$wire.startActivity()">
@@ -638,7 +638,7 @@ new class extends Component
     @if($this->runningActivities->count() > 0)
     <div class="space-y-3 animate-page-entrance" wire:transition.slide.up>
         <div class="flex items-center justify-between">
-            <h2 class="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-2 font-mono">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 flex items-center gap-2 font-mono">
                 <span class="relative flex h-2.5 w-2.5">
                   <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                   <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
@@ -651,10 +651,10 @@ new class extends Component
             @foreach($this->runningActivities as $running)
                 @php $isPaused = $running->isPaused(); @endphp
                 <div wire:key="running-{{ $running->id }}-{{ $isPaused ? 'paused-' . ($running->paused_at ? $running->paused_at->timestamp : '1') : 'active' }}" 
-                     class="group relative overflow-hidden rounded-2xl border transition-all duration-300 p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3
+                     class="group relative overflow-hidden rounded-2xl border transition-all duration-200 p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3
                             {{ $isPaused 
-                                ? 'border-amber-500/40 bg-amber-500/10 dark:bg-amber-950/30' 
-                                : 'border-emerald-500/30 bg-emerald-500/5 dark:bg-emerald-950/20' }}" 
+                                ? 'bg-amber-50/70 dark:bg-amber-950/25 border-amber-200 dark:border-amber-800/60' 
+                                : 'bg-emerald-50/70 dark:bg-emerald-950/25 border-emerald-200 dark:border-emerald-800/60' }}" 
                      x-data="{ 
                          initialSeconds: {{ $running->elapsed_seconds }},
                          seconds: {{ $running->elapsed_seconds }}, 
@@ -699,27 +699,27 @@ new class extends Component
                         <div class="flex items-center gap-2">
                             <div class="font-bold text-base sm:text-lg text-zinc-900 dark:text-zinc-100 truncate">{{ $running->detail }}</div>
                             @if($isPaused)
-                                <span class="bg-amber-500/20 text-amber-700 dark:text-amber-300 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-md font-mono font-bold border border-amber-500/40 flex items-center gap-1 animate-pulse">
+                                <span class="bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-300 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-md font-mono font-bold border border-amber-300 dark:border-amber-700/60 flex items-center gap-1.5 animate-pulse">
                                     <span class="size-1.5 rounded-full bg-amber-500"></span>
                                     <span>PAUSED</span>
                                 </span>
                             @else
-                                <span class="bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-md font-mono font-bold border border-emerald-500/40 flex items-center gap-1">
+                                <span class="bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-md font-mono font-bold border border-emerald-300 dark:border-emerald-700/60 flex items-center gap-1.5">
                                     <span class="size-1.5 rounded-full bg-emerald-500 animate-ping"></span>
                                     <span>LIVE</span>
                                 </span>
                             @endif
                         </div>
 
-                        <div class="text-xs text-neutral-500 dark:text-neutral-400 mt-1 flex flex-wrap items-center gap-2">
-                            <span class="inline-flex items-center gap-1.5 font-medium text-neutral-700 dark:text-neutral-300">
-                                <flux:icon name="folder" class="size-3.5 {{ $isPaused ? 'text-amber-500' : 'text-emerald-500' }} shrink-0" />
+                        <div class="text-xs text-zinc-600 dark:text-zinc-400 mt-1.5 flex flex-wrap items-center gap-2">
+                            <span class="inline-flex items-center gap-1.5 font-medium {{ $isPaused ? 'text-amber-900 dark:text-amber-200 bg-amber-100/70 dark:bg-amber-900/40 border-amber-200 dark:border-amber-800/60' : 'text-emerald-900 dark:text-emerald-200 bg-emerald-100/70 dark:bg-emerald-900/40 border-emerald-200 dark:border-emerald-800/60' }} px-2 py-0.5 rounded-md border">
+                                <flux:icon name="folder" class="size-3.5 {{ $isPaused ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400' }} shrink-0" />
                                 <span>{{ $running->project->name }}</span>
                             </span>
                             <span>&bull;</span>
-                            <span>{{ $running->category->name }}</span>
+                            <span class="font-medium text-zinc-700 dark:text-zinc-300">{{ $running->category->name }}</span>
                             @if($running->is_parallel) 
-                                <span class="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-md font-mono font-bold ml-1 border border-indigo-500/20">Parallel</span> 
+                                <span class="bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-md font-mono font-bold ml-1 border border-indigo-500/20">Parallel</span> 
                             @endif
                         </div>
                     </div>
@@ -727,8 +727,8 @@ new class extends Component
                     <!-- Live Stopwatch Readout & Actions (Pause / Resume / Stop) -->
                     <div class="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
                         <div class="flex items-center gap-2">
-                            <flux:icon name="clock" class="size-4 {{ $isPaused ? 'text-amber-500' : 'text-emerald-500 animate-spin' }}" style="animation-duration: 3s;" />
-                            <span class="font-mono text-2xl sm:text-3xl font-extrabold tracking-wider {{ $isPaused ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400' }}" 
+                            <flux:icon name="clock" class="size-4.5 {{ $isPaused ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400' }}" />
+                            <span class="font-mono text-2xl sm:text-3xl font-extrabold tracking-wider {{ $isPaused ? 'text-amber-700 dark:text-amber-300' : 'text-emerald-700 dark:text-emerald-300' }}" 
                                   x-text="formatTime(seconds)"></span>
                         </div>
 
@@ -737,7 +737,7 @@ new class extends Component
                                 <!-- Resume Button -->
                                 <button type="button" 
                                         wire:click="resumeActivity({{ $running->id }})" 
-                                        class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs sm:text-sm px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border border-emerald-500/80 shadow-xs shadow-emerald-600/20 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0" 
+                                        class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs sm:text-sm px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border border-emerald-500 shadow-xs active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0" 
                                         title="Resume Activity">
                                     <flux:icon name="play" class="size-3.5 sm:size-4 fill-current" />
                                     <span>Resume</span>
@@ -746,7 +746,7 @@ new class extends Component
                                 <!-- Pause Button -->
                                 <button type="button" 
                                         wire:click="pauseActivity({{ $running->id }})" 
-                                        class="bg-amber-500 hover:bg-amber-400 text-white font-semibold text-xs sm:text-sm px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border border-amber-400/80 shadow-xs shadow-amber-500/20 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0" 
+                                        class="bg-amber-500 hover:bg-amber-400 text-white font-semibold text-xs sm:text-sm px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border border-amber-400 shadow-xs active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0" 
                                         title="Pause Activity">
                                     <flux:icon name="pause" class="size-3.5 sm:size-4 fill-current" />
                                     <span>Pause</span>
@@ -756,16 +756,13 @@ new class extends Component
                             <!-- Stop Button -->
                             <button type="button" 
                                     wire:click="stopActivity({{ $running->id }})" 
-                                    class="bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs sm:text-sm px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border border-rose-500/80 shadow-xs shadow-rose-600/20 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0" 
+                                    class="bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs sm:text-sm px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border border-rose-500 shadow-xs active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0" 
                                     title="Stop Activity">
                                 <flux:icon name="stop" class="size-3.5 sm:size-4 fill-current" />
                                 <span>Stop</span>
                             </button>
                         </div>
                     </div>
-
-                    <!-- Bottom Pulse Bar -->
-                    <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent {{ $isPaused ? 'via-amber-500/60' : 'via-emerald-500/60' }} to-transparent animate-pulse"></div>
                 </div>
             @endforeach
         </div>
@@ -923,11 +920,11 @@ new class extends Component
                 @php
                     $dayFormatted = $this->calculateMergedDuration($dayActivities);
                 @endphp
-                <div wire:key="day-{{ $date }}" class="rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl shadow-xs overflow-hidden">
+                <div wire:key="day-{{ $date }}" class="rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-xs overflow-hidden">
                     <!-- Day Header -->
-                    <div class="px-4 py-3 bg-zinc-100/70 dark:bg-zinc-950/70 border-b border-zinc-200/60 dark:border-zinc-800/60 flex items-center justify-between">
+                    <div class="px-4 py-3 bg-zinc-100 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-700 flex items-center justify-between">
                         <div class="flex items-center gap-2">
-                            <div class="size-6 rounded-lg bg-zinc-200 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0">
+                            <div class="size-6 rounded-lg bg-zinc-200 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0">
                                 <flux:icon name="calendar-days" class="size-3.5 text-zinc-700 dark:text-zinc-300" />
                             </div>
                             <span class="text-xs font-bold text-zinc-800 dark:text-zinc-200 uppercase tracking-wider">
@@ -1024,13 +1021,10 @@ new class extends Component
                     </flux:button>
                 </div>
             @endif
-        </div>
-    </div>
-
-    <!-- Edit Time Modal -->
+      <!-- Edit Time Modal -->
     <div x-data="{ show: @entangle('showEditModal') }" x-show="show" style="display: none;" class="relative z-[100]">
         <!-- Backdrop -->
-        <div x-show="show" x-transition.opacity class="fixed inset-0 bg-zinc-900/50 backdrop-blur-sm"></div>
+        <div x-show="show" x-transition.opacity class="fixed inset-0 bg-black/60"></div>
         
         <!-- Modal -->
         <div class="fixed inset-0 flex items-center justify-center p-4 sm:p-6 z-[101]">
@@ -1041,8 +1035,8 @@ new class extends Component
                  x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
                  x-transition:leave="ease-in duration-200" 
                  x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" 
-                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                 class="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800 w-full max-w-sm overflow-hidden text-left relative">
+                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
+                 class="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-700 w-full max-w-sm overflow-hidden text-left relative">
                 <div class="p-6">
                     <h3 class="text-base font-semibold text-zinc-900 dark:text-zinc-100 mb-4">Edit Activity</h3>
                     
@@ -1074,7 +1068,7 @@ new class extends Component
                     </div>
                 </div>
                 
-                <div class="bg-zinc-50 dark:bg-zinc-950 px-6 py-4 flex justify-end gap-3 border-t border-zinc-200 dark:border-zinc-800">
+                <div class="bg-zinc-50 dark:bg-zinc-950 px-6 py-4 flex justify-end gap-3 border-t border-zinc-200 dark:border-zinc-700">
                     <flux:button variant="subtle" wire:click="cancelEdit">Cancel</flux:button>
                     <flux:button variant="primary" wire:click="updateActivity">Save Changes</flux:button>
                 </div>
@@ -1083,10 +1077,10 @@ new class extends Component
     </div>
 
     <!-- Export Activities Modal (Full Screen Teleported via Flux) -->
-    <flux:modal name="export-modal" class="w-[calc(100vw-2rem)] max-w-md backdrop:backdrop-blur-md z-[200]">
+    <flux:modal name="export-modal" class="w-[calc(100vw-2rem)] max-w-md z-[200]">
         <div x-data="{ exportStart: '', exportEnd: '' }" class="space-y-5">
             <div class="flex items-start gap-3.5">
-                <div class="size-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0">
+                <div class="size-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0">
                     <flux:icon name="arrow-down-tray" class="size-5 text-zinc-700 dark:text-zinc-300" />
                 </div>
                 <div class="flex-1 min-w-0">
@@ -1112,7 +1106,7 @@ new class extends Component
                 </div>
             </div>
 
-            <div class="flex items-center justify-between pt-3 border-t border-zinc-200/80 dark:border-zinc-800">
+            <div class="flex items-center justify-between pt-3 border-t border-zinc-200 dark:border-zinc-700">
                 <flux:modal.close>
                     <flux:button variant="ghost" size="sm" class="cursor-pointer">Cancel</flux:button>
                 </flux:modal.close>
@@ -1128,7 +1122,7 @@ new class extends Component
     </flux:modal>
 
     <!-- Delete Activity Confirmation Modal -->
-    <flux:modal name="delete-activity-modal" class="w-[calc(100vw-2rem)] max-w-md backdrop:backdrop-blur-md z-[200]">
+    <flux:modal name="delete-activity-modal" class="w-[calc(100vw-2rem)] max-w-md z-[200]">
         <div x-data="{ id: null, detail: '' }" 
              x-on:open-delete-activity-modal.window="id = $event.detail.id; detail = $event.detail.detail; $dispatch('modal-show', { name: 'delete-activity-modal' })" 
              class="space-y-4">

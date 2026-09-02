@@ -1,12 +1,8 @@
 <x-layouts::auth :title="__('Register')">
-    <div class="w-full max-w-5xl overflow-hidden rounded-3xl border border-zinc-800/80 bg-zinc-900/60 backdrop-blur-2xl shadow-2xl grid grid-cols-1 lg:grid-cols-12 min-h-[660px]">
+    <div class="w-full max-w-5xl overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-900 shadow-2xl grid grid-cols-1 lg:grid-cols-12 min-h-[660px]">
         
         <!-- Left Hero Section (Brand & Value Proposition) -->
-        <div class="lg:col-span-6 p-8 sm:p-12 flex flex-col justify-between relative bg-gradient-to-br from-zinc-900/90 via-zinc-900/60 to-amber-950/20 border-b lg:border-b-0 lg:border-r border-zinc-800/60 overflow-hidden">
-            <!-- Background Glow Orbs -->
-            <div class="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-amber-500/15 blur-3xl pointer-events-none"></div>
-            <div class="absolute -bottom-24 -right-24 w-72 h-72 rounded-full bg-orange-500/15 blur-3xl pointer-events-none"></div>
-
+        <div class="lg:col-span-6 p-8 sm:p-12 flex flex-col justify-between relative bg-zinc-900 border-b lg:border-b-0 lg:border-r border-zinc-800 overflow-hidden">
             <div class="relative z-10">
                 <!-- Brand Logo & Title -->
                 <a href="{{ route('home') }}" class="inline-flex items-center gap-3 group" wire:navigate>
@@ -32,7 +28,7 @@
                     </div>
 
                     <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
-                        Start tracking with <span class="bg-gradient-to-r from-amber-400 via-amber-300 to-orange-400 bg-clip-text text-transparent">zero friction</span>.
+                        Start tracking with <span class="bg-gradient-to-r from-amber-400 via-amber-300 to-orange-400 bg-clip-text text-transparent inline-block pr-2 pb-0.5">zero friction</span>.
                     </h1>
 
                     <p class="text-zinc-400 text-sm leading-relaxed">
@@ -82,7 +78,7 @@
                 class="relative z-10 mt-8 select-none"
             >
                 <!-- Showcase Container Box -->
-                <div class="rounded-2xl border border-zinc-800/90 bg-zinc-950/80 backdrop-blur-xl p-5 shadow-2xl relative overflow-hidden">
+                <div class="rounded-2xl border border-zinc-800 bg-zinc-950 p-5 shadow-2xl relative overflow-hidden">
                     
                     <!-- Segmented Progress Indicator Bar -->
                     <div class="flex items-center gap-2 mb-4 pb-3 border-b border-zinc-900">

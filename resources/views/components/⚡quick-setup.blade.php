@@ -252,7 +252,7 @@ new class extends Component
     <!-- Quick Setup Modal Overlay -->
     @if($showModal)
         <div data-quick-setup-modal
-             class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-zinc-950/70 backdrop-blur-md"
+             class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-black/60"
              x-data
              x-transition:enter="transition ease-out duration-300"
              x-transition:enter-start="opacity-0 scale-95"
@@ -261,37 +261,34 @@ new class extends Component
              x-transition:leave-start="opacity-100 scale-100"
              x-transition:leave-end="opacity-0 scale-95">
 
-            <div class="relative w-full max-w-2xl bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl border border-zinc-200/80 dark:border-zinc-800 overflow-hidden my-auto">
+            <div class="relative w-full max-w-2xl bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl border border-zinc-200 dark:border-zinc-700 overflow-hidden my-auto">
                 
                 <!-- Modal Header banner -->
-                <div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 p-6 sm:p-8 text-white relative overflow-hidden">
-                    <!-- Background decorative glow -->
-                    <div class="absolute -top-10 -right-10 size-40 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
-
+                <div class="bg-zinc-900 dark:bg-zinc-800 p-6 sm:p-8 text-white relative overflow-hidden border-b border-zinc-200 dark:border-zinc-700">
                     <div class="flex items-start justify-between gap-4 relative z-10">
                         <div>
-                            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-semibold text-white mb-3">
-                                <flux:icon name="sparkles" class="size-3.5" />
+                            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-800 dark:bg-zinc-700 text-xs font-semibold text-white mb-3 border border-zinc-700 dark:border-zinc-600">
+                                <flux:icon name="sparkles" class="size-3.5 text-amber-400" />
                                 <span>New User Onboarding</span>
                             </div>
                             <h2 class="text-xl sm:text-2xl font-bold tracking-tight">Welcome to Activity Tracker! 🚀</h2>
-                            <p class="mt-1.5 text-xs sm:text-sm text-indigo-100 max-w-lg leading-relaxed">
-                                Let's set up your initial data. At least <strong class="font-extrabold text-white bg-white/20 px-2 py-0.5 rounded-md shadow-2xs">1 Project</strong> and <strong class="font-extrabold text-white bg-white/20 px-2 py-0.5 rounded-md shadow-2xs">1 Category</strong> are required so you can start tracking activities.
+                            <p class="mt-1.5 text-xs sm:text-sm text-zinc-300 max-w-lg leading-relaxed">
+                                Let's set up your initial data. At least <strong class="font-extrabold text-white bg-zinc-800 dark:bg-zinc-700 px-2 py-0.5 rounded-md">1 Project</strong> and <strong class="font-extrabold text-white bg-zinc-800 dark:bg-zinc-700 px-2 py-0.5 rounded-md">1 Category</strong> are required so you can start tracking activities.
                             </p>
                         </div>
-                        <button @click="$wire.closeModal()" type="button" class="p-2 rounded-full text-white/80 hover:text-white hover:bg-white/10 transition-colors cursor-pointer shrink-0">
+                        <button @click="$wire.closeModal()" type="button" class="p-2 rounded-full text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer shrink-0">
                             <flux:icon name="x-mark" class="size-5" />
                         </button>
                     </div>
 
                     <!-- Progress Bar Header -->
-                    <div class="mt-6 pt-4 border-t border-white/20">
+                    <div class="mt-6 pt-4 border-t border-zinc-700/60">
                         <div class="flex items-center justify-between text-xs font-semibold mb-2">
                             <span>Initial Setup Progress</span>
-                            <span>{{ $this->progress_percent }}% Completed</span>
+                            <span class="font-mono text-emerald-400">{{ $this->progress_percent }}% Completed</span>
                         </div>
-                        <div class="w-full bg-black/20 rounded-full h-2.5 overflow-hidden p-0.5 backdrop-blur-xs">
-                            <div class="bg-gradient-to-r from-emerald-300 to-teal-200 h-full rounded-full transition-all duration-500 shadow-sm" style="width: {{ $this->progress_percent }}%"></div>
+                        <div class="w-full bg-zinc-800 dark:bg-zinc-900 rounded-full h-2.5 overflow-hidden p-0.5 border border-zinc-700">
+                            <div class="bg-emerald-500 h-full rounded-full transition-all duration-500 shadow-sm" style="width: {{ $this->progress_percent }}%"></div>
                         </div>
                     </div>
                 </div>
