@@ -808,10 +808,10 @@ new class extends Component
                     <div wire:key="dashboard-stream-task-{{ $task->id }}" 
                          x-data="{ isCompleting: false }"
                          :class="{ 'opacity-40 scale-98 bg-emerald-500/5': isCompleting }"
-                         class="group px-3.5 py-3 hover:bg-zinc-100/60 dark:hover:bg-zinc-800/40 transition-all duration-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                         class="group px-3 py-2.5 sm:px-3.5 sm:py-2.5 hover:bg-zinc-100/60 dark:hover:bg-zinc-800/40 transition-all duration-200 flex items-center justify-between gap-2.5 sm:gap-3">
                         
                         <!-- Left Task Title & Project Tag & Labels -->
-                        <div class="min-w-0 flex-1 flex flex-col sm:flex-row sm:items-center gap-2">
+                        <div class="min-w-0 flex-1 flex items-center gap-2 sm:gap-2.5">
                             <!-- Task Status Toggle Checkbox Button -->
                             @if($task->status === 'done')
                                 <button type="button" 
@@ -830,15 +830,15 @@ new class extends Component
                                 </button>
                             @endif
 
-                            <div class="min-w-0 flex-1 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2.5">
-                                <h4 class="font-semibold text-sm text-zinc-900 dark:text-zinc-100 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors truncate {{ $task->status === 'done' ? 'line-through text-zinc-400 dark:text-zinc-500' : '' }}"
+                            <div class="min-w-0 flex-1 flex items-center gap-1.5 sm:gap-2.5 flex-wrap sm:flex-nowrap">
+                                <h4 class="font-semibold text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors truncate max-w-full sm:max-w-md {{ $task->status === 'done' ? 'line-through text-zinc-400 dark:text-zinc-500' : '' }}"
                                     :class="{ 'line-through text-zinc-400': isCompleting }">
                                     {{ $task->title }}
                                 </h4>
 
                                 <div class="flex items-center gap-1.5 shrink-0 flex-wrap">
                                     @if($task->project)
-                                        <span class="inline-flex items-center gap-1 text-[10px] font-medium text-zinc-600 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800/80 px-2 py-0.5 rounded-md border border-zinc-200/60 dark:border-zinc-700/50 max-w-[150px] truncate">
+                                        <span class="inline-flex items-center gap-1 text-[10px] font-medium text-zinc-600 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800/80 px-1.5 py-0.5 rounded-md border border-zinc-200/60 dark:border-zinc-700/50 max-w-[120px] sm:max-w-[150px] truncate">
                                             <span class="size-1.5 rounded-full bg-amber-500 shrink-0"></span>
                                             <span class="truncate">{{ $task->project->name }}</span>
                                         </span>
@@ -846,7 +846,7 @@ new class extends Component
 
                                     @if($task->due_badge)
                                         @php $badge = $task->due_badge; @endphp
-                                        <span class="inline-flex items-center gap-1 text-[9px] font-semibold px-2 py-0.5 rounded-md border
+                                        <span class="inline-flex items-center gap-1 text-[9px] font-semibold px-1.5 py-0.5 rounded-md border
                                             {{ $badge['color'] === 'rose' ? 'bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-200/80 dark:border-rose-900/40 font-bold' : '' }}
                                             {{ $badge['color'] === 'amber' ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-200/80 dark:border-amber-900/40 font-bold' : '' }}
                                             {{ $badge['color'] === 'indigo' ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700/60' : '' }}
@@ -858,7 +858,7 @@ new class extends Component
                                     @endif
 
                                     @foreach($task->labels as $label)
-                                        <span class="inline-flex items-center text-[9px] font-semibold px-2 py-0.5 rounded-md border {{ $this->getLabelBgClass($label->color) }}">
+                                        <span class="inline-flex items-center text-[9px] font-semibold px-1.5 py-0.5 rounded-md border {{ $this->getLabelBgClass($label->color) }}">
                                             {{ $label->name }}
                                         </span>
                                     @endforeach
@@ -867,10 +867,13 @@ new class extends Component
                         </div>
 
                         <!-- Right Meta -->
-                        <div class="flex items-center justify-between sm:justify-end gap-2.5 shrink-0 pt-1.5 sm:pt-0 border-t sm:border-t-0 border-zinc-200/40 dark:border-zinc-800/40">
-                            <!-- Time ago badge -->
-                            <span class="text-[11px] font-mono text-zinc-400 dark:text-zinc-500">
+                        <div class="shrink-0 flex items-center justify-end">
+                            <!-- Time ago badge: short on mobile (2d, 6d), full on desktop -->
+                            <span class="text-[10px] sm:text-[11px] font-mono text-zinc-400 dark:text-zinc-500 whitespace-nowrap hidden sm:inline">
                                 {{ $task->created_at->locale('en')->diffForHumans() }}
+                            </span>
+                            <span class="text-[10px] sm:text-[11px] font-mono text-zinc-400 dark:text-zinc-500 whitespace-nowrap sm:hidden">
+                                {{ $task->created_at->locale('en')->diffForHumans(short: true) }}
                             </span>
                         </div>
                     </div>

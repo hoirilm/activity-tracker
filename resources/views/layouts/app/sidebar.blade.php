@@ -26,83 +26,151 @@
                 }
             }
 
-            /* Navigation Items - Consistent Theme Styling */
+            /* Navigation Items - Ultra Minimalist (Vercel Style) */
             [data-flux-sidebar-item] {
-                transition: all 180ms ease !important;
-                border-radius: 0.75rem !important; /* rounded-xl */
-                font-size: 0.8125rem !important;
-                font-weight: 500 !important;
-                min-height: 2.25rem !important;
-                padding-left: 0.75rem !important;
-                padding-right: 0.75rem !important;
-                margin-top: 2px !important;
-                margin-bottom: 2px !important;
+                transition: all 160ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+                border-radius: 0.5rem !important; /* rounded-lg */
+                font-size: 0.8125rem !important; /* 13px */
+                font-weight: 450 !important;
+                min-height: 2.125rem !important; /* 34px */
+                padding-left: 0.625rem !important;
+                padding-right: 0.625rem !important;
+                margin-top: 1.5px !important;
+                margin-bottom: 1.5px !important;
+                letter-spacing: -0.01em !important;
+                position: relative !important;
+                border: 1px solid transparent !important;
             }
 
-            /* Hover on Inactive Items */
+            /* Inactive Items (Clean, Muted) */
+            html.dark [data-flux-sidebar-item]:not([data-current]) {
+                color: #a1a1aa !important; /* zinc-400 */
+                background: transparent !important;
+            }
+            html:not(.dark) [data-flux-sidebar-item]:not([data-current]) {
+                color: #71717a !important; /* zinc-500 */
+                background: transparent !important;
+            }
+
+            /* Inactive Item Hover (Soft Barely-There Glass Hover) */
             html.dark [data-flux-sidebar-item]:not([data-current]):hover {
-                background-color: rgba(255, 255, 255, 0.05) !important;
-                color: #f4f4f5 !important;
+                background-color: rgba(255, 255, 255, 0.04) !important;
+                color: #fafafa !important;
             }
             html:not(.dark) [data-flux-sidebar-item]:not([data-current]):hover {
-                background-color: rgba(0, 0, 0, 0.04) !important;
+                background-color: rgba(0, 0, 0, 0.035) !important;
+                color: #09090b !important;
+            }
+
+            /* Inactive Icons */
+            html.dark [data-flux-sidebar-item]:not([data-current]) svg,
+            html.dark [data-flux-sidebar-item]:not([data-current]) [data-slot="icon"] {
+                color: #71717a !important; /* zinc-500 */
+                transition: color 160ms ease !important;
+            }
+            html:not(.dark) [data-flux-sidebar-item]:not([data-current]) svg,
+            html:not(.dark) [data-flux-sidebar-item]:not([data-current]) [data-slot="icon"] {
+                color: #a1a1aa !important; /* zinc-400 */
+                transition: color 160ms ease !important;
+            }
+            html.dark [data-flux-sidebar-item]:not([data-current]):hover svg,
+            html.dark [data-flux-sidebar-item]:not([data-current]):hover [data-slot="icon"] {
+                color: #f4f4f5 !important;
+            }
+            html:not(.dark) [data-flux-sidebar-item]:not([data-current]):hover svg,
+            html:not(.dark) [data-flux-sidebar-item]:not([data-current]):hover [data-slot="icon"] {
                 color: #18181b !important;
             }
 
-            /* Active State - Signature Warm Amber Gradient & Indicator */
+            /* Active State - Ultra Minimalist: Crisp White Text, Clean Subtle Plate */
             html.dark [data-flux-sidebar-item][data-current] {
-                background: linear-gradient(90deg, rgba(245, 158, 11, 0.18) 0%, rgba(245, 158, 11, 0.05) 70%, transparent 100%) !important;
-                color: #fbbf24 !important; /* amber-400 */
+                background: rgba(255, 255, 255, 0.06) !important;
+                color: #ffffff !important;
                 font-weight: 600 !important;
-                border-left: 3px solid #f59e0b !important; /* amber-500 */
-                border-top-left-radius: 0.25rem !important;
-                border-bottom-left-radius: 0.25rem !important;
-                border-top: 1px solid rgba(245, 158, 11, 0.15) !important;
-                border-bottom: 1px solid rgba(245, 158, 11, 0.08) !important;
-                border-right: 1px solid transparent !important;
+                border: 1px solid rgba(255, 255, 255, 0.08) !important;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
             }
             html:not(.dark) [data-flux-sidebar-item][data-current] {
-                background: linear-gradient(90deg, rgba(245, 158, 11, 0.15) 0%, rgba(245, 158, 11, 0.04) 70%, transparent 100%) !important;
-                color: #d97706 !important; /* amber-600 */
+                background: rgba(0, 0, 0, 0.04) !important;
+                color: #09090b !important;
                 font-weight: 600 !important;
-                border-left: 3px solid #f59e0b !important; /* amber-500 */
-                border-top-left-radius: 0.25rem !important;
-                border-bottom-left-radius: 0.25rem !important;
-                border-top: 1px solid rgba(245, 158, 11, 0.15) !important;
-                border-bottom: 1px solid rgba(245, 158, 11, 0.08) !important;
-                border-right: 1px solid transparent !important;
+                border: 1px solid rgba(0, 0, 0, 0.06) !important;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
             }
 
-            /* Active Icon Glow */
+            /* Active Icon */
             html.dark [data-flux-sidebar-item][data-current] svg,
             html.dark [data-flux-sidebar-item][data-current] [data-slot="icon"] {
-                color: #fbbf24 !important;
+                color: #ffffff !important;
             }
             html:not(.dark) [data-flux-sidebar-item][data-current] svg,
             html:not(.dark) [data-flux-sidebar-item][data-current] [data-slot="icon"] {
-                color: #d97706 !important;
+                color: #09090b !important;
             }
 
-            /* Badge Styling (Issues count, etc.) */
+            /* Glowing Amber Dot Indicator on Active Item (Vercel Style) */
+            ui-sidebar:not([data-flux-sidebar-collapsed-desktop]) [data-flux-sidebar-item][data-current]:not(:has([data-flux-navlist-badge]))::after {
+                content: '';
+                position: absolute;
+                right: 0.65rem;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 5.5px;
+                height: 5.5px;
+                border-radius: 9999px;
+                background-color: #f59e0b;
+                box-shadow: 0 0 8px rgba(245, 158, 11, 0.65), 0 0 2px rgba(245, 158, 11, 0.9);
+            }
+
+            /* When Collapsed: glowing dot appears bottom right of icon */
+            ui-sidebar[data-flux-sidebar-collapsed-desktop] [data-flux-sidebar-item][data-current]::after {
+                content: '';
+                position: absolute;
+                right: 0.5rem;
+                bottom: 0.35rem;
+                width: 5px;
+                height: 5px;
+                border-radius: 9999px;
+                background-color: #f59e0b;
+                box-shadow: 0 0 6px rgba(245, 158, 11, 0.7);
+            }
+
+            /* Badge (Issues Count) - Minimalist Monospace Capsule */
             html.dark [data-flux-sidebar-item] [data-flux-navlist-badge],
             html.dark [data-flux-navlist-badge] {
-                background-color: rgba(245, 158, 11, 0.18) !important;
-                color: #fbbf24 !important;
-                border: 1px solid rgba(245, 158, 11, 0.35) !important;
+                background-color: rgba(255, 255, 255, 0.06) !important;
+                color: #d4d4d8 !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
                 border-radius: 9999px !important;
                 font-size: 10px !important;
-                font-weight: 700 !important;
-                padding: 1px 6.5px !important;
+                font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+                font-weight: 600 !important;
+                padding: 0.5px 6px !important;
+                line-height: 1.2 !important;
             }
             html:not(.dark) [data-flux-sidebar-item] [data-flux-navlist-badge],
             html:not(.dark) [data-flux-navlist-badge] {
-                background-color: rgba(245, 158, 11, 0.14) !important;
-                color: #d97706 !important;
-                border: 1px solid rgba(245, 158, 11, 0.3) !important;
+                background-color: rgba(0, 0, 0, 0.05) !important;
+                color: #52525b !important;
+                border: 1px solid rgba(0, 0, 0, 0.08) !important;
                 border-radius: 9999px !important;
                 font-size: 10px !important;
-                font-weight: 700 !important;
-                padding: 1px 6.5px !important;
+                font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+                font-weight: 600 !important;
+                padding: 0.5px 6px !important;
+                line-height: 1.2 !important;
+            }
+
+            /* Active item with badge: badge gains subtle amber glow */
+            html.dark [data-flux-sidebar-item][data-current] [data-flux-navlist-badge] {
+                background-color: rgba(245, 158, 11, 0.15) !important;
+                color: #fbbf24 !important;
+                border-color: rgba(245, 158, 11, 0.3) !important;
+            }
+            html:not(.dark) [data-flux-sidebar-item][data-current] [data-flux-navlist-badge] {
+                background-color: rgba(245, 158, 11, 0.12) !important;
+                color: #d97706 !important;
+                border-color: rgba(245, 158, 11, 0.25) !important;
             }
 
             /* Dynamic User Menu: In-place Accordion vs Collapsed Flyout */
