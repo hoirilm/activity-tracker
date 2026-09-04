@@ -11,4 +11,5 @@
     </flux:main>
     <livewire:onboarding-tour />
     <livewire:task-celebration />
+    <livewire:quick-notes-drawer />
 </x-layouts::app.sidebar>

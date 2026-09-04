@@ -22,4 +22,9 @@ class Label extends Model
     {
         return $this->belongsToMany(Task::class);
     }
+
+    public function notes(): BelongsToMany
+    {
+        return $this->belongsToMany(Note::class);
+    }
 }

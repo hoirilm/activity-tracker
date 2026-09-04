@@ -15,6 +15,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('dashboard', 'dashboard')->name('dashboard');
     Route::view('tracker', 'tracker')->name('tracker');
     Route::view('manage', 'manage')->name('manage');
+    Route::view('notes', 'notes')->name('notes');
 
     Route::get('issues', function () {
         if (! auth()->user()->is_admin) {

@@ -112,3 +112,16 @@ html.dark .driver-popover-arrow:after {
 html.dark .driver-popover-close-btn {
     @apply text-zinc-400 hover:text-white transition-colors cursor-pointer top-3 right-3;
 }
+
+/* Premium Modal Backdrop Blur */
+[data-flux-modal] > dialog::backdrop {
+    background-color: rgba(0, 0, 0, 0.4) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+}
+
+html.dark [data-flux-modal] > dialog::backdrop {
+    background-color: rgba(0, 0, 0, 0.65) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+}

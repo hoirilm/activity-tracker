@@ -216,6 +216,9 @@
                 <flux:sidebar.item id="tour-manage" icon="cog-8-tooth" :href="route('manage')" :current="request()->routeIs('manage')" wire:navigate>
                     {{ __('Manage') }}
                 </flux:sidebar.item>
+                <flux:sidebar.item id="tour-notes" icon="document-text" :href="route('notes')" :current="request()->routeIs('notes')" wire:navigate>
+                    {{ __('Notes') }}
+                </flux:sidebar.item>
                 
                 @if(auth()->check() && auth()->user()->is_admin)
                 @php $openAdminIssues = App\Models\Issue::where('status', 'open')->count(); @endphp
@@ -311,6 +314,16 @@
                             <span>{{ __('Manage') }}</span>
                         </div>
                         @if(request()->routeIs('manage'))
+                            <span class="size-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.65)]"></span>
+                        @endif
+                    </a>
+
+                    <a href="{{ route('notes') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center justify-between px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150 {{ request()->routeIs('notes') ? 'bg-zinc-100 dark:bg-white/[0.06] text-zinc-950 dark:text-white font-semibold border border-zinc-200/80 dark:border-white/[0.08] shadow-2xs' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-white/[0.04] hover:text-zinc-900 dark:hover:text-zinc-100' }}">
+                        <div class="flex items-center gap-2.5">
+                            <flux:icon name="document-text" class="size-4" />
+                            <span>{{ __('Notes') }}</span>
+                        </div>
+                        @if(request()->routeIs('notes'))
                             <span class="size-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.65)]"></span>
                         @endif
                     </a>
@@ -449,7 +462,7 @@
              x-transition:leave="transition ease-in duration-200"
              x-transition:leave-start="opacity-100 translate-y-0 scale-100"
              x-transition:leave-end="opacity-0 translate-y-6 scale-90"
-             class="hidden md:block fixed bottom-6 right-6 lg:bottom-8 lg:right-8 z-[9999] pointer-events-none"
+             class="hidden md:block fixed bottom-18 right-5 sm:bottom-20 sm:right-6 z-[9999] pointer-events-none"
              style="display: none;">
             
             <button 

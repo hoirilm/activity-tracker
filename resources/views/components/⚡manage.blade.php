@@ -939,6 +939,31 @@ new class extends Component
         display: block !important;
         object-fit: cover !important;
     }
+
+    /* Archived Tasks Modal & Modals Backdrop Blur */
+    dialog[data-modal="archived-tasks-modal"]::backdrop,
+    [data-flux-modal] > dialog[data-modal="archived-tasks-modal"]::backdrop {
+        background-color: rgba(0, 0, 0, 0.45) !important;
+        backdrop-filter: blur(10px) !important;
+        -webkit-backdrop-filter: blur(10px) !important;
+    }
+    html.dark dialog[data-modal="archived-tasks-modal"]::backdrop,
+    html.dark [data-flux-modal] > dialog[data-modal="archived-tasks-modal"]::backdrop {
+        background-color: rgba(0, 0, 0, 0.65) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
+    }
+
+    dialog[data-modal="archived-tasks-modal"] {
+        border-radius: 1.25rem !important;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6) !important;
+    }
+    html.dark dialog[data-modal="archived-tasks-modal"] {
+        background-color: rgba(24, 24, 27, 0.94) !important;
+        backdrop-filter: blur(16px) !important;
+        -webkit-backdrop-filter: blur(16px) !important;
+        border: 1px solid rgba(63, 63, 70, 0.6) !important;
+    }
 </style>
 
     <!-- Main Animated Content -->

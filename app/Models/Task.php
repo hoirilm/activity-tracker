@@ -134,4 +134,9 @@ class Task extends Model
     {
         return $this->hasMany(Activity::class);
     }
+
+    public function notes()
+    {
+        return $this->hasMany(Note::class);
+    }
 }

@@ -96,4 +96,9 @@ class User extends Authenticatable implements PasskeyUser
     {
         return $this->hasMany(Label::class);
     }
+
+    public function notes()
+    {
+        return $this->hasMany(Note::class)->orderBy('updated_at', 'desc');
+    }
 }
