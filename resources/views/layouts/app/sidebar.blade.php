@@ -219,6 +219,11 @@
                 
                 @if(auth()->check() && auth()->user()->is_admin)
                 @php $openAdminIssues = App\Models\Issue::where('status', 'open')->count(); @endphp
+                <div class="pt-3 pb-1 px-3 in-data-flux-sidebar-collapsed-desktop:hidden">
+                    <span class="text-[10px] font-mono font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Admin</span>
+                </div>
+                <div class="my-2 border-t border-zinc-200/50 dark:border-zinc-800/50 hidden in-data-flux-sidebar-collapsed-desktop:block"></div>
+                
                 <flux:sidebar.item id="tour-issues" icon="flag" :href="route('issues')" :current="request()->routeIs('issues')" :badge="$openAdminIssues ?: null" wire:navigate>
                     {{ __('Issues') }}
                 </flux:sidebar.item>
@@ -280,41 +285,75 @@
 
                 <!-- Navigation Links -->
                 <nav class="space-y-1">
-                    <a href="{{ route('dashboard') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('dashboard') ? 'bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-transparent text-amber-600 dark:text-amber-400 font-semibold border-l-2 border-amber-500 shadow-2xs' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white' }}">
-                        <flux:icon name="home" class="size-5" />
-                        <span>{{ __('Dashboard') }}</span>
+                    <a href="{{ route('dashboard') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center justify-between px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150 {{ request()->routeIs('dashboard') ? 'bg-zinc-100 dark:bg-white/[0.06] text-zinc-950 dark:text-white font-semibold border border-zinc-200/80 dark:border-white/[0.08] shadow-2xs' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-white/[0.04] hover:text-zinc-900 dark:hover:text-zinc-100' }}">
+                        <div class="flex items-center gap-2.5">
+                            <flux:icon name="home" class="size-4" />
+                            <span>{{ __('Dashboard') }}</span>
+                        </div>
+                        @if(request()->routeIs('dashboard'))
+                            <span class="size-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.65)]"></span>
+                        @endif
                     </a>
 
-                    <a href="{{ route('tracker') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('tracker') ? 'bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-transparent text-amber-600 dark:text-amber-400 font-semibold border-l-2 border-amber-500 shadow-2xs' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white' }}">
-                        <flux:icon name="clock" class="size-5" />
-                        <span>{{ __('Tracker') }}</span>
+                    <a href="{{ route('tracker') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center justify-between px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150 {{ request()->routeIs('tracker') ? 'bg-zinc-100 dark:bg-white/[0.06] text-zinc-950 dark:text-white font-semibold border border-zinc-200/80 dark:border-white/[0.08] shadow-2xs' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-white/[0.04] hover:text-zinc-900 dark:hover:text-zinc-100' }}">
+                        <div class="flex items-center gap-2.5">
+                            <flux:icon name="clock" class="size-4" />
+                            <span>{{ __('Tracker') }}</span>
+                        </div>
+                        @if(request()->routeIs('tracker'))
+                            <span class="size-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.65)]"></span>
+                        @endif
                     </a>
 
-                    <a href="{{ route('manage') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('manage') ? 'bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-transparent text-amber-600 dark:text-amber-400 font-semibold border-l-2 border-amber-500 shadow-2xs' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white' }}">
-                        <flux:icon name="cog-8-tooth" class="size-5" />
-                        <span>{{ __('Manage') }}</span>
+                    <a href="{{ route('manage') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center justify-between px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150 {{ request()->routeIs('manage') ? 'bg-zinc-100 dark:bg-white/[0.06] text-zinc-950 dark:text-white font-semibold border border-zinc-200/80 dark:border-white/[0.08] shadow-2xs' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-white/[0.04] hover:text-zinc-900 dark:hover:text-zinc-100' }}">
+                        <div class="flex items-center gap-2.5">
+                            <flux:icon name="cog-8-tooth" class="size-4" />
+                            <span>{{ __('Manage') }}</span>
+                        </div>
+                        @if(request()->routeIs('manage'))
+                            <span class="size-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.65)]"></span>
+                        @endif
                     </a>
 
                     @if(auth()->check() && auth()->user()->is_admin)
                         @php $openAdminIssues = App\Models\Issue::where('status', 'open')->count(); @endphp
-                        <a href="{{ route('issues') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('issues') ? 'bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-transparent text-amber-600 dark:text-amber-400 font-semibold border-l-2 border-amber-500 shadow-2xs' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white' }}">
-                            <div class="flex items-center gap-3">
-                                <flux:icon name="flag" class="size-5" />
+                        <div class="pt-3 pb-1 px-3">
+                            <span class="text-[10px] font-mono font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Admin</span>
+                        </div>
+
+                        <a href="{{ route('issues') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center justify-between px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150 {{ request()->routeIs('issues') ? 'bg-zinc-100 dark:bg-white/[0.06] text-zinc-950 dark:text-white font-semibold border border-zinc-200/80 dark:border-white/[0.08] shadow-2xs' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-white/[0.04] hover:text-zinc-900 dark:hover:text-zinc-100' }}">
+                            <div class="flex items-center gap-2.5">
+                                <flux:icon name="flag" class="size-4" />
                                 <span>{{ __('Issues') }}</span>
                             </div>
-                            @if($openAdminIssues)
-                                <span class="px-2 py-0.5 text-xs font-bold bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded-full border border-amber-500/30">{{ $openAdminIssues }}</span>
+                            <div class="flex items-center gap-2">
+                                @if($openAdminIssues)
+                                    <span class="px-1.5 py-0.2 text-[10px] font-mono font-semibold bg-zinc-200/80 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 rounded-full border border-zinc-300/80 dark:border-zinc-700/60">{{ $openAdminIssues }}</span>
+                                @endif
+                                @if(request()->routeIs('issues'))
+                                    <span class="size-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.65)]"></span>
+                                @endif
+                            </div>
+                        </a>
+
+                        <a href="{{ route('members') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center justify-between px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150 {{ request()->routeIs('members') ? 'bg-zinc-100 dark:bg-white/[0.06] text-zinc-950 dark:text-white font-semibold border border-zinc-200/80 dark:border-white/[0.08] shadow-2xs' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-white/[0.04] hover:text-zinc-900 dark:hover:text-zinc-100' }}">
+                            <div class="flex items-center gap-2.5">
+                                <flux:icon name="users" class="size-4" />
+                                <span>{{ __('Members') }}</span>
+                            </div>
+                            @if(request()->routeIs('members'))
+                                <span class="size-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.65)]"></span>
                             @endif
                         </a>
 
-                        <a href="{{ route('members') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('members') ? 'bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-transparent text-amber-600 dark:text-amber-400 font-semibold border-l-2 border-amber-500 shadow-2xs' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white' }}">
-                            <flux:icon name="users" class="size-5" />
-                            <span>{{ __('Members') }}</span>
-                        </a>
-
-                        <a href="{{ route('broadcast') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('broadcast') ? 'bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-transparent text-amber-600 dark:text-amber-400 font-semibold border-l-2 border-amber-500 shadow-2xs' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white' }}">
-                            <flux:icon name="megaphone" class="size-5" />
-                            <span>{{ __('Broadcast') }}</span>
+                        <a href="{{ route('broadcast') }}" wire:navigate @click="mobileNavOpen = false" class="flex items-center justify-between px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150 {{ request()->routeIs('broadcast') ? 'bg-zinc-100 dark:bg-white/[0.06] text-zinc-950 dark:text-white font-semibold border border-zinc-200/80 dark:border-white/[0.08] shadow-2xs' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-white/[0.04] hover:text-zinc-900 dark:hover:text-zinc-100' }}">
+                            <div class="flex items-center gap-2.5">
+                                <flux:icon name="megaphone" class="size-4" />
+                                <span>{{ __('Broadcast') }}</span>
+                            </div>
+                            @if(request()->routeIs('broadcast'))
+                                <span class="size-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.65)]"></span>
+                            @endif
                         </a>
                     @endif
                 </nav>
