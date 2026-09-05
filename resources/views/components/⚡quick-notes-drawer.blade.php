@@ -1,9 +1,9 @@
-
 <?php
 
 use App\Models\Note;
 use App\Models\Project;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 new class extends Component
@@ -48,6 +48,21 @@ new class extends Component
         }
     }
 
+    #[On('note-updated')]
+    public function handleExternalNoteUpdated(int $id, string $source = ''): void
+    {
+        if ($source === 'drawer') {
+            return;
+        }
+
+        if ($this->selectedNoteId === $id && ! $this->isCreating) {
+            $note = auth()->user()->notes()->find($id);
+            if ($note) {
+                $this->loadNote($note);
+            }
+        }
+    }
+
     protected function hasChanges(): bool
     {
         $hasContent = trim(strip_tags($this->content ?? '')) !== '' || trim($this->content ?? '') !== '';
@@ -70,6 +85,26 @@ new class extends Component
         }
 
         $this->isOpen = false;
+    }
+
+    public function openFull(): mixed
+    {
+        if ($this->isCreating) {
+            if ($this->hasChanges()) {
+                $this->saveNote();
+            }
+        } elseif ($this->selectedNoteId) {
+            $this->saveNote();
+        }
+
+        $this->isOpen = false;
+
+        $targetId = $this->selectedNoteId;
+        if ($targetId) {
+            return $this->redirect(route('notes', ['selected' => $targetId]), navigate: true);
+        }
+
+        return $this->redirect(route('notes'), navigate: true);
     }
 
     public function loadNote(Note $note): void
@@ -120,6 +155,8 @@ new class extends Component
                 $this->saveNote();
             }
             $this->isCreating = false;
+        } elseif ($this->selectedNoteId) {
+            $this->saveNote();
         }
 
         $note = auth()->user()->notes()->find($id);
@@ -166,7 +203,8 @@ new class extends Component
             $this->selectedNoteId = $note->id;
             $this->saveStatus = 'saved';
             $this->dispatch('note-saved');
-            $this->dispatch('note-created');
+            $this->dispatch('note-created', id: $note->id, source: 'drawer');
+            $this->dispatch('note-updated', id: $note->id, source: 'drawer');
             return;
         }
 
@@ -185,18 +223,19 @@ new class extends Component
 
         $this->saveStatus = 'saved';
         $this->dispatch('note-saved');
+        $this->dispatch('note-updated', id: $note->id, source: 'drawer');
     }
 
     #[Computed]
     public function recentNotes()
     {
-        return auth()->user()->notes()->active()->orderByDesc('updated_at')->take(10)->get();
+        return auth()->user()->notes()->select(['id', 'title', 'updated_at'])->active()->orderByDesc('updated_at')->take(10)->get();
     }
 
     #[Computed]
     public function projects()
     {
-        return auth()->user()->projects()->orderBy('name')->get();
+        return auth()->user()->projects()->select(['id', 'name'])->orderBy('name')->get();
     }
 };
 ?>
@@ -493,14 +532,14 @@ new class extends Component
             <!-- Right Controls: Open in Full Notes & Close -->
             <div class="flex items-center gap-1.5 shrink-0">
                 @if($selectedNoteId)
-                    <a href="{{ route('notes', ['selected' => $selectedNoteId]) }}" 
-                       wire:navigate 
-                       @click="closeDrawer()"
-                       title="Open full page in Notes"
-                       class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 transition-colors">
+                    <button wire:click="openFull" 
+                            @click="flushSave()"
+                            type="button"
+                            title="Open full page in Notes"
+                            class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 transition-colors cursor-pointer">
                         <span>Open Full</span>
                         <flux:icon name="arrow-up-right" class="size-3" />
-                    </a>
+                    </button>
                 @endif
 
                 <button @click="closeDrawer()" 
@@ -615,16 +654,20 @@ new class extends Component
                     if (open) {
                         this.$nextTick(() => {
                             const w = wire || this.$wire;
-                            this.setHtml(w?.content || '');
-                            this.updateStats();
+                            if (w?.content && (!this.$refs.scratchpadEditor || !this.$refs.scratchpadEditor.innerHTML.trim())) {
+                                this.setHtml(w.content);
+                                this.updateStats();
+                            }
                         });
                     }
                 });
 
                 if (this.isOpen && this.$refs.scratchpadEditor) {
                     const w = wire || this.$wire;
-                    this.setHtml(w?.content || '');
-                    this.updateStats();
+                    if (w?.content) {
+                        this.setHtml(w.content);
+                        this.updateStats();
+                    }
                 }
 
                 try {
@@ -632,11 +675,18 @@ new class extends Component
                 } catch (e) {}
             },
 
-            openDrawer() {
+            openDrawer(noteId = null) {
                 this.isOpen = true;
                 const w = wire || this.$wire;
                 if (w) {
-                    w.openDrawer();
+                    if (!noteId) {
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const selectedFromUrl = urlParams.get('selected');
+                        if (selectedFromUrl) {
+                            noteId = parseInt(selectedFromUrl, 10);
+                        }
+                    }
+                    w.openDrawer(noteId || null);
                 }
             },
 
@@ -669,13 +719,23 @@ new class extends Component
                         content = event.detail[0];
                     }
                 }
+
+                // If the scratchpad editor is currently focused by user, do not clobber caret
+                const isFocused = this.$refs.scratchpadEditor && (document.activeElement === this.$refs.scratchpadEditor || this.$refs.scratchpadEditor.contains(document.activeElement));
+                if (isFocused) {
+                    return;
+                }
+
                 this.setHtml(content);
                 this.updateStats();
             },
 
             setHtml(html) {
                 if (this.$refs.scratchpadEditor) {
-                    this.$refs.scratchpadEditor.innerHTML = this.normalizeEditorHtml(html);
+                    const normalized = this.normalizeEditorHtml(html);
+                    if (this.$refs.scratchpadEditor.innerHTML !== normalized) {
+                        this.$refs.scratchpadEditor.innerHTML = normalized;
+                    }
                 }
             },
 

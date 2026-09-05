@@ -235,6 +235,64 @@ test('note editor textarea uses font-sans matching preview font instead of font-
         ->assertSeeHtml('font-sans leading-relaxed custom-scrollbar');
 });
 
+test('scratchpad changes synchronize with full notes page and preserve content', function () {
+    $user = User::factory()->create();
+    $note = Note::create([
+        'user_id' => $user->id,
+        'title' => 'Catatan Sinkronisasi',
+        'content' => 'Konten awal',
+    ]);
+
+    // Open notes page first
+    $notesPage = Livewire::actingAs($user)
+        ->test('notes')
+        ->call('selectNote', $note->id);
+
+    expect($notesPage->get('content'))->toBe('Konten awal');
+
+    // Open scratchpad and edit the note
+    $drawer = Livewire::actingAs($user)
+        ->test('quick-notes-drawer')
+        ->call('openDrawer', $note->id)
+        ->set('content', 'Konten diperbarui dari scratchpad!')
+        ->call('closeDrawer')
+        ->assertDispatched('note-updated', id: $note->id);
+
+    // Database is updated
+    expect($note->fresh()->content)->toBe('Konten diperbarui dari scratchpad!');
+
+    // Dispatch note-updated event to notes page
+    $notesPage->dispatch('note-updated', id: $note->id);
+
+    // Notes page now reflects updated content without stale overwrite!
+    expect($notesPage->get('content'))->toBe('Konten diperbarui dari scratchpad!');
+
+    // Reopen scratchpad drawer, content is preserved!
+    $drawerReopen = Livewire::actingAs($user)
+        ->test('quick-notes-drawer')
+        ->call('openDrawer', $note->id);
+
+    expect($drawerReopen->get('content'))->toBe('Konten diperbarui dari scratchpad!');
+});
+
+test('openFull method in quick-notes-drawer saves note and redirects to full notes page', function () {
+    $user = User::factory()->create();
+    $note = Note::create([
+        'user_id' => $user->id,
+        'title' => 'Catatan Open Full',
+        'content' => 'Teks awal',
+    ]);
+
+    Livewire::actingAs($user)
+        ->test('quick-notes-drawer')
+        ->call('openDrawer', $note->id)
+        ->set('content', 'Teks sebelum open full')
+        ->call('openFull')
+        ->assertRedirect(route('notes', ['selected' => $note->id]));
+
+    expect($note->fresh()->content)->toBe('Teks sebelum open full');
+});
+
 
 
 

@@ -6,6 +6,7 @@ use App\Models\Project;
 use App\Models\Task;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
@@ -62,6 +63,33 @@ new class extends Component
         }
     }
 
+    #[On('note-updated')]
+    public function handleExternalNoteUpdated(int $id, string $source = ''): void
+    {
+        if ($source === 'notes') {
+            return;
+        }
+
+        $this->cachedCurrentNote = null;
+
+        if ($this->selectedNoteId === $id) {
+            $note = auth()->user()->notes()->with(['project', 'task', 'labels'])->find($id);
+            if ($note) {
+                $this->loadNote($note);
+            }
+        }
+    }
+
+    #[On('note-created')]
+    public function handleExternalNoteCreated(?int $id = null, string $source = ''): void
+    {
+        if ($source === 'notes') {
+            return;
+        }
+
+        $this->cachedCurrentNote = null;
+    }
+
     public function loadNote(Note $note): void
     {
         $this->isCreating = false;
@@ -71,7 +99,9 @@ new class extends Component
 
         $raw = $note->content ?? '';
         if ($raw !== '' && ! str_contains($raw, '<p>') && ! str_contains($raw, '<div>') && ! str_contains($raw, '<h1') && ! str_contains($raw, '<h2') && ! str_contains($raw, '<ul') && ! str_contains($raw, '<table')) {
-            $raw = Str::markdown($raw);
+            if (preg_match('/(^#|\*\*|__|\*|_|~~|`|\[.*\]\(.*\)|\n- |\n\d+\. )/m', $raw)) {
+                $raw = Str::markdown($raw);
+            }
         }
         $this->content = $raw;
 
@@ -211,7 +241,8 @@ new class extends Component
 
             $this->saveStatus = 'saved';
             $this->dispatch('note-saved');
-            $this->dispatch('note-created');
+            $this->dispatch('note-created', id: $note->id, source: 'notes');
+            $this->dispatch('note-updated', id: $note->id, source: 'notes');
             return;
         }
 
@@ -236,6 +267,7 @@ new class extends Component
 
         $this->saveStatus = 'saved';
         $this->dispatch('note-saved');
+        $this->dispatch('note-updated', id: $note->id, source: 'notes');
     }
 
     public function togglePin(): void
@@ -250,6 +282,9 @@ new class extends Component
         }
 
         $this->dispatch('note-saved');
+        if ($this->selectedNoteId) {
+            $this->dispatch('note-updated', id: $this->selectedNoteId, source: 'notes');
+        }
     }
 
     public function confirmDeleteNote(int $id): void
@@ -257,6 +292,7 @@ new class extends Component
         $this->noteToDeleteId = $id;
         $this->js("\$flux.modal('delete-note-modal').show()");
         $this->dispatch('modal-show', name: 'delete-note-modal');
+        $this->dispatch('open-modal', name: 'delete-note-modal');
     }
 
     public function toggleArchive(?int $id = null): void
@@ -296,6 +332,7 @@ new class extends Component
             }
 
             $this->dispatch('note-saved');
+            $this->dispatch('note-updated', id: $targetId, source: 'notes');
         }
     }
 
@@ -307,6 +344,7 @@ new class extends Component
             $this->isCreating = false;
             $this->js("\$flux.modal('delete-note-modal').close()");
             $this->dispatch('modal-close', name: 'delete-note-modal');
+            $this->dispatch('close-modal', name: 'delete-note-modal');
             $first = auth()->user()->notes()->active()->orderByDesc('is_pinned')->orderByDesc('updated_at')->first();
             if ($first) {
                 $this->loadNote($first);
@@ -319,6 +357,7 @@ new class extends Component
         if (! $targetId) {
             $this->js("\$flux.modal('delete-note-modal').close()");
             $this->dispatch('modal-close', name: 'delete-note-modal');
+            $this->dispatch('close-modal', name: 'delete-note-modal');
             return;
         }
 
@@ -344,6 +383,7 @@ new class extends Component
         $this->noteToDeleteId = null;
         $this->js("\$flux.modal('delete-note-modal').close()");
         $this->dispatch('modal-close', name: 'delete-note-modal');
+        $this->dispatch('close-modal', name: 'delete-note-modal');
     }
 
     public function toggleLabel(int $labelId): void
@@ -1353,7 +1393,10 @@ new class extends Component
 
                     setHtml(html) {
                         if (this.$refs.editor) {
-                            this.$refs.editor.innerHTML = this.normalizeEditorHtml(html);
+                            const normalized = this.normalizeEditorHtml(html);
+                            if (this.$refs.editor.innerHTML !== normalized) {
+                                this.$refs.editor.innerHTML = normalized;
+                            }
                         }
                     },
 
@@ -1454,6 +1497,13 @@ new class extends Component
                                 content = event.detail[0];
                             }
                         }
+
+                        // If the editor is currently focused by the user, do not clobber caret
+                        const isFocused = this.$refs.editor && (document.activeElement === this.$refs.editor || this.$refs.editor.contains(document.activeElement));
+                        if (isFocused) {
+                            return;
+                        }
+
                         this.setHtml(content);
                     },
 
