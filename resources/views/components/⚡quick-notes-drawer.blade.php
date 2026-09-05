@@ -636,6 +636,7 @@ new class extends Component
             isOpen: false,
             saveStatus: 'saved',
             saveTimer: null,
+            isDirty: false,
             wordCount: {{ str_word_count(strip_tags($content ?? '')) }},
             charCount: {{ strlen(strip_tags($content ?? '')) }},
 
@@ -726,6 +727,7 @@ new class extends Component
                     return;
                 }
 
+                this.isDirty = false;
                 this.setHtml(content);
                 this.updateStats();
             },
@@ -888,6 +890,7 @@ new class extends Component
             },
 
             onEditorInput() {
+                this.isDirty = true;
                 this.updateStats();
                 this.saveStatus = 'saving';
                 clearTimeout(this.saveTimer);
@@ -901,9 +904,11 @@ new class extends Component
                     clearTimeout(this.saveTimer);
                     this.saveTimer = null;
                 }
+                if (!this.isDirty) return;
                 if (this.$refs.scratchpadEditor) {
                     const w = wire || this.$wire;
                     if (w) {
+                        this.isDirty = false;
                         w.set('content', this.$refs.scratchpadEditor.innerHTML);
                     }
                     this.saveStatus = 'saved';

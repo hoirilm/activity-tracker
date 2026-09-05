@@ -292,7 +292,35 @@ test('openFull method in quick-notes-drawer saves note and redirects to full not
 
     expect($note->fresh()->content)->toBe('Teks sebelum open full');
 });
+test('note auto-populates excerpt column on save and avoids content load on notes list', function () {
+    $user = User::factory()->create();
+    $note = Note::create([
+        'user_id' => $user->id,
+        'title' => 'Catatan Benchmark Excerpt',
+        'content' => '<h1>Judul Heading</h1><p>Ini adalah paragraf pengujian untuk excerpt yang disimpan otomatis ke kolom database agar tidak perlu parse content.</p>',
+    ]);
 
+    expect($note->fresh()->excerpt)->not->toBeEmpty();
+    expect($note->fresh()->excerpt)->toContain('Judul Heading');
+    expect($note->fresh()->excerpt)->not->toContain('<h1>');
 
+    // Test noteCounts computed property
+    $test = Livewire::actingAs($user)->test('notes');
+    $counts = $test->get('noteCounts');
 
+    expect($counts)->toBeArray();
+    expect($counts['all'])->toBe(1);
+    expect($counts['pinned'])->toBe(0);
+    expect($counts['archived'])->toBe(0);
 
+    // Pin note and verify
+    $note->update(['is_pinned' => true]);
+    $countsAfterPin = Livewire::actingAs($user)->test('notes')->get('noteCounts');
+    expect($countsAfterPin['pinned'])->toBe(1);
+
+    // Archive note and verify
+    $note->update(['is_archived' => true]);
+    $countsAfterArchive = Livewire::actingAs($user)->test('notes')->get('noteCounts');
+    expect($countsAfterArchive['all'])->toBe(0);
+    expect($countsAfterArchive['archived'])->toBe(1);
+});

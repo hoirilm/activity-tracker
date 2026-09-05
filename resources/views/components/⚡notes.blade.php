@@ -398,10 +398,34 @@ new class extends Component
     }
 
     #[Computed]
+    public function noteCounts(): array
+    {
+        $userId = auth()->id();
+        if (! $userId) {
+            return ['all' => 0, 'pinned' => 0, 'archived' => 0];
+        }
+
+        $row = Note::where('user_id', $userId)
+            ->selectRaw('
+                COUNT(CASE WHEN is_archived = false THEN 1 END) as all_count,
+                COUNT(CASE WHEN is_archived = false AND is_pinned = true THEN 1 END) as pinned_count,
+                COUNT(CASE WHEN is_archived = true THEN 1 END) as archived_count
+            ')
+            ->first();
+
+        return [
+            'all' => (int) ($row?->all_count ?? 0),
+            'pinned' => (int) ($row?->pinned_count ?? 0),
+            'archived' => (int) ($row?->archived_count ?? 0),
+        ];
+    }
+
+    #[Computed]
     public function notesList()
     {
         return auth()->user()->notes()
-            ->with(['project', 'labels', 'task'])
+            ->select(['id', 'user_id', 'project_id', 'task_id', 'title', 'excerpt', 'is_pinned', 'is_archived', 'updated_at'])
+            ->with(['project:id,name', 'task:id,title,project_id', 'labels:id,name,color'])
             ->when($this->filterType === 'archived', fn ($q) => $q->archived(), fn ($q) => $q->active())
             ->when($this->filterType === 'pinned', fn ($q) => $q->pinned())
             ->when($this->filterProjectId, fn ($q) => $q->where('project_id', $this->filterProjectId))
@@ -462,7 +486,7 @@ new class extends Component
     #[Computed]
     public function projects()
     {
-        return auth()->user()->projects()->orderBy('name')->get();
+        return auth()->user()->projects()->select(['id', 'name'])->orderBy('name')->get();
     }
 
     #[Computed]
@@ -487,7 +511,7 @@ new class extends Component
     #[Computed]
     public function allLabels()
     {
-        return auth()->user()->labels()->orderBy('name')->get();
+        return auth()->user()->labels()->select(['id', 'name', 'color'])->orderBy('name')->get();
     }
 
     public function renderMarkdown(?string $text): string
@@ -543,7 +567,7 @@ new class extends Component
                     <flux:icon name="document-text" class="size-4 shrink-0" />
                     <span>All Notes</span>
                     <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-zinc-200/60 dark:bg-zinc-700/60 text-zinc-700 dark:text-zinc-300">
-                        {{ auth()->user()->notes()->active()->count() }}
+                        {{ $this->noteCounts['all'] }}
                     </span>
                 </button>
 
@@ -553,7 +577,7 @@ new class extends Component
                     <flux:icon name="bookmark" class="size-4 shrink-0 text-amber-500" />
                     <span>Pinned</span>
                     <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-zinc-200/60 dark:bg-zinc-700/60 text-zinc-700 dark:text-zinc-300">
-                        {{ auth()->user()->notes()->active()->pinned()->count() }}
+                        {{ $this->noteCounts['pinned'] }}
                     </span>
                 </button>
 
@@ -563,7 +587,7 @@ new class extends Component
                     <flux:icon name="archive-box" class="size-4 shrink-0" />
                     <span>Archived</span>
                     <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-zinc-200/60 dark:bg-zinc-700/60 text-zinc-700 dark:text-zinc-300">
-                        {{ auth()->user()->notes()->archived()->count() }}
+                        {{ $this->noteCounts['archived'] }}
                     </span>
                 </button>
             </div>
@@ -1372,6 +1396,7 @@ new class extends Component
                 Alpine.data('notesRichEditor', (wire) => ({
                     styleMenuOpen: false,
                     saveTimer: null,
+                    isDirty: false,
 
                     initEditor() {
                         const w = wire || this.$wire;
@@ -1404,7 +1429,7 @@ new class extends Component
                         const row = document.createElement('div');
                         row.className = 'note-checklist-item my-1.5 flex items-start gap-2.5 w-full';
                         row.setAttribute('data-checklist', 'true');
-                        row.innerHTML = `<input type='checkbox' contenteditable='false' class='note-checkbox mt-1 size-4 rounded accent-amber-500 cursor-pointer shrink-0' /><span class='note-checklist-text flex-1 outline-none leading-normal text-zinc-900 dark:text-zinc-100'>${content}</span>`;
+                        row.innerHTML = `<input type='checkbox' contenteditable='false' class='note-checkbox mt-1 size-4 rounded-full cursor-pointer shrink-0' /><span class='note-checklist-text flex-1 outline-none leading-normal text-zinc-900 dark:text-zinc-100'>${content}</span>`;
                         return row;
                     },
 
@@ -1504,10 +1529,12 @@ new class extends Component
                             return;
                         }
 
+                        this.isDirty = false;
                         this.setHtml(content);
                     },
 
                     onInput() {
+                        this.isDirty = true;
                         this.$dispatch('note-saving');
                         clearTimeout(this.saveTimer);
                         this.saveTimer = setTimeout(() => {
@@ -1520,8 +1547,10 @@ new class extends Component
                             clearTimeout(this.saveTimer);
                             this.saveTimer = null;
                         }
+                        if (!this.isDirty) return;
                         const w = wire || this.$wire;
                         if (w && this.$refs.editor) {
+                            this.isDirty = false;
                             w.set('content', this.$refs.editor.innerHTML);
                         }
                     },

@@ -86,11 +86,22 @@ class Note extends Model
         return trim($clean);
     }
 
+    protected static function booted(): void
+    {
+        static::saving(function (Note $note) {
+            if ($note->isDirty('content') || empty($note->attributes['excerpt'])) {
+                $note->attributes['excerpt'] = Str::limit($note->clean_content, 120);
+            }
+        });
+    }
+
     public function getExcerptAttribute(): string
     {
-        $clean = $this->clean_content;
+        if (isset($this->attributes['excerpt']) && $this->attributes['excerpt'] !== '') {
+            return $this->attributes['excerpt'];
+        }
 
-        return Str::limit($clean, 120);
+        return Str::limit($this->clean_content, 120);
     }
 
     public function getWordCountAttribute(): int
