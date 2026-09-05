@@ -848,67 +848,48 @@ new class extends Component
         background-color: rgba(255, 255, 255, 0.1);
     }
 
-    /* Tables: Tokens & Theme Adaptation */
-    #note-rich-editor {
-        --table-border: #e4e4e7;
-        --table-th-bg: #f4f4f5;
-        --table-th-color: #18181b;
-        --table-td-color: #27272a;
-        --table-hover-bg: rgba(0, 0, 0, 0.02);
-    }
-    :is(html.dark, .dark, [data-theme="dark"], [data-flux-appearance="dark"]) #note-rich-editor,
-    :is(html.dark, .dark, [data-theme="dark"], [data-flux-appearance="dark"]) & #note-rich-editor {
-        --table-border: #3f3f46;
-        --table-th-bg: #27272a;
-        --table-th-color: #fafafa;
-        --table-td-color: #e4e4e7;
-        --table-hover-bg: rgba(255, 255, 255, 0.04);
-    }
-    @media (prefers-color-scheme: dark) {
-        :root:not(.light) #note-rich-editor,
-        :root:not(.light) & #note-rich-editor,
-        html:not(.light) #note-rich-editor {
-            --table-border: #3f3f46;
-            --table-th-bg: #27272a;
-            --table-th-color: #fafafa;
-            --table-td-color: #e4e4e7;
-            --table-hover-bg: rgba(255, 255, 255, 0.04);
-        }
-    }
-
+    /* Tables: Balanced Light & Dark Theme Adaptation */
     #note-rich-editor table {
         width: 100% !important;
         border-collapse: collapse !important;
-        margin: 1rem 0 !important;
+        margin: 1.25rem 0 !important;
         font-size: 0.8125rem !important;
-        border: 1px solid var(--table-border) !important;
+        border: 1px solid #e4e4e7 !important;
+        border-radius: 0.375rem !important;
     }
     #note-rich-editor thead {
-        border-bottom: 2px solid var(--table-border) !important;
+        border-bottom: 2px solid #e4e4e7 !important;
     }
     #note-rich-editor thead tr,
     #note-rich-editor thead tr th,
     #note-rich-editor th {
-        background-color: var(--table-th-bg) !important;
-        color: var(--table-th-color) !important;
+        background-color: #f4f4f5 !important;
+        color: #18181b !important;
         font-weight: 600 !important;
         text-align: left !important;
-        border: 1px solid var(--table-border) !important;
+        border: 1px solid #e4e4e7 !important;
         padding: 0.5rem 0.75rem !important;
+        letter-spacing: -0.01em !important;
     }
     #note-rich-editor td {
-        border: 1px solid var(--table-border) !important;
+        background-color: transparent !important;
+        border: 1px solid #e4e4e7 !important;
         padding: 0.5rem 0.75rem !important;
-        color: var(--table-td-color) !important;
+        color: #27272a !important;
+        line-height: 1.5 !important;
     }
-    #note-rich-editor tbody tr:hover {
-        background-color: var(--table-hover-bg) !important;
+    #note-rich-editor tbody tr:hover td {
+        background-color: rgba(0, 0, 0, 0.02) !important;
     }
 
-    /* Fallback direct selectors for dark mode */
+    /* Table: Dark Mode */
     :is(html.dark, .dark, [data-theme="dark"], [data-flux-appearance="dark"]) #note-rich-editor table,
     :is(html.dark, .dark, [data-theme="dark"], [data-flux-appearance="dark"]) & #note-rich-editor table {
-        border-color: #3f3f46 !important;
+        border-color: #27272a !important;
+    }
+    :is(html.dark, .dark, [data-theme="dark"], [data-flux-appearance="dark"]) #note-rich-editor thead,
+    :is(html.dark, .dark, [data-theme="dark"], [data-flux-appearance="dark"]) & #note-rich-editor thead {
+        border-bottom-color: #3f3f46 !important;
     }
     :is(html.dark, .dark, [data-theme="dark"], [data-flux-appearance="dark"]) #note-rich-editor thead tr,
     :is(html.dark, .dark, [data-theme="dark"], [data-flux-appearance="dark"]) #note-rich-editor thead tr th,
@@ -917,13 +898,18 @@ new class extends Component
     :is(html.dark, .dark, [data-theme="dark"], [data-flux-appearance="dark"]) & #note-rich-editor thead tr th,
     :is(html.dark, .dark, [data-theme="dark"], [data-flux-appearance="dark"]) & #note-rich-editor th {
         background-color: #27272a !important;
-        color: #fafafa !important;
+        color: #f4f4f5 !important;
         border-color: #3f3f46 !important;
     }
     :is(html.dark, .dark, [data-theme="dark"], [data-flux-appearance="dark"]) #note-rich-editor td,
     :is(html.dark, .dark, [data-theme="dark"], [data-flux-appearance="dark"]) & #note-rich-editor td {
-        color: #e4e4e7 !important;
-        border-color: #3f3f46 !important;
+        background-color: transparent !important;
+        color: #d4d4d8 !important;
+        border-color: #27272a !important;
+    }
+    :is(html.dark, .dark, [data-theme="dark"], [data-flux-appearance="dark"]) #note-rich-editor tbody tr:hover td,
+    :is(html.dark, .dark, [data-theme="dark"], [data-flux-appearance="dark"]) & #note-rich-editor tbody tr:hover td {
+        background-color: rgba(255, 255, 255, 0.03) !important;
     }
 
     /* Blockquote */
@@ -953,20 +939,25 @@ new class extends Component
 
     /* Checklist Items */
     #note-rich-editor .note-checklist-item,
-    #note-rich-editor [data-checklist="true"] {
+    #note-rich-editor [data-checklist="true"],
+    #note-rich-editor div:has(> input.note-checkbox),
+    #note-rich-editor div:has(> input[type="checkbox"]) {
         display: flex !important;
         flex-direction: row !important;
+        flex-wrap: wrap !important;
         align-items: flex-start !important;
         gap: 0.625rem !important;
         margin: 0.375rem 0 !important;
         width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
     }
     #note-rich-editor .note-checklist-item > .note-checklist-text,
     #note-rich-editor [data-checklist="true"] > .note-checklist-text,
     #note-rich-editor .note-checklist-item > span,
     #note-rich-editor [data-checklist="true"] > span {
         display: block !important;
-        flex: 1 1 0% !important;
+        flex: 1 1 calc(100% - 2.5rem) !important;
         min-width: 0 !important;
         outline: none !important;
         word-break: break-word;
@@ -976,9 +967,13 @@ new class extends Component
         margin-top: 0.25rem !important;
         cursor: pointer !important;
         flex-shrink: 0 !important;
+        user-select: none !important;
+        -webkit-user-select: none !important;
+        pointer-events: auto !important;
     }
     #note-rich-editor input[type="checkbox"]:checked + span,
-    #note-rich-editor input[type="checkbox"]:checked + div {
+    #note-rich-editor input[type="checkbox"]:checked + div,
+    #note-rich-editor input[type="checkbox"]:checked ~ .note-checklist-text {
         text-decoration: line-through !important;
         opacity: 0.5 !important;
     }
@@ -1362,6 +1357,14 @@ new class extends Component
                         }
                     },
 
+                    createChecklistRow(content = '<br>') {
+                        const row = document.createElement('div');
+                        row.className = 'note-checklist-item my-1.5 flex items-start gap-2.5 w-full';
+                        row.setAttribute('data-checklist', 'true');
+                        row.innerHTML = `<input type='checkbox' contenteditable='false' class='note-checkbox mt-1 size-4 rounded accent-amber-500 cursor-pointer shrink-0' /><span class='note-checklist-text flex-1 outline-none leading-normal text-zinc-900 dark:text-zinc-100'>${content}</span>`;
+                        return row;
+                    },
+
                     normalizeEditorHtml(html) {
                         if (!html || !html.trim() || html.trim() === '<br>') {
                             return '<p><br></p>';
@@ -1370,33 +1373,30 @@ new class extends Component
                         const doc = parser.parseFromString(`<div>${html}</div>`, 'text/html');
                         const root = doc.body.firstElementChild;
 
-                        // 1. Flatten any nested .note-checklist-item elements
-                        let hasNested = true;
+                        // 1. Flatten ANY nested checklist items (defense in depth)
                         let iterations = 0;
-                        while (hasNested && iterations < 50) {
+                        while (iterations < 20) {
                             iterations++;
-                            hasNested = false;
-                            const nestedItems = root.querySelectorAll('.note-checklist-item .note-checklist-item, [data-checklist="true"] [data-checklist="true"]');
-                            if (nestedItems.length > 0) {
-                                hasNested = true;
-                                nestedItems.forEach(item => {
-                                    let parentChecklist = item.parentElement;
-                                    while (parentChecklist && parentChecklist !== root && !parentChecklist.classList.contains('note-checklist-item')) {
-                                        parentChecklist = parentChecklist.parentElement;
-                                    }
-                                    if (parentChecklist && parentChecklist !== root) {
-                                        parentChecklist.after(item);
-                                    } else {
-                                        root.appendChild(item);
-                                    }
-                                });
-                            }
+                            const nestedChecklists = root.querySelectorAll('.note-checklist-item .note-checklist-item, [data-checklist="true"] [data-checklist="true"], .note-checklist-item div:has(> input[type="checkbox"]), div:has(> input[type="checkbox"]) div:has(> input[type="checkbox"])');
+                            if (!nestedChecklists.length) break;
+                            nestedChecklists.forEach(item => {
+                                let parent = item.parentElement;
+                                while (parent && parent !== root && !parent.classList?.contains('note-checklist-item') && parent.getAttribute('data-checklist') !== 'true' && !parent.querySelector(':scope > input[type="checkbox"]')) {
+                                    parent = parent.parentElement;
+                                }
+                                if (parent && parent !== root) {
+                                    parent.after(item);
+                                } else {
+                                    root.appendChild(item);
+                                }
+                            });
                         }
 
-                        // 2. Clean up stray blocks trapped inside checklist items
-                        const checklistItems = root.querySelectorAll('.note-checklist-item, [data-checklist="true"]');
-                        checklistItems.forEach(item => {
-                            const strayBlocks = item.querySelectorAll('p, div:not(.note-checklist-item)');
+                        // 2. Standardize all checklist items
+                        const allChecklists = root.querySelectorAll('.note-checklist-item, [data-checklist="true"], div:has(> input.note-checkbox), div:has(> input[type="checkbox"])');
+                        allChecklists.forEach(item => {
+                            // Extract any nested paragraphs / divs that shouldn't be inside checklist
+                            const strayBlocks = item.querySelectorAll('p, blockquote, table, pre');
                             strayBlocks.forEach(sb => {
                                 if (!sb.textContent.trim()) {
                                     sb.remove();
@@ -1405,21 +1405,29 @@ new class extends Component
                                 }
                             });
 
-                            item.classList.add('note-checklist-item', 'my-1.5', 'flex', 'items-start', 'gap-2.5');
+                            item.className = 'note-checklist-item my-1.5 flex items-start gap-2.5 w-full';
                             item.setAttribute('data-checklist', 'true');
+                            item.removeAttribute('contenteditable');
 
-                            const cb = item.querySelector('input[type="checkbox"]');
-                            if (cb) {
-                                cb.setAttribute('contenteditable', 'false');
-                                cb.className = 'note-checkbox mt-1 size-4 rounded accent-amber-500 cursor-pointer shrink-0';
+                            let cb = item.querySelector('input[type="checkbox"]');
+                            if (!cb) {
+                                cb = doc.createElement('input');
+                                cb.type = 'checkbox';
+                                item.prepend(cb);
                             }
+                            cb.setAttribute('contenteditable', 'false');
+                            cb.className = 'note-checkbox mt-1 size-4 rounded accent-amber-500 cursor-pointer shrink-0';
 
-                            const span = item.querySelector('.note-checklist-text') || item.querySelector('span');
-                            if (span) {
-                                span.className = 'note-checklist-text flex-1 outline-none leading-normal text-zinc-900 dark:text-zinc-100';
-                                if (!span.innerHTML.trim()) {
-                                    span.innerHTML = '<br>';
-                                }
+                            let span = item.querySelector('.note-checklist-text') || item.querySelector('span');
+                            if (!span) {
+                                span = doc.createElement('span');
+                                const nodes = Array.from(item.childNodes).filter(n => n !== cb);
+                                nodes.forEach(n => span.appendChild(n));
+                                item.appendChild(span);
+                            }
+                            span.className = 'note-checklist-text flex-1 outline-none leading-normal text-zinc-900 dark:text-zinc-100';
+                            if (!span.innerHTML.trim()) {
+                                span.innerHTML = '<br>';
                             }
                         });
 
@@ -1570,47 +1578,60 @@ new class extends Component
                     insertChecklist() {
                         this.$refs.editor.focus();
                         const sel = window.getSelection();
-                        let currentBlock = null;
+                        let anchor = sel && sel.rangeCount > 0 ? sel.anchorNode : null;
+                        if (anchor && anchor.nodeType === Node.TEXT_NODE) anchor = anchor.parentElement;
 
-                        if (sel && sel.rangeCount > 0) {
-                            let node = sel.anchorNode;
-                            while (node && node !== this.$refs.editor) {
-                                if (node.parentElement === this.$refs.editor) {
-                                    currentBlock = node;
-                                    break;
-                                }
-                                node = node.parentNode;
-                            }
-                        }
-
-                        if (currentBlock && currentBlock.classList?.contains('note-checklist-item')) {
-                            // Already in a checklist item: add new checklist row below
-                            const newRow = document.createElement('div');
-                            newRow.className = 'note-checklist-item my-1.5 flex items-start gap-2.5';
-                            newRow.setAttribute('data-checklist', 'true');
-                            newRow.innerHTML = `<input type='checkbox' contenteditable='false' class='note-checkbox mt-1 size-4 rounded accent-amber-500 cursor-pointer shrink-0' /><span class='note-checklist-text flex-1 outline-none leading-normal text-zinc-900 dark:text-zinc-100'><br></span>`;
-                            currentBlock.after(newRow);
-                            this.focusElement(newRow.querySelector('span'), false);
-                        } else if (currentBlock && currentBlock.tagName !== 'TABLE') {
-                            // Convert current block into a checklist item preserving text
-                            const text = currentBlock.innerText?.trim() || currentBlock.textContent?.trim() || '';
-                            const newRow = document.createElement('div');
-                            newRow.className = 'note-checklist-item my-1.5 flex items-start gap-2.5';
-                            newRow.setAttribute('data-checklist', 'true');
-                            newRow.innerHTML = `<input type='checkbox' contenteditable='false' class='note-checkbox mt-1 size-4 rounded accent-amber-500 cursor-pointer shrink-0' /><span class='note-checklist-text flex-1 outline-none leading-normal text-zinc-900 dark:text-zinc-100'>${text ? this.escapeHtml(text) : '<br>'}</span>`;
-                            currentBlock.replaceWith(newRow);
-                            this.focusElement(newRow.querySelector('span'), true);
-                        } else {
-                            // Append to editor
-                            const newRow = document.createElement('div');
-                            newRow.className = 'note-checklist-item my-1.5 flex items-start gap-2.5';
-                            newRow.setAttribute('data-checklist', 'true');
-                            newRow.innerHTML = `<input type='checkbox' contenteditable='false' class='note-checkbox mt-1 size-4 rounded accent-amber-500 cursor-pointer shrink-0' /><span class='note-checklist-text flex-1 outline-none leading-normal text-zinc-900 dark:text-zinc-100'>Checklist item</span>`;
+                        if (!anchor || !this.$refs.editor.contains(anchor)) {
+                            // If caret was not inside editor, append a new empty checklist item
+                            const newRow = this.createChecklistRow('<br>');
                             const p = document.createElement('p');
                             p.innerHTML = '<br>';
                             this.$refs.editor.appendChild(newRow);
                             this.$refs.editor.appendChild(p);
-                            this.focusElement(newRow.querySelector('span'), true);
+                            this.focusElement(newRow.querySelector('.note-checklist-text'), false);
+                            this.onInput();
+                            return;
+                        }
+
+                        // Check if current block is ALREADY a checklist item -> TOGGLE OFF (Apple Notes style)
+                        const existingChecklist = anchor.closest('.note-checklist-item, [data-checklist="true"], div:has(> input.note-checkbox), div:has(> input[type="checkbox"])');
+                        if (existingChecklist && this.$refs.editor.contains(existingChecklist)) {
+                            // Find the outermost checklist item if nested
+                            let topRow = existingChecklist;
+                            while (topRow.parentElement && topRow.parentElement !== this.$refs.editor) {
+                                const p = topRow.parentElement.closest('.note-checklist-item, [data-checklist="true"], div:has(> input.note-checkbox), div:has(> input[type="checkbox"])');
+                                if (p && this.$refs.editor.contains(p)) {
+                                    topRow = p;
+                                } else {
+                                    break;
+                                }
+                            }
+                            const span = existingChecklist.querySelector('.note-checklist-text') || existingChecklist.querySelector('span');
+                            const html = span ? span.innerHTML : '<br>';
+                            const p = document.createElement('p');
+                            p.innerHTML = html.trim() ? html : '<br>';
+                            topRow.replaceWith(p);
+                            this.focusElement(p, true);
+                            this.onInput();
+                            return;
+                        }
+
+                        // Otherwise find current top-level block inside editor
+                        let block = anchor;
+                        while (block && block.parentElement && block.parentElement !== this.$refs.editor) {
+                            block = block.parentElement;
+                        }
+                        if (!block || block === this.$refs.editor) block = anchor;
+
+                        if (block && block !== this.$refs.editor && block.tagName !== 'TABLE') {
+                            const html = block.innerHTML;
+                            const newRow = this.createChecklistRow(html && html.trim() && html !== '<br>' ? html : '<br>');
+                            block.replaceWith(newRow);
+                            this.focusElement(newRow.querySelector('.note-checklist-text'), true);
+                        } else {
+                            const newRow = this.createChecklistRow('<br>');
+                            this.$refs.editor.appendChild(newRow);
+                            this.focusElement(newRow.querySelector('.note-checklist-text'), false);
                         }
 
                         this.onInput();
@@ -1659,46 +1680,51 @@ new class extends Component
                         const sel = window.getSelection();
                         if (!sel || sel.rangeCount === 0) return false;
 
-                        let node = sel.anchorNode;
-                        let checklistRow = null;
-                        let textContainer = null;
+                        let anchor = sel.anchorNode;
+                        if (!anchor) return false;
+                        if (anchor.nodeType === Node.TEXT_NODE) anchor = anchor.parentElement;
+                        if (!anchor || !this.$refs.editor.contains(anchor)) return false;
 
-                        while (node && node !== this.$refs.editor) {
-                            if (node.nodeType === Node.ELEMENT_NODE) {
-                                if (node.tagName === 'SPAN' || node.classList?.contains('note-checklist-text')) {
-                                    textContainer = node;
-                                }
-                                if (node.classList?.contains('note-checklist-item') || node.getAttribute('data-checklist') === 'true') {
-                                    checklistRow = node;
-                                    // Walk up to find outermost checklistRow in case of any legacy nesting
-                                    let parent = node.parentElement;
-                                    while (parent && parent !== this.$refs.editor) {
-                                        if (parent.classList?.contains('note-checklist-item') || parent.getAttribute('data-checklist') === 'true') {
-                                            checklistRow = parent;
-                                        }
-                                        parent = parent.parentElement;
-                                    }
-                                    break;
-                                }
+                        const checklistRow = anchor.closest('.note-checklist-item, [data-checklist="true"], div:has(> input.note-checkbox), div:has(> input[type="checkbox"])');
+                        if (!checklistRow || !this.$refs.editor.contains(checklistRow)) return false;
+
+                        // Find top-level checklist row so siblings are never inserted inside a parent checklist
+                        let topRow = checklistRow;
+                        while (topRow.parentElement && topRow.parentElement !== this.$refs.editor) {
+                            const p = topRow.parentElement.closest('.note-checklist-item, [data-checklist="true"], div:has(> input.note-checkbox), div:has(> input[type="checkbox"])');
+                            if (p && this.$refs.editor.contains(p)) {
+                                topRow = p;
+                            } else {
+                                break;
                             }
-                            node = node.parentNode;
                         }
 
-                        if (!checklistRow) return false;
-
-                        const span = textContainer || checklistRow.querySelector('.note-checklist-text') || checklistRow.querySelector('span');
-                        if (!span) return false;
-
+                        const span = checklistRow.querySelector('.note-checklist-text') || checklistRow.querySelector('span') || checklistRow;
                         const rawText = span.innerText || span.textContent || '';
-                        const cleanText = rawText.replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
+                        const cleanText = rawText.replace(/[\u200B-\u200D\uFEFF\n\r]/g, '').trim();
 
+                        // Tab / Shift+Tab for Indent / Outdent
+                        if (e.key === 'Tab') {
+                            e.preventDefault();
+                            const currentMargin = parseInt(topRow.style.marginLeft || '0', 10) || 0;
+                            if (e.shiftKey) {
+                                const newMargin = Math.max(0, currentMargin - 24);
+                                topRow.style.marginLeft = newMargin ? `${newMargin}px` : '';
+                            } else {
+                                const newMargin = Math.min(96, currentMargin + 24);
+                                topRow.style.marginLeft = `${newMargin}px`;
+                            }
+                            this.onInput();
+                            return true;
+                        }
+
+                        // Backspace / Delete
                         if (e.key === 'Backspace' || e.key === 'Delete') {
-                            // Empty checklist item: delete it
                             if (cleanText === '') {
                                 e.preventDefault();
-                                const prev = checklistRow.previousElementSibling;
-                                const next = checklistRow.nextElementSibling;
-                                checklistRow.remove();
+                                const prev = topRow.previousElementSibling;
+                                const next = topRow.nextElementSibling;
+                                topRow.remove();
 
                                 if (!this.$refs.editor.innerHTML.trim() || this.$refs.editor.innerHTML === '<br>') {
                                     this.$refs.editor.innerHTML = '<p><br></p>';
@@ -1717,12 +1743,11 @@ new class extends Component
                                 return true;
                             }
 
-                            // Backspace at offset 0 of text: un-checklist and convert to normal paragraph
                             if (e.key === 'Backspace') {
                                 const range = sel.getRangeAt(0);
                                 let isAtStart = false;
                                 if (range.collapsed) {
-                                    if (range.startOffset === 0 && (sel.anchorNode === span || sel.anchorNode.parentNode === span || sel.anchorNode === span.firstChild)) {
+                                    if (range.startOffset === 0 && (range.startContainer === span || range.startContainer === span.firstChild || range.startContainer.parentNode === span)) {
                                         isAtStart = true;
                                     }
                                 }
@@ -1730,7 +1755,7 @@ new class extends Component
                                     e.preventDefault();
                                     const p = document.createElement('p');
                                     p.innerHTML = span.innerHTML || '<br>';
-                                    checklistRow.replaceWith(p);
+                                    topRow.replaceWith(p);
                                     this.focusElement(p, false);
                                     this.onInput();
                                     return true;
@@ -1738,51 +1763,110 @@ new class extends Component
                             }
                         }
 
+                        // Enter
                         if (e.key === 'Enter') {
                             e.preventDefault();
 
-                            // Enter on empty checklist item -> exit to paragraph
+                            // Enter on empty checklist item -> exit checklist mode to body paragraph
                             if (cleanText === '') {
                                 const p = document.createElement('p');
                                 p.innerHTML = '<br>';
-                                checklistRow.replaceWith(p);
+                                topRow.replaceWith(p);
                                 this.focusElement(p, false);
                                 this.onInput();
                                 return true;
                             }
 
                             // Enter with text -> split text at caret
-                            let preText = '';
-                            let postText = '';
+                            let preHtml = '';
+                            let postHtml = '';
                             try {
                                 const range = sel.getRangeAt(0);
                                 const preRange = range.cloneRange();
                                 preRange.selectNodeContents(span);
-                                preRange.setEnd(range.endContainer, range.endOffset);
-                                preText = preRange.toString();
+                                preRange.setEnd(range.startContainer, range.startOffset);
+                                const preFrag = preRange.cloneContents();
+                                const divPre = document.createElement('div');
+                                divPre.appendChild(preFrag);
+                                preHtml = divPre.innerHTML;
 
                                 const postRange = range.cloneRange();
                                 postRange.selectNodeContents(span);
-                                postRange.setStart(range.startContainer, range.startOffset);
-                                postText = postRange.toString();
+                                postRange.setStart(range.endContainer, range.endOffset);
+                                const postFrag = postRange.cloneContents();
+                                const divPost = document.createElement('div');
+                                divPost.appendChild(postFrag);
+                                postHtml = divPost.innerHTML;
                             } catch (err) {
-                                preText = cleanText;
-                                postText = '';
+                                preHtml = span.innerHTML;
+                                postHtml = '';
                             }
 
-                            span.innerHTML = preText ? this.escapeHtml(preText) : '<br>';
+                            span.innerHTML = preHtml.trim() ? preHtml : '<br>';
 
-                            const newRow = document.createElement('div');
-                            newRow.className = 'note-checklist-item my-1.5 flex items-start gap-2.5';
-                            newRow.setAttribute('data-checklist', 'true');
-                            newRow.innerHTML = `<input type='checkbox' contenteditable='false' class='note-checkbox mt-1 size-4 rounded accent-amber-500 cursor-pointer shrink-0' /><span class='note-checklist-text flex-1 outline-none leading-normal text-zinc-900 dark:text-zinc-100'>${postText ? this.escapeHtml(postText) : '<br>'}</span>`;
+                            const newRow = this.createChecklistRow(postHtml.trim() ? postHtml : '<br>');
+                            if (topRow.style.marginLeft) {
+                                newRow.style.marginLeft = topRow.style.marginLeft;
+                            }
 
-                            checklistRow.after(newRow);
-                            const newSpan = newRow.querySelector('span');
+                            topRow.after(newRow);
+                            const newSpan = newRow.querySelector('.note-checklist-text');
                             this.focusElement(newSpan, false);
 
                             this.onInput();
                             return true;
+                        }
+
+                        return false;
+                    },
+
+                    handleListKeydown(e) {
+                        const sel = window.getSelection();
+                        if (!sel || sel.rangeCount === 0) return false;
+
+                        let anchor = sel.anchorNode;
+                        if (!anchor) return false;
+                        if (anchor.nodeType === Node.TEXT_NODE) anchor = anchor.parentElement;
+                        if (!anchor || !this.$refs.editor.contains(anchor)) return false;
+
+                        const li = anchor.closest('li');
+                        if (!li) return false;
+
+                        const list = li.closest('ul, ol');
+                        if (!list) return false;
+
+                        // Tab / Shift+Tab inside list -> Indent / Outdent
+                        if (e.key === 'Tab') {
+                            e.preventDefault();
+                            if (e.shiftKey) {
+                                document.execCommand('outdent', false, null);
+                            } else {
+                                document.execCommand('indent', false, null);
+                            }
+                            this.onInput();
+                            return true;
+                        }
+
+                        // Enter on empty <li> -> exit list to normal paragraph below
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            const text = li.innerText?.replace(/[\u200B-\u200D\uFEFF\n\r]/g, '').trim() || '';
+                            if (text === '') {
+                                e.preventDefault();
+                                li.remove();
+                                if (!list.querySelectorAll('li').length) {
+                                    const p = document.createElement('p');
+                                    p.innerHTML = '<br>';
+                                    list.replaceWith(p);
+                                    this.focusElement(p, false);
+                                } else {
+                                    const p = document.createElement('p');
+                                    p.innerHTML = '<br>';
+                                    list.after(p);
+                                    this.focusElement(p, false);
+                                }
+                                this.onInput();
+                                return true;
+                            }
                         }
 
                         return false;
@@ -2060,8 +2144,8 @@ new class extends Component
                     },
 
                     onKeydown(e) {
-                        // 1. Checklist handler (Enter, Backspace, Delete)
-                        if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'Enter') {
+                        // 1. Checklist handler (Enter, Backspace, Delete, Tab)
+                        if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'Enter' || e.key === 'Tab') {
                             if (this.handleChecklistKeydown(e)) {
                                 return;
                             }
@@ -2074,28 +2158,35 @@ new class extends Component
                             }
                         }
 
-                        // 3. Heading handler (Enter -> converts to normal body paragraph)
+                        // 3. List handler (Enter on empty <li>, Tab indents <li>)
+                        if (e.key === 'Enter' || e.key === 'Tab') {
+                            if (this.handleListKeydown(e)) {
+                                return;
+                            }
+                        }
+
+                        // 4. Heading handler (Enter -> converts to normal body paragraph)
                         if (e.key === 'Enter') {
                             if (this.handleHeadingKeydown(e)) {
                                 return;
                             }
                         }
 
-                        // 4. Code block handler (Tab, Enter)
+                        // 5. Code block handler (Tab, Enter)
                         if (e.key === 'Tab' || e.key === 'Enter') {
                             if (this.handleCodeKeydown(e)) {
                                 return;
                             }
                         }
 
-                        // 5. Blockquote handler (Enter on empty)
+                        // 6. Blockquote handler (Enter on empty)
                         if (e.key === 'Enter') {
                             if (this.handleBlockquoteKeydown(e)) {
                                 return;
                             }
                         }
 
-                        // 6. Keyboard shortcuts
+                        // 7. Keyboard shortcuts
                         if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'b') {
                             e.preventDefault();
                             this.exec('bold');
