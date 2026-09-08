@@ -1043,51 +1043,56 @@ new class extends Component
     }
 </style>
 
-                    <!-- Top Toolbar inside Editor -->
-                    <div class="p-3 sm:px-6 py-2.5 border-b border-zinc-200/80 dark:border-zinc-800 flex items-center justify-between gap-3 bg-zinc-50/40 dark:bg-zinc-900/40 shrink-0">
+                    <!-- Top Header Bar inside Editor (Apple Notes Style: Metadata & Actions) -->
+                    <div class="px-4 sm:px-8 py-2 border-b border-zinc-200/80 dark:border-zinc-800 flex items-center justify-between gap-3 bg-zinc-50/40 dark:bg-zinc-900/40 shrink-0">
                         <!-- Left Controls: Project, Task, Labels -->
                         <div class="flex items-center flex-wrap gap-2">
-                            <!-- Project Selector (Clean Native Select) -->
-                            <select wire:model.live="projectId" 
-                                    @change="saveStatus = 'saving'"
-                                    class="h-8 py-1 pl-2.5 pr-7 text-xs font-medium rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/20 cursor-pointer min-w-[125px] max-w-[190px] truncate shadow-2xs">
-                                <option value="">No Project</option>
-                                @foreach($this->projects as $project)
-                                    <option value="{{ $project->id }}">{{ $project->name }}</option>
-                                @endforeach
-                            </select>
-
-                            <!-- Task Selector (Filtered by Selected Project) -->
-                            <div class="hidden md:block">
-                                <select wire:model.live="taskId" 
-                                        @change="saveStatus = 'saving'"
-                                        @disabled(! $projectId)
-                                        class="h-8 py-1 pl-2.5 pr-7 text-xs font-medium rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/20 cursor-pointer min-w-[135px] max-w-[210px] truncate disabled:opacity-50 disabled:cursor-not-allowed shadow-2xs">
-                                    @if(! $projectId)
-                                        <option value="">Select Project First</option>
-                                    @else
-                                        <option value="">No Task</option>
-                                        @forelse($this->tasks as $task)
-                                            <option value="{{ $task->id }}">{{ $task->title }}</option>
-                                        @empty
-                                            <option value="" disabled>No tasks in project</option>
-                                        @endforelse
-                                    @endif
-                                </select>
+                            <!-- Project Pill -->
+                            <div class="relative flex items-center">
+                                <div class="h-7 px-2.5 rounded-lg border border-zinc-200/90 dark:border-zinc-700/80 bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700/60 flex items-center gap-1.5 transition-colors shadow-2xs">
+                                    <flux:icon name="folder" class="size-3 text-zinc-400 shrink-0" />
+                                    <select wire:model.live="projectId" 
+                                            @change="saveStatus = 'saving'"
+                                            class="bg-transparent border-0 p-0 pr-4 text-xs font-semibold text-zinc-700 dark:text-zinc-200 focus:ring-0 focus:outline-none cursor-pointer max-w-[150px] truncate">
+                                        <option value="">No Project</option>
+                                        @foreach($this->projects as $project)
+                                            <option value="{{ $project->id }}">{{ $project->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
                             </div>
 
-                            <!-- Labels Picker -->
+                            <!-- Task Pill (Active only when Project is selected) -->
+                            @if($projectId)
+                                <div class="relative flex items-center">
+                                    <div class="h-7 px-2.5 rounded-lg border border-amber-500/30 dark:border-amber-500/20 bg-amber-500/10 dark:bg-amber-500/15 flex items-center gap-1.5 transition-colors shadow-2xs">
+                                        <flux:icon name="clipboard-document-check" class="size-3 text-amber-500 shrink-0" />
+                                        <select wire:model.live="taskId" 
+                                                @change="saveStatus = 'saving'"
+                                                class="bg-transparent border-0 p-0 pr-4 text-xs font-semibold text-amber-800 dark:text-amber-200 focus:ring-0 focus:outline-none cursor-pointer max-w-[160px] truncate">
+                                            <option value="">No Task</option>
+                                            @forelse($this->tasks as $task)
+                                                <option value="{{ $task->id }}">{{ $task->title }}</option>
+                                            @empty
+                                                <option value="" disabled>No tasks in project</option>
+                                            @endforelse
+                                        </select>
+                                    </div>
+                                </div>
+                            @endif
+
+                            <!-- Labels Pill & Dropdown -->
                             <div class="relative" x-data="{ openLabels: false }">
                                 <button @click="openLabels = !openLabels" 
                                         type="button" 
-                                        class="h-8 px-2.5 text-xs font-medium rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-600 flex items-center gap-1.5 cursor-pointer shadow-2xs transition-colors focus:outline-none"
-                                        :class="openLabels ? 'text-amber-600 dark:text-amber-400 border-amber-500/50' : ''">
-                                    <flux:icon name="tag" class="size-3.5 text-zinc-400" />
-                                    <span>Labels</span>
+                                        class="h-7 px-2.5 rounded-lg border border-zinc-200/90 dark:border-zinc-700/80 bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700/60 text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5 cursor-pointer shadow-2xs transition-colors focus:outline-none text-xs"
+                                        :class="openLabels ? 'border-amber-500 text-amber-600 dark:text-amber-400' : ''">
+                                    <flux:icon name="tag" class="size-3 text-zinc-400" />
+                                    <span class="font-medium">Labels</span>
                                     @if(count($selectedLabelIds) > 0)
                                         <span class="px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold bg-amber-500/20 text-amber-600 dark:text-amber-400">{{ count($selectedLabelIds) }}</span>
                                     @endif
-                                    <flux:icon name="chevron-down" class="size-3 text-zinc-400 transition-transform duration-150" ::class="openLabels ? 'rotate-180' : ''" />
+                                    <flux:icon name="chevron-down" class="size-2.5 text-zinc-400 transition-transform duration-150" ::class="openLabels ? 'rotate-180' : ''" />
                                 </button>
 
                                 <div x-show="openLabels" 
@@ -1109,7 +1114,7 @@ new class extends Component
                                     <div class="max-h-60 overflow-y-auto space-y-0.5 pr-0.5 custom-scrollbar">
                                         @forelse($this->allLabels as $lbl)
                                             <button wire:click="toggleLabel({{ $lbl->id }})" 
-                                                    type="button"
+                                                    type="button" 
                                                     class="note-dropdown-item w-full text-left px-2.5 py-1.5 rounded-lg text-xs flex items-center justify-between gap-3 text-zinc-700 dark:text-zinc-200 cursor-pointer select-none">
                                                 <span class="flex items-center gap-2.5 min-w-0">
                                                     <span class="size-2.5 rounded-full shrink-0 shadow-xs ring-2 ring-white dark:ring-zinc-800" style="background-color: var(--color-{{ $lbl->color }}-500, #a1a1aa);"></span>
@@ -1127,16 +1132,32 @@ new class extends Component
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Inline Active Labels Badges -->
+                            @if(! empty($selectedLabelIds))
+                                <div class="hidden xl:flex items-center flex-wrap gap-1">
+                                    @foreach($this->allLabels->whereIn('id', $selectedLabelIds)->take(3) as $activeLbl)
+                                        <button wire:click="toggleLabel({{ $activeLbl->id }})"
+                                                type="button"
+                                                title="Click to remove {{ $activeLbl->name }}"
+                                                class="inline-flex items-center gap-1.5 h-7 px-2 rounded-lg bg-zinc-100/80 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-rose-50 dark:hover:bg-rose-500/10 hover:text-rose-600 dark:hover:text-rose-400 border border-zinc-200/80 dark:border-zinc-700/80 hover:border-rose-300 dark:hover:border-rose-500/30 text-[11px] transition-colors group cursor-pointer shadow-2xs">
+                                            <span class="size-2 rounded-full shrink-0" style="background-color: var(--color-{{ $activeLbl->color }}-500, #a1a1aa);"></span>
+                                            <span class="font-medium">{{ $activeLbl->name }}</span>
+                                            <flux:icon name="x-mark" class="size-2.5 opacity-40 group-hover:opacity-100" />
+                                        </button>
+                                    @endforeach
+                                </div>
+                            @endif
                         </div>
 
-                        <!-- Right Actions: Autosave Status, Copy, Pin, Menu -->
-                        <div class="flex items-center gap-2">
+                        <!-- Right Actions: Autosave Status, Copy, Pin -->
+                        <div class="flex items-center gap-2 shrink-0">
                             <!-- Autosave status: in-place text & icon swap without double-text or layout blink -->
                             <div class="hidden sm:flex items-center gap-1.5 font-mono text-[11px] text-zinc-400 dark:text-zinc-500 select-none pr-1">
                                 <svg x-show="saveStatus === 'saving'" class="animate-spin size-3.5 text-zinc-400 dark:text-zinc-500 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" style="display: none;">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                								</svg>
+                                </svg>
                                 <svg x-show="saveStatus === 'saved'" class="size-3.5 text-zinc-400 dark:text-zinc-500 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                     <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
                                 </svg>
@@ -1164,8 +1185,18 @@ new class extends Component
                         </div>
                     </div>
 
-                    <!-- macOS Notes Style Text Formatting Toolbar -->
-                    <div class="px-4 sm:px-8 py-1.5 border-b border-zinc-200/70 dark:border-zinc-800/70 bg-zinc-50/50 dark:bg-zinc-900/40 flex items-center flex-wrap gap-1 text-zinc-600 dark:text-zinc-300 select-none shrink-0">
+                    <!-- Note Title Section (Single title at top of canvas) -->
+                    <div class="px-4 sm:px-8 pt-5 pb-3 shrink-0">
+                        <input type="text" 
+                               wire:key="note-title-{{ $selectedNoteId ?? 'draft' }}"
+                               wire:model.live.debounce.500ms="title" 
+                               @input="saveStatus = 'saving'"
+                               placeholder="Untitled Note" 
+                               class="w-full text-2xl sm:text-3xl font-bold bg-transparent border-0 text-zinc-900 dark:text-white placeholder-zinc-300 dark:placeholder-zinc-600 focus:outline-none focus:ring-0 p-0 tracking-tight leading-tight">
+                    </div>
+
+                    <!-- Rich Text Formatting Toolbar (Docked right above content body) -->
+                    <div class="px-4 sm:px-8 py-1.5 border-y border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex items-center flex-wrap gap-1 text-zinc-600 dark:text-zinc-300 select-none shrink-0">
                         <!-- Aa Typography Dropdown -->
                         <div class="relative" @click.away="styleMenuOpen = false">
                             <button @click="styleMenuOpen = !styleMenuOpen" 
@@ -1307,16 +1338,6 @@ new class extends Component
                                 class="size-7 rounded-lg flex items-center justify-center hover:bg-zinc-200/60 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 transition-colors cursor-pointer">
                             <flux:icon name="minus" class="size-3.5" />
                         </button>
-                    </div>
-
-                    <!-- Title Bar -->
-                    <div class="px-4 sm:px-8 pt-4 pb-2 shrink-0">
-                        <input type="text" 
-                               wire:key="note-title-{{ $selectedNoteId ?? 'draft' }}"
-                               wire:model.live.debounce.500ms="title" 
-                               @input="saveStatus = 'saving'"
-                               placeholder="Untitled Note" 
-                               class="w-full text-xl sm:text-2xl font-bold bg-transparent border-0 text-zinc-900 dark:text-white placeholder-zinc-300 dark:placeholder-zinc-600 focus:outline-none focus:ring-0 p-0 tracking-tight">
                     </div>
 
                     <!-- Note Editor Content Body (WYSIWYG Rich Text Canvas) -->

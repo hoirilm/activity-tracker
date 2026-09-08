@@ -457,13 +457,13 @@ new class extends Component
     <div class="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-40 hidden sm:block">
         <button @click="openDrawer()" 
                 type="button" 
-                title="Quick Scratchpad (Cmd+Shift+N / Ctrl+Shift+N)"
+                title="Quick Scratchpad (Option+S / Alt+S)"
                 class="flex items-center gap-2 px-3 py-2 rounded-full bg-white/90 dark:bg-zinc-800/90 hover:bg-amber-500 hover:text-zinc-950 dark:hover:bg-amber-500 dark:hover:text-zinc-950 text-zinc-700 dark:text-zinc-200 border border-zinc-200/80 dark:border-zinc-700/80 shadow-lg backdrop-blur-md transition-all duration-200 group active:scale-95 cursor-pointer">
             <div class="size-6 rounded-full bg-amber-500/10 group-hover:bg-zinc-950/10 flex items-center justify-center text-amber-500 group-hover:text-zinc-950 transition-colors">
                 <flux:icon name="pencil-square" class="size-3.5" />
             </div>
             <span class="text-xs font-semibold">Scratchpad</span>
-            <kbd class="text-[10px] font-mono px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-700/60 group-hover:bg-amber-600/30 rounded text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-950 transition-colors">⌘⇧N</kbd>
+            <kbd class="text-[10px] font-mono px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-700/60 group-hover:bg-amber-600/30 rounded text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-950 transition-colors">⌥S</kbd>
         </button>
     </div>
 
@@ -1158,8 +1158,11 @@ new class extends Component
             },
 
             handleShortcut(e) {
-                // Cmd+Shift+N or Ctrl+Shift+N
-                if ((e.metaKey || e.ctrlKey) && e.shiftKey && (e.key === 'N' || e.key === 'n')) {
+                // Option+S (Mac) / Alt+S (Windows/Linux) or Cmd+Shift+S / Ctrl+Shift+S
+                const isOptionS = e.altKey && !e.metaKey && !e.ctrlKey && (e.code === 'KeyS' || e.key?.toLowerCase() === 's' || e.key === 'ß');
+                const isCmdShiftS = (e.metaKey || e.ctrlKey) && e.shiftKey && (e.code === 'KeyS' || e.key?.toLowerCase() === 's');
+
+                if (isOptionS || isCmdShiftS) {
                     e.preventDefault();
                     if (this.isOpen) {
                         this.closeDrawer();
