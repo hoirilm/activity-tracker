@@ -51,6 +51,7 @@ new #[Title('Backup & Restore Settings')] class extends Component {
                 'total_categories' => count($data['categories'] ?? []),
                 'total_activities' => count($data['activities'] ?? []),
                 'total_tasks' => count($data['tasks'] ?? []),
+                'total_notes' => count($data['notes'] ?? []),
                 'total_labels' => count($data['labels'] ?? []),
             ];
 
@@ -70,6 +71,7 @@ new #[Title('Backup & Restore Settings')] class extends Component {
         $categories = $user->categories()->get(['id', 'name', 'created_at']);
         $labels = $user->labels()->get(['id', 'name', 'color', 'created_at']);
         $tasks = $user->tasks()->with(['project', 'labels', 'checklists'])->latest()->get();
+        $notes = $user->notes()->with(['project', 'task', 'labels'])->latest('updated_at')->get();
         $activities = $user->activities()
             ->with(['project', 'category'])
             ->orderBy('start_time', 'asc')
@@ -78,7 +80,7 @@ new #[Title('Backup & Restore Settings')] class extends Component {
         $latestActivity = $activities->last();
 
         $backupData = [
-            'version' => '1.1',
+            'version' => '1.2',
             'generator' => 'Klakoan Activity Tracker',
             'exported_at' => now()->toIso8601String(),
             'user' => [
@@ -90,6 +92,7 @@ new #[Title('Backup & Restore Settings')] class extends Component {
                 'total_categories' => $categories->count(),
                 'total_activities' => $activities->count(),
                 'total_tasks' => $tasks->count(),
+                'total_notes' => $notes->count(),
                 'total_labels' => $labels->count(),
                 'latest_activity_at' => $latestActivity ? $latestActivity->start_time->toIso8601String() : null,
             ],
@@ -109,6 +112,20 @@ new #[Title('Backup & Restore Settings')] class extends Component {
                         'is_completed' => (bool) $c->is_completed,
                         'position' => (int) $c->position,
                     ])->values()->all(),
+                ];
+            })->values()->all(),
+            'notes' => $notes->map(function ($n) {
+                return [
+                    'title' => $n->title,
+                    'content' => $n->content,
+                    'excerpt' => $n->excerpt,
+                    'project' => $n->project ? $n->project->name : null,
+                    'task' => $n->task ? $n->task->title : null,
+                    'is_pinned' => (bool) $n->is_pinned,
+                    'is_archived' => (bool) $n->is_archived,
+                    'labels' => $n->labels->pluck('name')->all(),
+                    'created_at' => $n->created_at ? $n->created_at->toIso8601String() : null,
+                    'updated_at' => $n->updated_at ? $n->updated_at->toIso8601String() : null,
                 ];
             })->values()->all(),
             'activities' => $activities->map(function ($act) {
@@ -150,7 +167,7 @@ new #[Title('Backup & Restore Settings')] class extends Component {
             $content = file_get_contents($this->backupFile->getRealPath());
             $data = json_decode($content, true);
 
-            if (! is_array($data) || ! isset($data['activities'])) {
+            if (! is_array($data) || (! isset($data['activities']) && ! isset($data['notes']))) {
                 $this->dispatch('toast', title: 'Invalid backup file structure.', category: 'RESTORE', type: 'danger');
 
                 return;
@@ -169,13 +186,16 @@ new #[Title('Backup & Restore Settings')] class extends Component {
                 if ($this->restoreMode === 'replace') {
                     $user->activities()->delete();
                     $user->tasks()->delete();
+                    $user->notes()->delete();
                 }
 
                 $importedCount = 0;
                 $importedTaskCount = 0;
+                $importedNoteCount = 0;
                 $projectMap = [];
                 $categoryMap = [];
                 $labelMap = [];
+                $taskMap = [];
 
                 foreach ($data['projects'] ?? [] as $proj) {
                     $name = trim($proj['name'] ?? '');
@@ -209,12 +229,16 @@ new #[Title('Backup & Restore Settings')] class extends Component {
                         $projectId = !empty($projectName) ? ($projectMap[$projectName] ?? null) : null;
 
                         if ($this->restoreMode === 'merge') {
-                            $exists = $user->tasks()
+                            $existingTask = $user->tasks()
                                 ->where('title', $title)
                                 ->where('project_id', $projectId)
-                                ->exists();
+                                ->first();
 
-                            if ($exists) {
+                            if ($existingTask) {
+                                $taskMap[$title] = $existingTask->id;
+                                if ($projectId) {
+                                    $taskMap[$projectId . ':' . $title] = $existingTask->id;
+                                }
                                 continue;
                             }
                         }
@@ -226,6 +250,11 @@ new #[Title('Backup & Restore Settings')] class extends Component {
                             'status' => $tData['status'] ?? 'new',
                             'due_at' => isset($tData['due_at']) && !empty($tData['due_at']) ? Carbon::parse($tData['due_at']) : null,
                         ]);
+
+                        $taskMap[$title] = $task->id;
+                        if ($projectId) {
+                            $taskMap[$projectId . ':' . $title] = $task->id;
+                        }
 
                         if (!empty($tData['labels'])) {
                             $tLabelIds = [];
@@ -253,6 +282,91 @@ new #[Title('Backup & Restore Settings')] class extends Component {
 
                         $importedTaskCount++;
                     }
+                }
+
+                foreach ($data['notes'] ?? [] as $nData) {
+                    $title = trim($nData['title'] ?? '');
+                    $content = $nData['content'] ?? null;
+
+                    if ($title === '' && ($content === null || trim(strip_tags($content)) === '')) {
+                        continue;
+                    }
+
+                    if ($title === '') {
+                        $title = 'Untitled Note';
+                    }
+
+                    $projectName = trim($nData['project'] ?? '');
+                    $projectId = !empty($projectName) ? ($projectMap[$projectName] ?? null) : null;
+
+                    $taskName = trim($nData['task'] ?? '');
+                    $taskId = null;
+                    if (!empty($taskName)) {
+                        $taskLookupKey = ($projectId ? $projectId . ':' : '') . $taskName;
+                        $taskId = $taskMap[$taskLookupKey] ?? ($taskMap[$taskName] ?? null);
+                        if (!$taskId) {
+                            $foundTask = $user->tasks()->where('title', $taskName)->first();
+                            if ($foundTask) {
+                                $taskId = $foundTask->id;
+                            }
+                        }
+                    }
+
+                    if ($this->restoreMode === 'merge') {
+                        $existsQuery = $user->notes()
+                            ->where('title', $title)
+                            ->where('project_id', $projectId)
+                            ->where('task_id', $taskId);
+
+                        if ($content === null) {
+                            $existsQuery->whereNull('content');
+                        } else {
+                            $existsQuery->where('content', $content);
+                        }
+
+                        if ($existsQuery->exists()) {
+                            continue;
+                        }
+                    }
+
+                    $note = new \App\Models\Note([
+                        'user_id' => $user->id,
+                        'title' => $title,
+                        'content' => $content,
+                        'excerpt' => $nData['excerpt'] ?? null,
+                        'project_id' => $projectId,
+                        'task_id' => $taskId,
+                        'is_pinned' => (bool) ($nData['is_pinned'] ?? false),
+                        'is_archived' => (bool) ($nData['is_archived'] ?? false),
+                    ]);
+
+                    if (!empty($nData['created_at'])) {
+                        $note->created_at = Carbon::parse($nData['created_at']);
+                    }
+                    if (!empty($nData['updated_at'])) {
+                        $note->updated_at = Carbon::parse($nData['updated_at']);
+                    }
+
+                    $note->save();
+
+                    if (!empty($nData['labels'])) {
+                        $nLabelIds = [];
+                        foreach ($nData['labels'] as $lName) {
+                            $lNameTrimmed = trim($lName);
+                            if ($lNameTrimmed !== '') {
+                                if (!isset($labelMap[$lNameTrimmed])) {
+                                    $l = $user->labels()->firstOrCreate(['name' => $lNameTrimmed], ['color' => 'amber']);
+                                    $labelMap[$lNameTrimmed] = $l->id;
+                                }
+                                $nLabelIds[] = $labelMap[$lNameTrimmed];
+                            }
+                        }
+                        if ($nLabelIds) {
+                            $note->labels()->sync($nLabelIds);
+                        }
+                    }
+
+                    $importedNoteCount++;
                 }
 
                 foreach ($data['activities'] ?? [] as $act) {
@@ -299,11 +413,23 @@ new #[Title('Backup & Restore Settings')] class extends Component {
                     $importedCount++;
                 }
 
-                $this->dispatch('toast', title: "Restored {$importedCount} activities and {$importedTaskCount} tasks!", category: 'RESTORE', type: 'success');
+                $summaryParts = [];
+                if ($importedCount > 0) {
+                    $summaryParts[] = "{$importedCount} activities";
+                }
+                if ($importedTaskCount > 0) {
+                    $summaryParts[] = "{$importedTaskCount} tasks";
+                }
+                if ($importedNoteCount > 0) {
+                    $summaryParts[] = "{$importedNoteCount} notes";
+                }
+                $summaryText = count($summaryParts) > 0 ? implode(', ', $summaryParts) : '0 items';
+
+                $this->dispatch('toast', title: "Restored {$summaryText}!", category: 'RESTORE', type: 'success');
 
                 $user->notifications()->create([
                     'title' => '🔄 Data Restore Successful',
-                    'body' => "A total of {$importedCount} activities and {$importedTaskCount} tasks have been restored from the backup file.",
+                    'body' => "A total of {$summaryText} have been restored from the backup file.",
                     'type' => 'success',
                 ]);
             });
@@ -320,7 +446,7 @@ new #[Title('Backup & Restore Settings')] class extends Component {
 
     <flux:heading class="sr-only">{{ __('Backup & Restore settings') }}</flux:heading>
 
-    <x-pages::settings.layout :heading="__('Backup & Restore')" :subheading="__('Export your complete activity history or restore from a JSON backup file.')">
+    <x-pages::settings.layout :heading="__('Backup & Restore')" :subheading="__('Export your complete activity history, tasks, and notes or restore from a JSON backup file.')">
         
         <div class="space-y-6">
             <!-- BACKUP SECTION -->
@@ -332,7 +458,7 @@ new #[Title('Backup & Restore Settings')] class extends Component {
                     <div class="flex-1 min-w-0">
                         <h3 class="text-sm font-bold text-zinc-900 dark:text-zinc-100">Backup Data</h3>
                         <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 leading-relaxed">
-                            Download your complete activity history, projects, and categories in a JSON backup file.
+                            Download your complete activity history, projects, categories, tasks, and notes in a JSON backup file.
                         </p>
                     </div>
                 </div>
@@ -344,37 +470,42 @@ new #[Title('Backup & Restore Settings')] class extends Component {
                     $totalCategories = $user->categories()->count();
                     $totalActivities = $user->activities()->count();
                     $totalTasks = $user->tasks()->count();
+                    $totalNotes = $user->notes()->count();
                     $totalLabels = $user->labels()->count();
                     $latestActivity = $user->activities()->latest('start_time')->first();
                 @endphp
 
-                <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-950/60 border border-zinc-200/60 dark:border-zinc-800/60">
-                    <div class="text-center">
-                        <div class="text-[10px] uppercase font-bold text-zinc-400 dark:text-zinc-500">Projects</div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-950/60 border border-zinc-200/60 dark:border-zinc-800/60">
+                    <div class="text-center p-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-2xs">
+                        <div class="text-[10px] uppercase font-bold tracking-wider text-zinc-500 dark:text-zinc-400">Projects</div>
                         <div class="text-base font-extrabold text-zinc-900 dark:text-zinc-100 mt-0.5 font-mono">{{ $totalProjects }}</div>
                     </div>
-                    <div class="text-center sm:border-l border-zinc-200/60 dark:border-zinc-800/60">
-                        <div class="text-[10px] uppercase font-bold text-zinc-400 dark:text-zinc-500">Categories</div>
+                    <div class="text-center p-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-2xs">
+                        <div class="text-[10px] uppercase font-bold tracking-wider text-zinc-500 dark:text-zinc-400">Categories</div>
                         <div class="text-base font-extrabold text-zinc-900 dark:text-zinc-100 mt-0.5 font-mono">{{ $totalCategories }}</div>
                     </div>
-                    <div class="text-center border-l border-zinc-200/60 dark:border-zinc-800/60">
-                        <div class="text-[10px] uppercase font-bold text-zinc-400 dark:text-zinc-500">Activities</div>
+                    <div class="text-center p-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-2xs">
+                        <div class="text-[10px] uppercase font-bold tracking-wider text-zinc-500 dark:text-zinc-400">Activities</div>
                         <div class="text-base font-extrabold text-zinc-900 dark:text-zinc-100 mt-0.5 font-mono">{{ $totalActivities }}</div>
                     </div>
-                    <div class="text-center border-l border-zinc-200/60 dark:border-zinc-800/60">
-                        <div class="text-[10px] uppercase font-bold text-zinc-400 dark:text-zinc-500">Tasks</div>
+                    <div class="text-center p-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-2xs">
+                        <div class="text-[10px] uppercase font-bold tracking-wider text-zinc-500 dark:text-zinc-400">Tasks</div>
                         <div class="text-base font-extrabold text-zinc-900 dark:text-zinc-100 mt-0.5 font-mono">{{ $totalTasks }}</div>
                     </div>
-                    <div class="text-center border-l border-zinc-200/60 dark:border-zinc-800/60">
-                        <div class="text-[10px] uppercase font-bold text-zinc-400 dark:text-zinc-500">Labels</div>
+                    <div class="text-center p-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-2xs">
+                        <div class="text-[10px] uppercase font-bold tracking-wider text-zinc-500 dark:text-zinc-400">Notes</div>
+                        <div class="text-base font-extrabold text-zinc-900 dark:text-zinc-100 mt-0.5 font-mono">{{ $totalNotes }}</div>
+                    </div>
+                    <div class="text-center p-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-2xs">
+                        <div class="text-[10px] uppercase font-bold tracking-wider text-zinc-500 dark:text-zinc-400">Labels</div>
                         <div class="text-base font-extrabold text-zinc-900 dark:text-zinc-100 mt-0.5 font-mono">{{ $totalLabels }}</div>
                     </div>
                 </div>
 
                 @if($latestActivity)
                     <div class="text-[11px] text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5 pt-1">
-                        <flux:icon name="clock" class="size-3.5 text-zinc-400" />
-                        <span>Latest Activity: <strong>{{ $latestActivity->start_time->format('d M Y, H:i') }}</strong> ({{ $latestActivity->detail }})</span>
+                        <flux:icon name="clock" class="size-3.5 text-zinc-400 dark:text-zinc-500" />
+                        <span>Latest Activity: <strong class="text-zinc-700 dark:text-zinc-200 font-semibold">{{ $latestActivity->start_time->format('d M Y, H:i') }}</strong> <span class="text-zinc-500 dark:text-zinc-400">({{ $latestActivity->detail }})</span></span>
                     </div>
                 @endif
 
@@ -400,7 +531,7 @@ new #[Title('Backup & Restore Settings')] class extends Component {
                     <div class="flex-1 min-w-0">
                         <h3 class="text-sm font-bold text-zinc-900 dark:text-zinc-100">Restore Data</h3>
                         <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 leading-relaxed">
-                            Upload a JSON backup file to restore all activities, tasks, projects, categories, and labels to your account.
+                            Upload a JSON backup file to restore all activities, tasks, notes, projects, categories, and labels to your account.
                         </p>
                     </div>
                 </div>
@@ -412,13 +543,13 @@ new #[Title('Backup & Restore Settings')] class extends Component {
                     <div class="relative flex items-center justify-center p-6 rounded-2xl border-2 border-dashed border-zinc-300 dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-950/40 hover:bg-zinc-100/60 dark:hover:bg-zinc-800/40 transition-colors cursor-pointer text-center">
                         <input type="file" wire:model="backupFile" accept=".json" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
                         <div class="space-y-2 pointer-events-none">
-                            <div class="size-10 rounded-xl bg-zinc-200/80 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700/60 mx-auto flex items-center justify-center text-zinc-600 dark:text-zinc-400">
+                            <div class="size-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 mx-auto flex items-center justify-center text-zinc-700 dark:text-zinc-300">
                                 <flux:icon name="document-arrow-up" class="size-5" />
                             </div>
                             <div class="text-xs text-zinc-600 dark:text-zinc-400 font-medium">
                                 <span class="text-zinc-900 dark:text-zinc-100 font-bold">Click to select file</span> or drag &amp; drop file here
                             </div>
-                            <div class="text-[10px] text-zinc-400">Supports official Activity Tracker JSON backup files (Max 20MB)</div>
+                            <div class="text-[10px] text-zinc-400 dark:text-zinc-500">Supports official Activity Tracker JSON backup files (Max 20MB)</div>
                         </div>
                     </div>
                 </div>
@@ -450,32 +581,36 @@ new #[Title('Backup & Restore Settings')] class extends Component {
                                 </div>
                                 
                                 <label class="flex items-center gap-2 pt-1 font-semibold text-[11px] cursor-pointer text-amber-950 dark:text-amber-100 border-t border-amber-200/60 dark:border-amber-800/60">
-                                    <input type="checkbox" wire:model.live="confirmDifferentAccount" class="rounded border-amber-300 text-amber-600 focus:ring-amber-500">
+                                    <input type="checkbox" wire:model.live="confirmDifferentAccount" class="rounded border-amber-300 dark:border-amber-700 text-amber-600 focus:ring-amber-500">
                                     <span>I understand &amp; wish to import this data into my account anyway</span>
                                 </label>
                             </div>
                         @endif
 
-                        <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center text-xs">
-                            <div class="p-2 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800">
-                                <div class="text-[10px] text-zinc-400 font-bold">Projects</div>
-                                <div class="font-bold text-zinc-900 dark:text-zinc-100 font-mono mt-0.5">{{ $previewData['total_projects'] }}</div>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 text-center text-xs">
+                            <div class="p-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-2xs">
+                                <div class="text-[10px] uppercase font-bold tracking-wider text-zinc-500 dark:text-zinc-400">Projects</div>
+                                <div class="text-base font-extrabold text-zinc-900 dark:text-zinc-100 mt-0.5 font-mono">{{ $previewData['total_projects'] }}</div>
                             </div>
-                            <div class="p-2 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800">
-                                <div class="text-[10px] text-zinc-400 font-bold">Categories</div>
-                                <div class="font-bold text-zinc-900 dark:text-zinc-100 font-mono mt-0.5">{{ $previewData['total_categories'] }}</div>
+                            <div class="p-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-2xs">
+                                <div class="text-[10px] uppercase font-bold tracking-wider text-zinc-500 dark:text-zinc-400">Categories</div>
+                                <div class="text-base font-extrabold text-zinc-900 dark:text-zinc-100 mt-0.5 font-mono">{{ $previewData['total_categories'] }}</div>
                             </div>
-                            <div class="p-2 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800">
-                                <div class="text-[10px] text-zinc-400 font-bold">Activities</div>
-                                <div class="font-bold text-zinc-900 dark:text-zinc-100 font-mono mt-0.5">{{ $previewData['total_activities'] }}</div>
+                            <div class="p-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-2xs">
+                                <div class="text-[10px] uppercase font-bold tracking-wider text-zinc-500 dark:text-zinc-400">Activities</div>
+                                <div class="text-base font-extrabold text-zinc-900 dark:text-zinc-100 mt-0.5 font-mono">{{ $previewData['total_activities'] }}</div>
                             </div>
-                            <div class="p-2 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800">
-                                <div class="text-[10px] text-zinc-400 font-bold">Tasks</div>
-                                <div class="font-bold text-zinc-900 dark:text-zinc-100 font-mono mt-0.5">{{ $previewData['total_tasks'] ?? 0 }}</div>
+                            <div class="p-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-2xs">
+                                <div class="text-[10px] uppercase font-bold tracking-wider text-zinc-500 dark:text-zinc-400">Tasks</div>
+                                <div class="text-base font-extrabold text-zinc-900 dark:text-zinc-100 mt-0.5 font-mono">{{ $previewData['total_tasks'] ?? 0 }}</div>
                             </div>
-                            <div class="p-2 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800">
-                                <div class="text-[10px] text-zinc-400 font-bold">Labels</div>
-                                <div class="font-bold text-zinc-900 dark:text-zinc-100 font-mono mt-0.5">{{ $previewData['total_labels'] ?? 0 }}</div>
+                            <div class="p-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-2xs">
+                                <div class="text-[10px] uppercase font-bold tracking-wider text-zinc-500 dark:text-zinc-400">Notes</div>
+                                <div class="text-base font-extrabold text-zinc-900 dark:text-zinc-100 mt-0.5 font-mono">{{ $previewData['total_notes'] ?? 0 }}</div>
+                            </div>
+                            <div class="p-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-2xs">
+                                <div class="text-[10px] uppercase font-bold tracking-wider text-zinc-500 dark:text-zinc-400">Labels</div>
+                                <div class="text-base font-extrabold text-zinc-900 dark:text-zinc-100 mt-0.5 font-mono">{{ $previewData['total_labels'] ?? 0 }}</div>
                             </div>
                         </div>
 

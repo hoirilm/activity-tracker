@@ -15,7 +15,7 @@ test('admin can compose and broadcast markdown announcement', function () {
         ->set('body', $markdownBody)
         ->set('type', 'info')
         ->call('broadcast')
-        ->assertSet('successMessage', 'Broadcast successfully sent to 2 users!');
+        ->assertDispatched('toast', title: 'Broadcast successfully sent to 2 users!');
 
     expect($user->notifications()->count())->toBe(1);
     $notification = $user->notifications()->first();

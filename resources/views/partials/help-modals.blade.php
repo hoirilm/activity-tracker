@@ -177,12 +177,12 @@
                     </div>
                     <div class="bg-zinc-100/80 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-700/40 rounded-xl overflow-hidden transition-all">
                         <button type="button" @click="open = open === 'm3' ? null : 'm3'" class="w-full flex items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-left text-zinc-800 dark:text-zinc-200 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors cursor-pointer" :class="open === 'm3' && 'text-zinc-900 dark:text-zinc-100'">
-                            <span>How does Backup &amp; Restore handle my Tasks and Labels?</span>
+                            <span>How does Backup &amp; Restore handle my Tasks, Notes, and Labels?</span>
                             <flux:icon name="chevron-down" class="size-4 text-zinc-400 shrink-0 transition-transform duration-200" ::class="open === 'm3' && 'rotate-180 text-zinc-700 dark:text-zinc-300'" />
                         </button>
                         <div x-show="open === 'm3'" x-collapse class="px-4 pb-3" style="display:none">
                             <div class="p-3 bg-zinc-200/60 dark:bg-zinc-950 rounded-xl border-l-2 border-zinc-400 dark:border-zinc-600 text-xs text-zinc-800 dark:text-zinc-300 leading-relaxed">
-                                When you export a JSON backup from <strong>Settings &rarr; Backup &amp; Restore</strong>, all your tasks, descriptions, statuses, and custom labels are included alongside projects, categories, and activity history. Importing a backup file restores all tasks and labels seamlessly.
+                                When you export a JSON backup from <strong>Settings &rarr; Backup &amp; Restore</strong>, all your tasks, notes (including markdown content, pinned status, and archives), and custom labels are included alongside projects, categories, and activity history. Importing a backup file restores all tasks, notes, and labels seamlessly.
                             </div>
                         </div>
                     </div>
