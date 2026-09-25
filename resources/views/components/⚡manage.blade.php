@@ -5,6 +5,8 @@ use App\Models\Project;
 use App\Models\Category;
 use App\Models\Task;
 use App\Models\Label;
+use App\Exports\TasksExport;
+use Maatwebsite\Excel\Facades\Excel;
 use Flux\Flux;
 use Illuminate\Support\Str;
 use League\CommonMark\GithubFlavoredMarkdownConverter;
@@ -38,6 +40,25 @@ new class extends Component
     public string $archiveSearchQuery = '';
     public string $viewMode = 'kanban';    // 'kanban' or 'list'
     public bool $showArchived = false;
+
+    // Task Export Properties
+    public array $exportStatuses = [
+        Task::STATUS_ON_HOLD,
+        Task::STATUS_NEW,
+        Task::STATUS_ON_PROGRESS,
+        Task::STATUS_DONE,
+    ];
+    public string $exportProjectMode = 'all'; // 'all' or 'custom'
+    public array $exportSelectedProjectIds = []; // Specific project IDs and/or 'non_project'
+    public string $exportDateType = 'all'; // 'all', 'created_at', 'due_at'
+    public ?string $exportStartDate = null;
+    public ?string $exportEndDate = null;
+    public string $exportFormat = 'xlsx'; // 'xlsx' or 'csv'
+    public string $exportSortBy = 'latest'; // 'latest', 'oldest', 'due_at', 'title', 'status', 'project'
+    public bool $exportIncludeChecklists = true;
+    public bool $exportIncludeLabels = true;
+    public bool $exportIncludeDescription = true;
+    public bool $exportIncludeTrackedTime = true;
 
     // Task Viewing Properties
     public ?int $viewingTaskId = null;
@@ -516,6 +537,158 @@ new class extends Component
         }
 
         return auth()->user()->tasks()->with(['project', 'labels', 'checklists'])->find($this->viewingTaskId);
+    }
+
+    // --- Task Export Actions ---
+
+    public function getExportFilteredCountProperty(): int
+    {
+        if (empty($this->exportStatuses)) {
+            return 0;
+        }
+
+        $query = auth()->user()->tasks()->whereIn('status', $this->exportStatuses);
+
+        if ($this->exportProjectMode === 'custom') {
+            if (empty($this->exportSelectedProjectIds)) {
+                return 0;
+            }
+
+            $includeNonProject = in_array('non_project', $this->exportSelectedProjectIds, true);
+            $numericProjectIds = array_values(array_filter($this->exportSelectedProjectIds, fn ($id) => is_numeric($id)));
+
+            $query->where(function ($q) use ($includeNonProject, $numericProjectIds) {
+                if ($includeNonProject && ! empty($numericProjectIds)) {
+                    $q->whereIn('project_id', $numericProjectIds)
+                        ->orWhereNull('project_id');
+                } elseif ($includeNonProject) {
+                    $q->whereNull('project_id');
+                } elseif (! empty($numericProjectIds)) {
+                    $q->whereIn('project_id', $numericProjectIds);
+                } else {
+                    $q->whereRaw('1 = 0');
+                }
+            });
+        }
+
+        if ($this->exportDateType === 'created_at') {
+            if ($this->exportStartDate) {
+                $query->whereDate('created_at', '>=', $this->exportStartDate);
+            }
+            if ($this->exportEndDate) {
+                $query->whereDate('created_at', '<=', $this->exportEndDate);
+            }
+        } elseif ($this->exportDateType === 'due_at') {
+            if ($this->exportStartDate) {
+                $query->whereDate('due_at', '>=', $this->exportStartDate);
+            }
+            if ($this->exportEndDate) {
+                $query->whereDate('due_at', '<=', $this->exportEndDate);
+            }
+        }
+
+        return $query->count();
+    }
+
+    public function exportTasks()
+    {
+        if (empty($this->exportStatuses)) {
+            $this->addError('exportStatuses', 'Please select at least one task status.');
+            return;
+        }
+
+        if ($this->exportProjectMode === 'custom' && empty($this->exportSelectedProjectIds)) {
+            $this->addError('exportSelectedProjectIds', 'Please select at least one project or choose "All Projects".');
+            return;
+        }
+
+        $projectIds = $this->exportProjectMode === 'all' ? ['all'] : $this->exportSelectedProjectIds;
+
+        $userName = Str::slug(auth()->user()->name, '_');
+        $dateStr = now()->format('Ymd_His');
+        $ext = $this->exportFormat === 'csv' ? 'csv' : 'xlsx';
+        $filename = "tasks_export_{$userName}_{$dateStr}.{$ext}";
+        $writerType = $this->exportFormat === 'csv' ? \Maatwebsite\Excel\Excel::CSV : \Maatwebsite\Excel\Excel::XLSX;
+
+        $this->dispatch('close-modal', name: 'export-tasks-modal');
+        $this->js("\$flux.modal('export-tasks-modal').close()");
+
+        return Excel::download(
+            new TasksExport(
+                userId: auth()->id(),
+                statuses: $this->exportStatuses,
+                projectIds: $projectIds,
+                dateType: $this->exportDateType,
+                startDate: $this->exportStartDate,
+                endDate: $this->exportEndDate,
+                sortBy: $this->exportSortBy,
+                includeChecklists: $this->exportIncludeChecklists,
+                includeLabels: $this->exportIncludeLabels,
+                includeDescription: $this->exportIncludeDescription,
+                includeTrackedTime: $this->exportIncludeTrackedTime
+            ),
+            $filename,
+            $writerType
+        );
+    }
+
+    public function selectAllExportStatuses()
+    {
+        $this->exportStatuses = [
+            Task::STATUS_ON_HOLD,
+            Task::STATUS_NEW,
+            Task::STATUS_ON_PROGRESS,
+            Task::STATUS_DONE,
+            Task::STATUS_ARCHIVED,
+        ];
+        $this->resetErrorBag('exportStatuses');
+    }
+
+    public function selectActiveExportStatuses()
+    {
+        $this->exportStatuses = [
+            Task::STATUS_ON_HOLD,
+            Task::STATUS_NEW,
+            Task::STATUS_ON_PROGRESS,
+            Task::STATUS_DONE,
+        ];
+        $this->resetErrorBag('exportStatuses');
+    }
+
+    public function selectDoneExportStatuses()
+    {
+        $this->exportStatuses = [Task::STATUS_DONE];
+        $this->resetErrorBag('exportStatuses');
+    }
+
+    public function selectAllExportProjects()
+    {
+        $ids = auth()->user()->projects()->pluck('id')->map(fn ($id) => (string) $id)->toArray();
+        $ids[] = 'non_project';
+        $this->exportSelectedProjectIds = $ids;
+        $this->resetErrorBag('exportSelectedProjectIds');
+    }
+
+    public function resetExportFilters()
+    {
+        $this->exportStatuses = [
+            Task::STATUS_ON_HOLD,
+            Task::STATUS_NEW,
+            Task::STATUS_ON_PROGRESS,
+            Task::STATUS_DONE,
+        ];
+        $this->exportProjectMode = 'all';
+        $this->exportSelectedProjectIds = [];
+        $this->exportDateType = 'all';
+        $this->exportStartDate = null;
+        $this->exportEndDate = null;
+        $this->exportFormat = 'xlsx';
+        $this->exportSortBy = 'latest';
+        $this->exportIncludeChecklists = true;
+        $this->exportIncludeLabels = true;
+        $this->exportIncludeDescription = true;
+        $this->exportIncludeTrackedTime = true;
+        $this->resetErrorBag();
     }
 
     // --- Label Actions ---
@@ -1083,6 +1256,14 @@ new class extends Component
                         <flux:icon name="bars-3-bottom-left" class="size-4" />
                     </button>
                 </div>
+
+                <!-- Export Tasks Modal Trigger -->
+                <flux:modal.trigger name="export-tasks-modal">
+                    <button type="button" class="cursor-pointer bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-medium rounded-xl px-3 py-2 text-xs border border-zinc-200 dark:border-zinc-700/60 active:scale-95 transition-all flex items-center gap-1.5 shrink-0">
+                        <flux:icon name="arrow-down-tray" class="size-3.5 text-zinc-500 dark:text-zinc-400" />
+                        <span>Export</span>
+                    </button>
+                </flux:modal.trigger>
 
                 <!-- Archive Repository Modal Trigger -->
                 @php $archivedCount = $this->archivedCount; @endphp
@@ -2428,6 +2609,318 @@ new class extends Component
                             Close Repository
                         </button>
                     </flux:modal.close>
+                </div>
+            </div>
+        </flux:modal>
+
+        <!-- EXPORT TASKS MODAL -->
+        <flux:modal name="export-tasks-modal" class="w-[calc(100vw-2rem)] max-w-2xl max-h-[90vh] overflow-y-auto z-[200]">
+            <div class="space-y-5">
+                <!-- Modal Header -->
+                <div class="flex items-center justify-between pb-3 border-b border-zinc-200/80 dark:border-zinc-800">
+                    <div class="flex items-center gap-2.5">
+                        <div class="size-8 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 flex items-center justify-center shrink-0">
+                            <flux:icon name="arrow-down-tray" class="size-4" />
+                        </div>
+                        <div>
+                            <flux:heading size="lg" class="font-bold">Export Tasks Data</flux:heading>
+                            <p class="text-xs text-zinc-500 dark:text-zinc-400">Download your tasks with customizable filters, columns, and formats.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Counter & Presets Banner -->
+                @php $matchingCount = $this->exportFilteredCount; @endphp
+                <div class="p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-950/60 border border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+                    <div class="flex items-center gap-2.5">
+                        <div class="size-9 rounded-xl flex items-center justify-center font-bold text-sm {{ $matchingCount > 0 ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20' }}">
+                            {{ $matchingCount }}
+                        </div>
+                        <div>
+                            <div class="text-xs font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
+                                <span>{{ $matchingCount }} {{ Str::plural('Task', $matchingCount) }} will be exported</span>
+                                @if($matchingCount === 0)
+                                    <span class="text-[10px] text-rose-500 font-normal">(Adjust filters below)</span>
+                                @endif
+                            </div>
+                            <p class="text-[11px] text-zinc-500 dark:text-zinc-400">Data matches current filter parameters in real-time.</p>
+                        </div>
+                    </div>
+
+                    <!-- Quick Preset Buttons -->
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                        <button type="button" 
+                                wire:click="selectActiveExportStatuses" 
+                                class="px-2.5 py-1 text-[11px] font-medium rounded-lg bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 transition-all cursor-pointer shadow-2xs">
+                            Active Only
+                        </button>
+                        <button type="button" 
+                                wire:click="selectAllExportStatuses" 
+                                class="px-2.5 py-1 text-[11px] font-medium rounded-lg bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 transition-all cursor-pointer shadow-2xs">
+                            All Statuses
+                        </button>
+                        <button type="button" 
+                                wire:click="resetExportFilters" 
+                                class="px-2.5 py-1 text-[11px] font-medium rounded-lg text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 transition-all cursor-pointer">
+                            Reset
+                        </button>
+                    </div>
+                </div>
+
+                <!-- SECTION 1: TASK STATUSES -->
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
+                            <span class="size-4 rounded-full bg-amber-500 text-zinc-950 flex items-center justify-center text-[10px] font-bold">1</span>
+                            <span>Task Statuses to Include</span>
+                            <span class="text-rose-500">*</span>
+                        </label>
+                        <div class="flex items-center gap-2 text-[11px]">
+                            <button type="button" wire:click="selectDoneExportStatuses" class="text-zinc-500 hover:text-emerald-600 dark:hover:text-emerald-400 font-medium cursor-pointer">Done Only</button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        <!-- On Hold -->
+                        <label class="relative flex items-center gap-2.5 p-2.5 rounded-xl border cursor-pointer transition-all {{ in_array(Task::STATUS_ON_HOLD, $exportStatuses) ? 'bg-orange-500/10 border-orange-500/40 text-orange-800 dark:text-orange-200 shadow-2xs' : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/40' }}">
+                            <input type="checkbox" wire:model.live="exportStatuses" value="{{ Task::STATUS_ON_HOLD }}" class="rounded text-orange-500 focus:ring-orange-500 border-zinc-300 dark:border-zinc-700">
+                            <div class="flex items-center gap-1.5 text-xs font-semibold">
+                                <span class="size-2 rounded-full bg-orange-500"></span>
+                                <span>On Hold</span>
+                            </div>
+                        </label>
+
+                        <!-- New -->
+                        <label class="relative flex items-center gap-2.5 p-2.5 rounded-xl border cursor-pointer transition-all {{ in_array(Task::STATUS_NEW, $exportStatuses) ? 'bg-sky-500/10 border-sky-500/40 text-sky-800 dark:text-sky-200 shadow-2xs' : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/40' }}">
+                            <input type="checkbox" wire:model.live="exportStatuses" value="{{ Task::STATUS_NEW }}" class="rounded text-sky-500 focus:ring-sky-500 border-zinc-300 dark:border-zinc-700">
+                            <div class="flex items-center gap-1.5 text-xs font-semibold">
+                                <span class="size-2 rounded-full bg-sky-500"></span>
+                                <span>New</span>
+                            </div>
+                        </label>
+
+                        <!-- On Progress -->
+                        <label class="relative flex items-center gap-2.5 p-2.5 rounded-xl border cursor-pointer transition-all {{ in_array(Task::STATUS_ON_PROGRESS, $exportStatuses) ? 'bg-amber-500/10 border-amber-500/40 text-amber-800 dark:text-amber-200 shadow-2xs' : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/40' }}">
+                            <input type="checkbox" wire:model.live="exportStatuses" value="{{ Task::STATUS_ON_PROGRESS }}" class="rounded text-amber-500 focus:ring-amber-500 border-zinc-300 dark:border-zinc-700">
+                            <div class="flex items-center gap-1.5 text-xs font-semibold">
+                                <span class="size-2 rounded-full bg-amber-500"></span>
+                                <span>On Progress</span>
+                            </div>
+                        </label>
+
+                        <!-- Done -->
+                        <label class="relative flex items-center gap-2.5 p-2.5 rounded-xl border cursor-pointer transition-all {{ in_array(Task::STATUS_DONE, $exportStatuses) ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-800 dark:text-emerald-200 shadow-2xs' : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/40' }}">
+                            <input type="checkbox" wire:model.live="exportStatuses" value="{{ Task::STATUS_DONE }}" class="rounded text-emerald-500 focus:ring-emerald-500 border-zinc-300 dark:border-zinc-700">
+                            <div class="flex items-center gap-1.5 text-xs font-semibold">
+                                <span class="size-2 rounded-full bg-emerald-500"></span>
+                                <span>Done</span>
+                            </div>
+                        </label>
+
+                        <!-- Archived -->
+                        <label class="relative flex items-center gap-2.5 p-2.5 rounded-xl border cursor-pointer transition-all {{ in_array(Task::STATUS_ARCHIVED, $exportStatuses) ? 'bg-zinc-500/15 border-zinc-500/40 text-zinc-800 dark:text-zinc-200 shadow-2xs' : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/40' }}">
+                            <input type="checkbox" wire:model.live="exportStatuses" value="{{ Task::STATUS_ARCHIVED }}" class="rounded text-zinc-500 focus:ring-zinc-500 border-zinc-300 dark:border-zinc-700">
+                            <div class="flex items-center gap-1.5 text-xs font-semibold">
+                                <span class="size-2 rounded-full bg-zinc-400"></span>
+                                <span>Archived</span>
+                            </div>
+                        </label>
+                    </div>
+                    @error('exportStatuses')
+                        <p class="text-xs text-rose-500 font-medium">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- SECTION 2: PROJECT SELECTION -->
+                <div class="space-y-2.5">
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
+                            <span class="size-4 rounded-full bg-amber-500 text-zinc-950 flex items-center justify-center text-[10px] font-bold">2</span>
+                            <span>Project Filter</span>
+                        </label>
+                        @if($exportProjectMode === 'custom')
+                            <button type="button" wire:click="selectAllExportProjects" class="text-[11px] text-amber-600 dark:text-amber-400 font-medium cursor-pointer">Select All Projects</button>
+                        @endif
+                    </div>
+
+                    <!-- Mode Toggle: All Projects vs Specific Projects -->
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="flex items-center gap-2.5 p-2.5 rounded-xl border cursor-pointer transition-all {{ $exportProjectMode === 'all' ? 'bg-amber-500/10 border-amber-500/40 text-zinc-900 dark:text-zinc-100 font-medium shadow-2xs' : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400' }}">
+                            <input type="radio" wire:model.live="exportProjectMode" value="all" class="text-amber-500 focus:ring-amber-500">
+                            <span class="text-xs">All Projects & Standalone</span>
+                        </label>
+
+                        <label class="flex items-center gap-2.5 p-2.5 rounded-xl border cursor-pointer transition-all {{ $exportProjectMode === 'custom' ? 'bg-amber-500/10 border-amber-500/40 text-zinc-900 dark:text-zinc-100 font-medium shadow-2xs' : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400' }}">
+                            <input type="radio" wire:model.live="exportProjectMode" value="custom" class="text-amber-500 focus:ring-amber-500">
+                            <span class="text-xs">Choose Specific Projects</span>
+                        </label>
+                    </div>
+
+                    <!-- Custom Project Checkboxes List -->
+                    @if($exportProjectMode === 'custom')
+                        <div class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-800 space-y-2 max-h-44 overflow-y-auto">
+                            <!-- Non-project option -->
+                            <label class="flex items-center justify-between p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900 cursor-pointer transition-all">
+                                <div class="flex items-center gap-2">
+                                    <input type="checkbox" wire:model.live="exportSelectedProjectIds" value="non_project" class="rounded text-amber-500 focus:ring-amber-500 border-zinc-300 dark:border-zinc-700">
+                                    <span class="text-xs text-zinc-700 dark:text-zinc-300 font-medium">Non-Project Tasks (Standalone)</span>
+                                </div>
+                                <span class="text-[10px] text-zinc-400">No project</span>
+                            </label>
+
+                            <!-- User's Projects -->
+                            @forelse($this->projects as $proj)
+                                <label class="flex items-center justify-between p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900 cursor-pointer transition-all">
+                                    <div class="flex items-center gap-2">
+                                        <input type="checkbox" wire:model.live="exportSelectedProjectIds" value="{{ (string)$proj->id }}" class="rounded text-amber-500 focus:ring-amber-500 border-zinc-300 dark:border-zinc-700">
+                                        <span class="text-xs text-zinc-700 dark:text-zinc-300 font-medium">{{ $proj->name }}</span>
+                                    </div>
+                                    <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-zinc-200/80 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
+                                        {{ $proj->tasks_count }} tasks
+                                    </span>
+                                </label>
+                            @empty
+                                <p class="text-xs text-zinc-400 text-center py-2">No projects created yet.</p>
+                            @endforelse
+                        </div>
+                        @error('exportSelectedProjectIds')
+                            <p class="text-xs text-rose-500 font-medium">{{ $message }}</p>
+                        @enderror
+                    @endif
+                </div>
+
+                <!-- SECTION 3: DATE RANGE FILTER -->
+                <div class="space-y-2.5">
+                    <label class="text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
+                        <span class="size-4 rounded-full bg-amber-500 text-zinc-950 flex items-center justify-center text-[10px] font-bold">3</span>
+                        <span>Date Range Filter (Optional)</span>
+                    </label>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <select wire:model.live="exportDateType" class="h-9 px-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-amber-500 cursor-pointer">
+                            <option value="all">All Dates (No Range)</option>
+                            <option value="created_at">Filter by Created Date</option>
+                            <option value="due_at">Filter by Due Date</option>
+                        </select>
+
+                        @if($exportDateType !== 'all')
+                            <div class="relative">
+                                <input type="date" 
+                                       wire:model.live="exportStartDate" 
+                                       placeholder="Start Date" 
+                                       class="w-full h-9 px-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-amber-500 cursor-pointer">
+                            </div>
+                            <div class="relative">
+                                <input type="date" 
+                                       wire:model.live="exportEndDate" 
+                                       placeholder="End Date" 
+                                       class="w-full h-9 px-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-amber-500 cursor-pointer">
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- SECTION 4: CONTENT & COLUMN TOGGLES -->
+                <div class="space-y-2.5">
+                    <label class="text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
+                        <span class="size-4 rounded-full bg-amber-500 text-zinc-950 flex items-center justify-center text-[10px] font-bold">4</span>
+                        <span>Columns & Additional Details</span>
+                    </label>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <label class="flex items-center gap-2.5 p-2 rounded-xl bg-zinc-50 dark:bg-zinc-950/40 border border-zinc-200/80 dark:border-zinc-800 cursor-pointer">
+                            <input type="checkbox" wire:model.live="exportIncludeChecklists" class="rounded text-amber-500 focus:ring-amber-500 border-zinc-300 dark:border-zinc-700">
+                            <div class="text-xs">
+                                <span class="font-semibold text-zinc-800 dark:text-zinc-200">Include Checklists</span>
+                                <span class="block text-[11px] text-zinc-500 dark:text-zinc-400">Progress (%) & subtask checklist items</span>
+                            </div>
+                        </label>
+
+                        <label class="flex items-center gap-2.5 p-2 rounded-xl bg-zinc-50 dark:bg-zinc-950/40 border border-zinc-200/80 dark:border-zinc-800 cursor-pointer">
+                            <input type="checkbox" wire:model.live="exportIncludeLabels" class="rounded text-amber-500 focus:ring-amber-500 border-zinc-300 dark:border-zinc-700">
+                            <div class="text-xs">
+                                <span class="font-semibold text-zinc-800 dark:text-zinc-200">Include Labels / Tags</span>
+                                <span class="block text-[11px] text-zinc-500 dark:text-zinc-400">Attached dynamic labels</span>
+                            </div>
+                        </label>
+
+                        <label class="flex items-center gap-2.5 p-2 rounded-xl bg-zinc-50 dark:bg-zinc-950/40 border border-zinc-200/80 dark:border-zinc-800 cursor-pointer">
+                            <input type="checkbox" wire:model.live="exportIncludeDescription" class="rounded text-amber-500 focus:ring-amber-500 border-zinc-300 dark:border-zinc-700">
+                            <div class="text-xs">
+                                <span class="font-semibold text-zinc-800 dark:text-zinc-200">Include Description</span>
+                                <span class="block text-[11px] text-zinc-500 dark:text-zinc-400">Full task notes & descriptions</span>
+                            </div>
+                        </label>
+
+                        <label class="flex items-center gap-2.5 p-2 rounded-xl bg-zinc-50 dark:bg-zinc-950/40 border border-zinc-200/80 dark:border-zinc-800 cursor-pointer">
+                            <input type="checkbox" wire:model.live="exportIncludeTrackedTime" class="rounded text-amber-500 focus:ring-amber-500 border-zinc-300 dark:border-zinc-700">
+                            <div class="text-xs">
+                                <span class="font-semibold text-zinc-800 dark:text-zinc-200">Include Tracked Time</span>
+                                <span class="block text-[11px] text-zinc-500 dark:text-zinc-400">Total duration from activities</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- SECTION 5: FORMAT & SORTING -->
+                <div class="space-y-2.5">
+                    <label class="text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
+                        <span class="size-4 rounded-full bg-amber-500 text-zinc-950 flex items-center justify-center text-[10px] font-bold">5</span>
+                        <span>Format & Ordering</span>
+                    </label>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <!-- Format Radio Cards -->
+                        <div class="flex items-center gap-2">
+                            <label class="flex-1 flex items-center justify-center gap-2 p-2.5 rounded-xl border cursor-pointer transition-all {{ $exportFormat === 'xlsx' ? 'bg-amber-500/10 border-amber-500/40 text-amber-800 dark:text-amber-200 font-bold shadow-2xs' : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400' }}">
+                                <input type="radio" wire:model.live="exportFormat" value="xlsx" class="sr-only">
+                                <flux:icon name="table-cells" class="size-4 text-emerald-500" />
+                                <span class="text-xs">Excel (.xlsx)</span>
+                            </label>
+
+                            <label class="flex-1 flex items-center justify-center gap-2 p-2.5 rounded-xl border cursor-pointer transition-all {{ $exportFormat === 'csv' ? 'bg-amber-500/10 border-amber-500/40 text-amber-800 dark:text-amber-200 font-bold shadow-2xs' : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400' }}">
+                                <input type="radio" wire:model.live="exportFormat" value="csv" class="sr-only">
+                                <flux:icon name="document-text" class="size-4 text-sky-500" />
+                                <span class="text-xs">CSV (.csv)</span>
+                            </label>
+                        </div>
+
+                        <!-- Sort Dropdown -->
+                        <div>
+                            <select wire:model.live="exportSortBy" class="w-full h-10 px-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-xs border border-zinc-200/80 dark:border-zinc-800 focus:outline-none focus:border-amber-500 cursor-pointer">
+                                <option value="latest">Sort: Newest Created First</option>
+                                <option value="oldest">Sort: Oldest Created First</option>
+                                <option value="due_at">Sort: Due Date (Earliest First)</option>
+                                <option value="title">Sort: Title (A-Z)</option>
+                                <option value="status">Sort: Status</option>
+                                <option value="project">Sort: Project Name</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="flex items-center justify-between pt-4 border-t border-zinc-200/80 dark:border-zinc-800">
+                    <flux:modal.close>
+                        <button type="button" class="h-9 px-4 rounded-xl text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 bg-zinc-100 dark:bg-zinc-800/60 hover:bg-zinc-200 dark:hover:bg-zinc-700/80 border border-zinc-200/80 dark:border-zinc-700/60 transition-all cursor-pointer active:scale-95">
+                            Cancel
+                        </button>
+                    </flux:modal.close>
+
+                    <button type="button" 
+                            wire:click="exportTasks" 
+                            wire:loading.attr="disabled"
+                            @if($matchingCount === 0) disabled @endif
+                            class="h-9 px-5 rounded-xl text-xs font-bold text-zinc-950 bg-amber-500 hover:bg-amber-400 border border-amber-400 shadow-xs shadow-amber-500/20 transition-all cursor-pointer flex items-center gap-2 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span wire:loading.remove wire:target="exportTasks" class="flex items-center gap-1.5">
+                            <flux:icon name="arrow-down-tray" class="size-4" />
+                            <span>Download {{ strtoupper($exportFormat) }} ({{ $matchingCount }})</span>
+                        </span>
+                        <span wire:loading wire:target="exportTasks" class="flex items-center gap-1.5">
+                            <flux:icon name="arrow-path" class="size-4 animate-spin" />
+                            <span>Preparing Export...</span>
+                        </span>
+                    </button>
                 </div>
             </div>
         </flux:modal>

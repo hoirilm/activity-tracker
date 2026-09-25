@@ -186,6 +186,17 @@
                             </div>
                         </div>
                     </div>
+                    <div class="bg-zinc-100/80 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-700/40 rounded-xl overflow-hidden transition-all">
+                        <button type="button" @click="open = open === 'm4' ? null : 'm4'" class="w-full flex items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-left text-zinc-800 dark:text-zinc-200 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors cursor-pointer" :class="open === 'm4' && 'text-zinc-900 dark:text-zinc-100'">
+                            <span>How can I export my Tasks data with custom filters?</span>
+                            <flux:icon name="chevron-down" class="size-4 text-zinc-400 shrink-0 transition-transform duration-200" ::class="open === 'm4' && 'rotate-180 text-zinc-700 dark:text-zinc-300'" />
+                        </button>
+                        <div x-show="open === 'm4'" x-collapse class="px-4 pb-3" style="display:none">
+                            <div class="p-3 bg-zinc-200/60 dark:bg-zinc-950 rounded-xl border-l-2 border-zinc-400 dark:border-zinc-600 text-xs text-zinc-800 dark:text-zinc-300 leading-relaxed">
+                                Click the <strong>Export</strong> button in the Tasks header on the <strong>Manage</strong> page. You can customize the export by selecting specific task statuses (On Hold, New, On Progress, Done, Archived), filtering by projects (or standalone non-project tasks), applying date ranges, choosing which columns to include (checklists, labels, descriptions, and total tracked time), and downloading as Excel (.xlsx) or CSV.
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
