@@ -30,6 +30,7 @@ new class extends Component
     
     public $editingActivityId = null;
     public $editDetail;
+    public $editProjectId = null;
     public $editTaskId = null;
     public $editStartTime;
     public $editEndTime;
@@ -55,6 +56,26 @@ new class extends Component
         }
         if (!$this->category_id) {
             $this->category_id = Category::where('user_id', auth()->id())->first()->id ?? null;
+        }
+    }
+
+    public function updatedEditProjectId($val)
+    {
+        if ($this->editTaskId) {
+            $task = auth()->user()->tasks()->find($this->editTaskId);
+            if ($task && $task->project_id && $task->project_id != $val) {
+                $this->editTaskId = null;
+            }
+        }
+    }
+
+    public function updatedEditTaskId($val)
+    {
+        if ($val) {
+            $task = auth()->user()->tasks()->find($val);
+            if ($task && $task->project_id) {
+                $this->editProjectId = $task->project_id;
+            }
         }
     }
 
@@ -113,19 +134,14 @@ new class extends Component
     {
         $query = auth()->user()->tasks()->with('project');
 
-        if ($this->editingActivityId) {
-            $activity = auth()->user()->activities()->find($this->editingActivityId);
-            if ($activity) {
-                return $query->where(function ($q) use ($activity) {
-                    if ($activity->project_id) {
-                        $q->where('project_id', $activity->project_id)
-                          ->orWhereNull('project_id');
-                    }
-                    if ($activity->task_id) {
-                        $q->orWhere('id', $activity->task_id);
-                    }
-                })->latest()->get();
-            }
+        if ($this->editProjectId) {
+            $query->where(function ($q) {
+                $q->where('project_id', $this->editProjectId)
+                  ->orWhereNull('project_id');
+                if ($this->editTaskId) {
+                    $q->orWhere('id', $this->editTaskId);
+                }
+            });
         }
 
         return $query->latest()->get();
@@ -324,6 +340,7 @@ new class extends Component
         if ($activity) {
             $this->editingActivityId = $activity->id;
             $this->editDetail = $activity->detail;
+            $this->editProjectId = $activity->project_id;
             $this->editTaskId = $activity->task_id;
             $this->editStartTime = $activity->start_time->format('Y-m-d\TH:i');
             $this->editEndTime = $activity->end_time ? $activity->end_time->format('Y-m-d\TH:i') : null;
@@ -335,22 +352,49 @@ new class extends Component
     {
         $this->validate([
             'editDetail' => 'required|string',
-            'editTaskId' => 'nullable|exists:tasks,id',
+            'editProjectId' => [
+                'required',
+                \Illuminate\Validation\Rule::exists('projects', 'id')->where('user_id', auth()->id()),
+            ],
+            'editTaskId' => [
+                'nullable',
+                \Illuminate\Validation\Rule::exists('tasks', 'id')->where('user_id', auth()->id()),
+            ],
             'editStartTime' => 'required|date',
             'editEndTime' => 'required|date|after_or_equal:editStartTime',
         ]);
+
+        if ($this->editTaskId) {
+            $task = auth()->user()->tasks()->find($this->editTaskId);
+            if ($task && $task->project_id && $task->project_id != $this->editProjectId) {
+                $this->editTaskId = null;
+            }
+        }
 
         $activity = auth()->user()->activities()->find($this->editingActivityId);
         if ($activity) {
             $activity->update([
                 'detail' => $this->editDetail,
+                'project_id' => $this->editProjectId,
                 'task_id' => $this->editTaskId ?: null,
                 'start_time' => Carbon::parse($this->editStartTime),
                 'end_time' => Carbon::parse($this->editEndTime),
             ]);
-            
+
+            if ($this->editTaskId) {
+                $task = auth()->user()->tasks()->find($this->editTaskId);
+                if ($task && in_array($task->status, [Task::STATUS_NEW, Task::STATUS_ON_HOLD])) {
+                    $task->update(['status' => Task::STATUS_ON_PROGRESS]);
+                }
+            }
+
             $this->showEditModal = false;
             $this->editingActivityId = null;
+            $this->editProjectId = null;
+            $this->editTaskId = null;
+            $this->editDetail = null;
+            $this->editStartTime = null;
+            $this->editEndTime = null;
             $this->dispatch('toast', title: 'Activity log updated.', category: 'ACTIVITY', type: 'success');
         }
     }
@@ -359,6 +403,11 @@ new class extends Component
     {
         $this->showEditModal = false;
         $this->editingActivityId = null;
+        $this->editProjectId = null;
+        $this->editTaskId = null;
+        $this->editDetail = null;
+        $this->editStartTime = null;
+        $this->editEndTime = null;
     }
 
     public function calculateMergedDuration($activities): string
@@ -998,7 +1047,7 @@ new class extends Component
                  x-transition:leave="ease-in duration-200" 
                  x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" 
                  x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
-                 class="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-700 w-full max-w-sm overflow-hidden text-left relative">
+                 class="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-700 w-full max-w-sm sm:max-w-md overflow-hidden text-left relative">
                 <div class="p-6">
                     <h3 class="text-base font-semibold text-zinc-900 dark:text-zinc-100 mb-4">Edit Activity</h3>
                     
@@ -1009,13 +1058,24 @@ new class extends Component
                             @error('editDetail') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Associated Task</label>
-                            <select wire:model="editTaskId" class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 shadow-xs text-xs py-2 px-3 transition-colors">
-                                <option value="">-- Non-Task Activity --</option>
-                                @foreach($this->editModalTasks as $t)
-                                    <option value="{{ $t->id }}">{{ $t->title }}{{ $t->project ? ' ('.$t->project->name.')' : '' }}</option>
+                            <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Project</label>
+                            <select wire:model.live="editProjectId" class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 shadow-xs text-xs py-2 px-3 transition-colors">
+                                <option value="">-- Select Project --</option>
+                                @foreach($this->projects as $p)
+                                    <option value="{{ $p->id }}">{{ $p->name }}</option>
                                 @endforeach
                             </select>
+                            @error('editProjectId') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Associated Task</label>
+                            <select wire:model.live="editTaskId" class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 shadow-xs text-xs py-2 px-3 transition-colors">
+                                <option value="">-- Non-Task Activity --</option>
+                                @foreach($this->editModalTasks as $t)
+                                    <option value="{{ $t->id }}">{{ $t->title }}</option>
+                                @endforeach
+                            </select>
+                            @error('editTaskId') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Start Time</label>
