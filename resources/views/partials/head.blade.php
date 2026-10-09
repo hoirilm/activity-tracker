@@ -11,6 +11,25 @@
 <link rel="shortcut icon" href="/favicon.ico?v=6">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=6">
 
+<!-- PWA Manifest & Meta Tags -->
+<link rel="manifest" href="/manifest.json?v=6">
+<meta name="theme-color" content="#09090b">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="{{ config('app.name', 'Activity Tracker') }}">
+
+<!-- Register PWA Service Worker -->
+<script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js?v=2').catch((err) => {
+                console.warn('PWA ServiceWorker registration failed:', err);
+            });
+        });
+    }
+</script>
+
 @fonts
 
 @vite(['resources/css/app.css', 'resources/js/app.js'])
